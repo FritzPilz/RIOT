@@ -36,6 +36,19 @@ ifeq ($(QUIET),0)
   CMAKEMAKEFLAGS += VERBOSE=1
 endif
 
+#WAMR_CONFIG will be included into the cmake
+ifneq ($(WAMR_CONFIG),)
+  WAMR_CMAKE_FLAGS += "-DWAMR_CONFIG=$(WAMR_CONFIG)"
+endif
+
+WAMR_CMAKE_FLAGS += "-DRIOT_INCLUDES=$(RIOT_INCLUDES)"\
+                     -DWAMR_BUILD_TARGET=$(WAMR_BUILD_TARGET)\
+                     -DWAMR_ROOT_DIR=$(PKG_SOURCE_DIR)/ \
+                     -DCMAKE_SYSTEM_NAME=Generic \
+                     -DCMAKE_SYSTEM_PROCESSOR="$(MCPU)" \
+                     -DCMAKE_C_COMPILER=$(CC) \
+                     -DCMAKE_C_COMPILER_WORKS=TRUE \
+
 
 all: $(BINDIR)/libwamr.a
 
@@ -43,20 +56,14 @@ $(BINDIR)/libwamr.a: $(PKG_BUILD_DIR)/libwamr.a
 	cp $< $@
 
 $(PKG_BUILD_DIR)/libwamr.a: $(PKG_BUILD_DIR)/Makefile
-	$(MAKE) -C $(PKG_BUILD_DIR) $(CMAKEMAKEFLAGS)
+	+$(MAKE) -C $(PKG_BUILD_DIR) $(CMAKEMAKEFLAGS)
 
-$(PKG_BUILD_DIR)/Makefile: $(PKG_PREPARED)
-	cmake -B$(PKG_BUILD_DIR) \
-		"-DRIOT_INCLUDES=$(RIOT_INCLUDES)"\
-		-DWAMR_BUILD_TARGET=$(WAMR_BUILD_TARGET)\
-		-DWAMR_ROOT_DIR=$(PKG_SOURCE_DIR)\\
-		-DCMAKE_SYSTEM_NAME=Generic \
-		-DCMAKE_SYSTEM_PROCESSOR="$(MCPU)" \
-		-DCMAKE_C_COMPILER=$(CC) \
-		-DCMAKE_C_COMPILER_WORKS=TRUE \
+$(PKG_BUILD_DIR)/Makefile: $(PKG_PREPARED) print_build_target
+	ASMFLAGS="${CFLAGS}" cmake -B$(PKG_BUILD_DIR) $(WAMR_CMAKE_FLAGS)
 
 print_build_target:
 	@echo CPU_ARCH: $(CPU_ARCH)
 	@echo CPU: $(CPU)
 	@echo CFLAGS: $(CFLAGS)
 	@echo WAMR_BUILD_TARGET: $(WAMR_BUILD_TARGET)
+	@echo WAMR_CONFIG: $(WAMR_CONFIG)

@@ -11,6 +11,10 @@ enable_language (ASM)
 
 set (WAMR_BUILD_PLATFORM "riot")
 
+if (DEFINED WAMR_CONFIG)
+  include (${WAMR_CONFIG})
+endif ()
+
 # Build as X86_32 by default, change to "AARCH64[sub]", "ARM[sub]", "THUMB[sub]", "MIPS" or "XTENSA"
 # if we want to support arm, thumb, mips or xtensa
 if (NOT DEFINED WAMR_BUILD_TARGET)
@@ -51,6 +55,6 @@ include_directories(SYSTEM ${RIOT_INCLUDES_LIST})
 
 
 # target_sources( ${WAMR_RUNTIME_LIB_SOURCE} )
-# executable linking is done by RIOT build system
+# executable linking is done by RIOT build system this just builds libwamr.a
 
 add_library( wamr ${WAMR_RUNTIME_LIB_SOURCE})
