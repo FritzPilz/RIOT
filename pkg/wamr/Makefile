@@ -19,20 +19,21 @@ RIOT_INCLUDES = $(filter-out -%,$(subst -I,,$(INCLUDES)))
 #WAMR_BUILD_TARGET is "X86_32" "AARCH64[sub]", "ARM[sub]",
 #                     "THUMB[sub]", "MIPS" or "XTENSA"
 #no msp430, no AVR support for now
+
 ifeq ($(CPU),native)
-#$(CPU) ist defined for every CPU
+#$(CPU) is defined for every CPU
 #everyone build on x86_32
-	WAMR_BUILD_TARGET = X86_32
+  WAMR_BUILD_TARGET = X86_32
 else ifeq ($(findstring arm,$(CPU_ARCH)),arm)
-	WAMR_BUILD_TARGET = THUMB
+  WAMR_BUILD_TARGET = THUMB
 else ifeq ($(CPU_ARCH),mips32r2)
-	WAMR_BUILD_TARGET = MIPS
+  WAMR_BUILD_TARGET = MIPS
 else ifeq ($(CPU_ARCH),xtensa)
-	WAMR_BUILD_TARGET = XTENSA
+  WAMR_BUILD_TARGET = XTENSA
 endif
 
-ifeq ($(QUIET), 0)
-	CMAKEMAKEFLAGS += VERBOSE=1
+ifeq ($(QUIET),0)
+  CMAKEMAKEFLAGS += VERBOSE=1
 endif
 
 
