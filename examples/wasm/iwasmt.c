@@ -16,7 +16,12 @@
 #include <thread.h>
 
 /*provide some test program*/
-#include "test_wasm.h"
+// #include "test_wasm.h"
+
+
+#include "blob/main.wasm.h"
+//we need this not const some stack POPs are marked for size
+//static uint8_t wasm_test_file[] = main_wasm;
 
 #define DEFAULT_THREAD_STACKSIZE (6 * 1024)
 #define DEFAULT_THREAD_PRIORITY 50
@@ -80,9 +85,12 @@ iwasm_main(void *arg1)
     init_args.mem_alloc_option.pool.heap_size = sizeof(global_heap_buf);
 #elif defined(FUNC_ALLOC)
     init_args.mem_alloc_type = Alloc_With_Allocator;
+/*deactivate Wpedantic for some lines*/
+#pragma GCC diagnostic ignored "-Wpedantic"
     init_args.mem_alloc_option.allocator.malloc_func = malloc;
     init_args.mem_alloc_option.allocator.realloc_func = realloc;
     init_args.mem_alloc_option.allocator.free_func = free;
+#pragma GCC diagnostic pop
 #else
     init_args.mem_alloc_type = Alloc_With_System_Allocator;
 #endif
@@ -94,9 +102,16 @@ iwasm_main(void *arg1)
     }
 
 
+
+
     /* load WASM byte buffer from byte buffer of include file */
     wasm_file_buf = (uint8_t *) wasm_test_file;
     wasm_file_buf_size = sizeof(wasm_test_file);
+
+//     wasm_file_buf = (uint8_t *) main_wasm;
+//     wasm_file_buf_size = main_wasm_len;
+
+
 
     /* load WASM module */
     if (!(wasm_module = wasm_runtime_load(wasm_file_buf, wasm_file_buf_size,

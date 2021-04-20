@@ -15,6 +15,8 @@ export WAMR_CONFIG := $(abspath config.cmake)
 WPEDANTIC := 0
 WERROR := 0
 
+BLOBS += main.wasm
+
 # Comment this out to disable code in RIOT that does safety checking
 # which is not needed in a production environment but helps in the
 # development process:
