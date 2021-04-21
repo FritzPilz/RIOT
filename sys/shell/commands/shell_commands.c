@@ -210,6 +210,9 @@ extern int _bootloader_handler(int argc, char **argv);
 #ifdef MODULE_GNRC_UDP_CMD
 extern int _gnrc_udp_cmd(int argc, char **argv);
 #endif
+#ifdef MODULE_BPF
+extern int _sc_bpf(int argc, char **argv);
+#endif
 
 const shell_command_t _shell_command_list[] = {
     {"reboot", "Reboot the node", _reboot_handler},
@@ -356,6 +359,7 @@ const shell_command_t _shell_command_list[] = {
 #ifdef MODULE_DFPLAYER
     {"dfplayer", "Control a DFPlayer Mini MP3 player", _sc_dfplayer},
 #endif
+<<<<<<< HEAD
 #ifdef MODULE_CONGURE_TEST
     { "cong_clear", "Clears CongURE state object", congure_test_clear_state },
     { "cong_setup", "Calls the setup function for the CongURE state object",
@@ -374,6 +378,9 @@ const shell_command_t _shell_command_list[] = {
       congure_test_msgs_reset },
     { "cong_report", "Calls a report_* method of the CongURE state object",
       congure_test_call_report },
+#endif
+#ifdef MODULE_BPF
+    {"bpf_keyval", "retrieve bpf key value store values", _sc_bpf},
 #endif
     {NULL, NULL, NULL}
 };
