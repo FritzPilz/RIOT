@@ -8,6 +8,8 @@ endif
 ifneq (,$(filter bpf,$(USEMODULE)))
   DIRS += bpf
 endif
+ifneq (,$(filter sched_rbpf,$(USEMODULE)))
+  DIRS += sched_rbpf
 endif
 ifneq (,$(filter bluetil_%,$(USEMODULE)))
   DIRS += net/ble/bluetil
