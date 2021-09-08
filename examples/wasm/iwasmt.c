@@ -11,17 +11,16 @@
 
 #include <string.h>
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wstrict-prototypes"
 #include "wasm_export.h"
+#pragma GCC diagnostic pop
 
 #include <thread.h>
 
 /*provide some test program*/
-// #include "test_wasm.h"
-
-
 #include "blob/main.wasm.h"
-//we need this not const some stack POPs are marked for size
-//static uint8_t wasm_test_file[] = main_wasm;
+
 
 #define DEFAULT_THREAD_STACKSIZE (6 * 1024)
 #define DEFAULT_THREAD_PRIORITY 50
@@ -48,7 +47,7 @@ iwasm_t(void *arg1)
     wasm_module_t wasm_module = (wasm_module_t) arg1;
     wasm_module_inst_t wasm_module_inst = NULL;
     char error_buf[128];
-    
+
     /* instantiate the module */
     if (!(wasm_module_inst = wasm_runtime_instantiate(wasm_module, 8 * 1024,
         8 * 1024, error_buf, sizeof(error_buf)))) {
@@ -101,17 +100,14 @@ iwasm_main(void *arg1)
         return NULL;
     }
 
-
-
-
-    /* load WASM byte buffer from byte buffer of include file */
-    wasm_file_buf = (uint8_t *) wasm_test_file;
-    wasm_file_buf_size = sizeof(wasm_test_file);
-
-//     wasm_file_buf = (uint8_t *) main_wasm;
-//     wasm_file_buf_size = main_wasm_len;
-
-
+    /* we need the byte codes be writable while loading it adds size information to
+    /* stack POPs */
+    //static uint8_t wasm_test_file[] = main_wasm;
+    wasm_file_buf = malloc(main_wasm_len);
+    memcpy(wasm_file_buf, main_wasm, main_wasm_len);
+    /* if architecture has const in writable mem
+    /* wasm_file_buf = (uint8_t *) main_wasm; */
+    wasm_file_buf_size = main_wasm_len;
 
     /* load WASM module */
     if (!(wasm_module = wasm_runtime_load(wasm_file_buf, wasm_file_buf_size,
@@ -152,9 +148,8 @@ iwasm_init(void)
 
     return tpid != 0 ? true : false;;
 }
+
 #define telltruth(X) ((X) ? "true" : "false")
-
-
 int
 main(void)
 {
