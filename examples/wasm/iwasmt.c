@@ -24,8 +24,6 @@
 #define DEFAULT_THREAD_STACKSIZE (6 * 1024)
 #define DEFAULT_THREAD_PRIORITY 50
 
-static int app_argc;
-static char **app_argv;
 
 /* execs the main function in an instantiated module */
 static int iwasm_instance_exec_main(wasm_module_inst_t module_inst, int argc, char **argv)
@@ -116,27 +114,20 @@ bool iwasm_runtime_init(void)
     return true;
 }
 
+#include "event.h"
+event_queue_t iwasm_q = EVENT_QUEUE_INIT_DETACHED;
+
 void * iwasm_thread(void *arg1)
 {
     (void) arg1; /*unused*/
-    uint8_t *wasm_buf = NULL;
-    unsigned wasm_buf_size = 0;
 
     if(!iwasm_runtime_init())
         return (void *)-1;
 
-    /* we need the bytecode to be writable while loading
-     * loading adds size information to stack POPs */
-    //static uint8_t wasm_test_file[] = main_wasm;
-    wasm_buf = malloc(main_wasm_len);
-    memcpy(wasm_buf, main_wasm, main_wasm_len);
-    /* no copy need if architecture has const in writable mem */
-    /* wasm_buf = (uint8_t *) main_wasm; */
-    wasm_buf_size = main_wasm_len;
+    event_queue_claim(&iwasm_q);
+    event_loop(&iwasm_q);
 
-    iwasm_bytecode_exec_main(wasm_buf, wasm_buf_size, app_argc, app_argv);
-
-    free(wasm_buf);
+    /*next lines should not be reached*/
     wasm_runtime_destroy();
     return NULL;
 }
@@ -159,20 +150,84 @@ bool iwasm_start_thread(void)
         .arg = NULL,
         .name = "simple_wamr"
     };
-
+    event_queue_init_detached(&iwasm_q);
     b.stack=malloc(b.stacksize);
     kernel_pid_t tpid = thread_create (b.stack, b.stacksize, b.priority, b.flags, b.task_func, b.arg, b.name);
 
     return tpid != 0 ? true : false;;
 }
 
-/* this seems to be a very direct interpretation of i like to have a wamr_run */
-int wamr_run(void *bytecode, size_t bytecode_len, int argc, char **argv){
-    return iwasm_bytecode_exec_main(bytecode, bytecode_len, argc, argv);
+#include "mutex.h"
+
+typedef struct run_bytecode_event { event_t super;
+                                    void *bytecode;
+                                    size_t bytecode_len;
+                                    int argc;
+                                    char **argv;
+                                    mutex_t finish;
+} run_bytecode_event_t;
+
+void _wamr_run_call(event_t *event){
+    run_bytecode_event_t * e = (run_bytecode_event_t *) event;
+    e->argc = iwasm_bytecode_exec_main(e->bytecode, e->bytecode_len, e->argc, e->argv);
+    mutex_unlock(&e->finish);
 }
 
+/* this seems to be a very direct interpretation of "i like to have a wamr_run" */
+int wamr_run(void *bytecode, size_t bytecode_len, int argc, char **argv){
+    run_bytecode_event_t * e = malloc(sizeof(run_bytecode_event_t));
+    *e = (run_bytecode_event_t){ .super.handler = _wamr_run_call,
+                                    .bytecode = bytecode,
+                                    .bytecode_len = bytecode_len,
+                                    .argc = argc, .argv = argv,
+                                    .finish = MUTEX_INIT_LOCKED};
+    event_post(&iwasm_q, (event_t*) e);
+
+    mutex_lock(&e->finish);
+
+    int ret = e->argc;
+    free(e);
+    return ret;
+}
+
+
+int wamr_run_cp(const void *bytecode, size_t bytecode_len, int argc, char **argv){
+    uint8_t *wasm_buf = NULL;
+    unsigned wasm_buf_size = 0;
+    /* we need the bytecode to be writable while loading
+     * loading adds size information to stack POPs */
+    //static uint8_t wasm_test_file[] = main_wasm;
+    wasm_buf = malloc(bytecode_len);
+    memcpy(wasm_buf, bytecode, bytecode_len);
+    /* no copy need if architecture has const in writable mem */
+    /* wasm_buf = (uint8_t *) main_wasm; */
+    wasm_buf_size = bytecode_len;
+
+    int ret = wamr_run(wasm_buf, wasm_buf_size, argc, argv);
+    free(wasm_buf);
+    return ret;
+}
+
+
 #define telltruth(X) ((X) ? "true" : "false")
+#include "blob/hello.wasm.h"
+
 int main(void)
 {
     printf("iwasm_thread_initilised: %s\n",telltruth(iwasm_start_thread()));
+
+    {
+        int app_argc = 1;
+        char *app_argv1 = "test";
+        char **app_argv = {&app_argv1};
+        int ret = wamr_run_cp(main_wasm, main_wasm_len, app_argc, app_argv);
+        printf("ret = %d\n",ret );
+    }
+    {
+        int app_argc = 1;
+        char *app_argv1 = "test";
+        char **app_argv = {&app_argv1};
+        int ret = wamr_run_cp(hello_wasm, hello_wasm_len, app_argc, app_argv);
+        printf("ret = %d\n",ret );
+    }
 }
