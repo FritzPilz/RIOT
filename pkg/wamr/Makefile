@@ -30,6 +30,8 @@ else ifeq ($(CPU_ARCH),mips32r2)
   WAMR_BUILD_TARGET = MIPS
 else ifeq ($(CPU_ARCH),xtensa)
   WAMR_BUILD_TARGET = XTENSA
+else ifeq ($(CPU_ARCH),rv32)
+  WAMR_BUILD_TARGET = RISCV32
 endif
 
 ifeq ($(QUIET),0)
