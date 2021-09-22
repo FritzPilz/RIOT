@@ -21,15 +21,13 @@
 /*provide some test program*/
 #include "blob/main.wasm.h"
 
-
 #define DEFAULT_THREAD_STACKSIZE (6 * 1024)
 #define DEFAULT_THREAD_PRIORITY 50
 
 static int app_argc;
 static char **app_argv;
 
-static void*
-app_instance_main(wasm_module_inst_t module_inst)
+static void* app_instance_main(wasm_module_inst_t module_inst)
 {
     const char *exception;
 
@@ -40,9 +38,7 @@ app_instance_main(wasm_module_inst_t module_inst)
     return NULL;
 }
 
-
-void *
-iwasm_t(void *arg1)
+void * iwasm_t(void *arg1)
 {
     wasm_module_t wasm_module = (wasm_module_t) arg1;
     wasm_module_inst_t wasm_module_inst = NULL;
@@ -60,8 +56,7 @@ iwasm_t(void *arg1)
     return NULL;
 }
 
-void *
-iwasm_main(void *arg1)
+void * iwasm_main(void *arg1)
 {
     (void) arg1; /*unused*/
     uint8_t *wasm_file_buf = NULL;
@@ -71,7 +66,7 @@ iwasm_main(void *arg1)
 
     RuntimeInitArgs init_args;
 
-//chose allocator non defaults to system allocator
+/* chose allocator non defaults to system allocator */
 #define FUNC_ALLOC
 //#define POOL_ALLOC
 
@@ -123,8 +118,7 @@ iwasm_main(void *arg1)
     return NULL;
 }
 
-bool
-iwasm_init(void)
+bool iwasm_init(void)
 {
     struct{
         char *  stack;
@@ -150,8 +144,7 @@ iwasm_init(void)
 }
 
 #define telltruth(X) ((X) ? "true" : "false")
-int
-main(void)
+int main(void)
 {
     printf("iwasm_initilised: %s\n",telltruth(iwasm_init()));
 }
