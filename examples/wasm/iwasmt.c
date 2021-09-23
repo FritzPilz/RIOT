@@ -28,6 +28,7 @@
 /* execs the main function in an instantiated module */
 static int iwasm_instance_exec_main(wasm_module_inst_t module_inst, int argc, char **argv)
 {
+    /* exception memory is part of instance -> no buffer need */
     const char *exception = 0;
     int ret = 0;
     wasm_application_execute_main(module_inst, argc, argv);
@@ -43,14 +44,15 @@ static int iwasm_instance_exec_main(wasm_module_inst_t module_inst, int argc, ch
 int iwasm_module_exec_main(wasm_module_t wasm_module , int argc, char **argv)
 {
     wasm_module_inst_t wasm_module_inst = NULL;
-    char error_buf[128];
     int ret = 0;
 
-    /* instantiate the module */
-    if (!(wasm_module_inst = wasm_runtime_instantiate(wasm_module, 8 * 1024,
-        8 * 1024, error_buf, sizeof(error_buf)))) {
-        puts(error_buf);
-        return -1;
+    {   /* instantiate the module */
+        char error_buf[128];
+        if (!(wasm_module_inst = wasm_runtime_instantiate(wasm_module, 8 * 1024,
+            8 * 1024, error_buf, sizeof(error_buf)))) {
+            puts(error_buf);
+            return -1;
+            }
     }
     ret = iwasm_instance_exec_main(wasm_module_inst, argc, argv);
     /* destroy the module instance */
@@ -59,14 +61,13 @@ int iwasm_module_exec_main(wasm_module_t wasm_module , int argc, char **argv)
 }
 
 /* bytecode needs to be writeable*/
-int iwasm_bytecode_exec_main(void *bytecode, size_t bytecode_len, int argc, char **argv){
-//  (uint8_t *) bytecode;
+int iwasm_bytecode_exec_main(uint8_t * bytecode, size_t bytecode_len, int argc, char **argv){
     int ret = 0;
     wasm_module_t wasm_module = NULL;
 
     {   /* load WASM module */
         char error_buf[128];
-        if (!(wasm_module = wasm_runtime_load((uint8_t * )bytecode, bytecode_len,
+        if (!(wasm_module = wasm_runtime_load(bytecode, bytecode_len,
                                           error_buf, sizeof(error_buf)))) {
             puts(error_buf);
             return -1;
@@ -169,13 +170,15 @@ typedef struct run_bytecode_event { event_t super;
 
 void _wamr_run_call(event_t *event){
     run_bytecode_event_t * e = (run_bytecode_event_t *) event;
-    e->argc = iwasm_bytecode_exec_main(e->bytecode, e->bytecode_len, e->argc, e->argv);
+    e->argc = iwasm_bytecode_exec_main((uint8_t * )e->bytecode, e->bytecode_len, e->argc, e->argv);
     mutex_unlock(&e->finish);
 }
 
 /* this seems to be a very direct interpretation of "i like to have a wamr_run" */
 int wamr_run(void *bytecode, size_t bytecode_len, int argc, char **argv){
     run_bytecode_event_t * e = malloc(sizeof(run_bytecode_event_t));
+    if (!e) return -1;
+
     *e = (run_bytecode_event_t){ .super.handler = _wamr_run_call,
                                     .bytecode = bytecode,
                                     .bytecode_len = bytecode_len,
@@ -192,16 +195,16 @@ int wamr_run(void *bytecode, size_t bytecode_len, int argc, char **argv){
 
 
 int wamr_run_cp(const void *bytecode, size_t bytecode_len, int argc, char **argv){
-    uint8_t *wasm_buf = NULL;
-    unsigned wasm_buf_size = 0;
     /* we need the bytecode to be writable while loading
      * loading adds size information to stack POPs */
-    //static uint8_t wasm_test_file[] = main_wasm;
-    wasm_buf = malloc(bytecode_len);
+    uint8_t * wasm_buf = malloc(bytecode_len);
     memcpy(wasm_buf, bytecode, bytecode_len);
     /* no copy need if architecture has const in writable mem */
     /* wasm_buf = (uint8_t *) main_wasm; */
-    wasm_buf_size = bytecode_len;
+
+    unsigned wasm_buf_size = bytecode_len;
+
+    /* iwasm uses argv[0] casted to an int to store mains return value */
 
     int ret = wamr_run(wasm_buf, wasm_buf_size, argc, argv);
     free(wasm_buf);
@@ -214,20 +217,20 @@ int wamr_run_cp(const void *bytecode, size_t bytecode_len, int argc, char **argv
 
 int main(void)
 {
-    printf("iwasm_thread_initilised: %s\n",telltruth(iwasm_start_thread()));
+    printf("iwasm_thread_initilised: %s\n", telltruth(iwasm_start_thread()));
 
     {
         int app_argc = 1;
         char *app_argv1 = "test";
         char **app_argv = {&app_argv1};
         int ret = wamr_run_cp(main_wasm, main_wasm_len, app_argc, app_argv);
-        printf("ret = %d\n",ret );
+        printf("ret = %d\n", ret);
     }
     {
         int app_argc = 1;
         char *app_argv1 = "test";
         char **app_argv = {&app_argv1};
         int ret = wamr_run_cp(hello_wasm, hello_wasm_len, app_argc, app_argv);
-        printf("ret = %d\n",ret );
+        printf("ret = %d\n", ret);
     }
 }
