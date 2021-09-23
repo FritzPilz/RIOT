@@ -1,7 +1,14 @@
 PKG_NAME=wamr
 PKG_URL=https://github.com/bytecodealliance/wasm-micro-runtime.git
-PKG_VERSION=main
+PKG_BLEADING?=1
+ifeq ($(PKG_BLEADING),1)
+  PKG_VERSION=main
+else
+  PKG_VERSION=8fd89bd415db73281c8fbd53de1c2726f35b5ddb
+endif
 PKG_LICENSE=Apache-2.0
+
+PKG_CUSTOM_PREPARED = CHECK_VERSION
 
 include $(RIOTBASE)/pkg/pkg.mk
 
@@ -51,7 +58,6 @@ WAMR_CMAKE_FLAGS += "-DRIOT_INCLUDES=$(RIOT_INCLUDES)"\
                      -DCMAKE_C_COMPILER=$(CC) \
                      -DCMAKE_C_COMPILER_WORKS=TRUE \
 
-
 all: $(BINDIR)/libwamr.a
 
 $(BINDIR)/libwamr.a: $(PKG_BUILD_DIR)/libwamr.a
@@ -64,8 +70,12 @@ $(PKG_BUILD_DIR)/Makefile: $(PKG_PREPARED) print_build_target
 	ASMFLAGS="${CFLAGS}" cmake -B$(PKG_BUILD_DIR) $(WAMR_CMAKE_FLAGS)
 
 print_build_target:
+	@echo PKG_VERSION: $(PKG_VERSION)
 	@echo CPU_ARCH: $(CPU_ARCH)
 	@echo CPU: $(CPU)
 	@echo CFLAGS: $(CFLAGS)
 	@echo WAMR_BUILD_TARGET: $(WAMR_BUILD_TARGET)
 	@echo WAMR_CONFIG: $(WAMR_CONFIG)
+
+CHECK_VERSION:
+	test -f $(PKG_DOWNLOADED) && (test `cat $(PKG_DOWNLOADED)` = $(PKG_VERSION) || rm $(PKG_DOWNLOADED));true
