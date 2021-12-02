@@ -66,31 +66,31 @@ void print_normal_addr(struct bpf_state* st){
   printf("sizeof(f32_ctx.data)  = %d\n", sizeof(f32_ctx.data));
   printf("sizeof(f32_ctx.words) = %d\n", sizeof(f32_ctx.words));
   printf("sizeof(bpf_fletcher32_bpf_bin) = %d\n", sizeof(bpf_fletcher32_bpf_bin));
-  
+
   printf("start_f32_ctx       = %"PRIu64"\n", (uint64_t) (intptr_t) &f32_ctx);
   printf("start_f32_ctx.data  = %"PRIu64"\n", (uint64_t) (intptr_t) &(f32_ctx.data));
-  printf("start_f32_ctx.words = %d\n", f32_ctx.words);
+  printf("start_f32_ctx.words = %"PRIu32"\n", f32_ctx.words);
   printf("start_f32_ctx.words = %"PRIu64"\n", (uint64_t) (intptr_t) &(f32_ctx.words));
-  
+
   for (int i = 0; i < 10; i++) {
   	printf("%0d:", i);
   	printf("ins64        = %"PRIu64"\n", *((uint64_t *) (intptr_t) bpf_fletcher32_bpf_bin +i));
   }
   printf("\n\n *********print_normal_addr*******\n\n");
-  
+
   printf("\n\n *********print_region_info*******\n\n");
-  
+
   printf("start_ctx(physical) =%"PRIu64"\n", (*(*((*st).mrs)).bpf_ctx).start_addr);
   printf("start_ctx (value)   = %"PRIu64"\n", *(uint64_t *) (uintptr_t)(*(*((*st).mrs)).bpf_ctx).start_addr);
   printf("ctx_size  = %"PRIu64"\n", (*(*((*st).mrs)).bpf_ctx).block_size);
   printf("ctx_words = %"PRIu16"\n", (uint16_t)(uintptr_t)((&(*(*((*st).mrs)).bpf_ctx).start_addr)+8));
   printf("ctx_words = %"PRIu16"\n", *((uint16_t *)(uintptr_t) ((&(*(*((*st).mrs)).bpf_ctx).start_addr)+8)));
-  
-   
+
+
   printf("start_content(physical) = %"PRIu64"\n", (*(*((*st).mrs)).content).start_addr);
   printf("start_content (value)   = %"PRIu16"\n", *(uint16_t *) (uintptr_t)(*(*((*st).mrs)).content).start_addr);
   printf("content_size  = %"PRIu64"\n", (*(*((*st).mrs)).content).block_size);
-  
+
   printf("\n\n *********print_region_info*******\n\n");
 }
 
@@ -118,20 +118,20 @@ uint32_t fletcher32(struct fletcher32_ctx *ctx)
 
 
 static void tests_bpf_run1(void)
-{   
+{
     printf("Hello rBPF_fletcher32 C code Testing:\n");
-    uint32_t res0;    
-  
+    uint32_t res0;
+
     uint32_t begin0 = ztimer_now(ZTIMER_USEC);
     //for (int i = 0; i < 1000; i++) {
       res0 = fletcher32(&f32_ctx);
     //}
     uint32_t end0 = ztimer_now(ZTIMER_USEC);
     printf("execution time: %f ms\n", (float)(end0-begin0)/US_PER_MS);
-    printf("rBPF_fletcher32 C result = 0x:%x\n", res0);
+    printf("rBPF_fletcher32 C result = 0x%"PRIx32"\n", res0);
 
     printf("End rBPF_fletcher32 Testing!\n");
-    
+
     printf ("fletcher32 start!!! \n");
     uint64_t result; // unsigned long long -> uint64_t
     // adding memory_regions
@@ -159,7 +159,7 @@ static void tests_bpf_run1(void)
     result = bpf_interpreter(&st, (const uint64_t *) bpf_fletcher32_bpf_bin, sizeof(bpf_fletcher32_bpf_bin), 10000);
     uint32_t end1 = ztimer_now(ZTIMER_USEC);
 
-    printf("rBPF_fletcher32 (dx) C result = 0x:%x\n", (uint32_t)result); //unsigned int uint32_t
+    printf("rBPF_fletcher32 (dx) C result = 0x%"PRIx32"\n", (uint32_t)result); //unsigned int uint32_t
     printf ("fletcher32 end!!! \n");
 
     printf("Result: %"PRIx32"\n", (uint32_t)result);
