@@ -1,4 +1,5 @@
 #include<stdio.h>
+#include<stdint.h>
 
 /*                                                                              
 defining bpf_flag                                                               
@@ -19,8 +20,8 @@ enum {
 };
 
 struct memory_region {
-  unsigned long long start_addr;
-  unsigned long long block_size;
+  uint64_t start_addr;
+  uint64_t block_size;
 };
 
 struct memory_regions {
@@ -30,11 +31,11 @@ struct memory_regions {
 };
 
 struct bpf_state {
-  unsigned long long state_pc;
-  unsigned long long regsmap[11];
+  uint64_t state_pc;
+  uint64_t regsmap[11];
   int bpf_flag;
   struct memory_regions *mrs;
 };
 
 
-unsigned long long bpf_interpreter(struct bpf_state *, unsigned long long *, unsigned long long, unsigned int);
+uint64_t bpf_interpreter(struct bpf_state *, const uint64_t *, uint64_t, uint32_t);
