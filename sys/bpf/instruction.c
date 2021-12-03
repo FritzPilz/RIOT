@@ -30,12 +30,11 @@ static inline size_t opcode2size(uint8_t opcode)
     unsigned size = (opcode >> 3) & 0x03;
     return lookup[size];
 }
-
-static int _check_mem(const bpf_t *bpf, uint8_t opcode, const intptr_t addr, uint8_t type)
+static int _check_mem(const bpf_t *bpf, uint8_t size, const intptr_t addr, uint8_t type)
 {
-    const intptr_t end = addr + opcode2size(opcode);
+    const intptr_t end = addr + size;
     for (const bpf_mem_region_t *region = &bpf->stack_region; region; region = region->next) {
-        if ((addr  >= (intptr_t)region->start) &&
+        if ((addr >= (intptr_t)(region->start)) &&
                 (end <= (intptr_t)(region->start + region->len)) &&
                 (region->flag & type)) {
 
@@ -47,14 +46,24 @@ static int _check_mem(const bpf_t *bpf, uint8_t opcode, const intptr_t addr, uin
     return -1;
 }
 
-static int _check_load(const bpf_t *bpf, uint8_t opcode, const intptr_t addr)
+static inline int _check_load(const bpf_t *bpf, uint8_t size, const intptr_t addr)
 {
-    return _check_mem(bpf, opcode, addr, BPF_MEM_REGION_READ);
+    return _check_mem(bpf, size, addr, BPF_MEM_REGION_READ);
 }
 
-static int _check_store(const bpf_t *bpf, uint8_t opcode, const intptr_t addr)
+static inline int _check_store(const bpf_t *bpf, uint8_t size, const intptr_t addr)
 {
-    return _check_mem(bpf, opcode, addr, BPF_MEM_REGION_WRITE);
+    return _check_mem(bpf, size, addr, BPF_MEM_REGION_WRITE);
+}
+
+int bpf_store_allowed(const bpf_t *bpf, void *addr, size_t size)
+{
+    return _check_store(bpf, size, (intptr_t)addr);
+}
+
+int bpf_load_allowed(const bpf_t *bpf, void *addr, size_t size)
+{
+    return _check_load(bpf, size, (intptr_t)addr);
 }
 
 static bpf_call_t _bpf_get_call(uint32_t num)
@@ -223,7 +232,7 @@ static int _load_x(const bpf_t *bpf, const bpf_instruction_t *instruction, uint6
     const uint8_t *src = (uint8_t*)(uintptr_t)regmap[instruction->src];
     intptr_t addr = (intptr_t)(src + instruction->offset);
 
-    if (_check_load(bpf, instruction->opcode, addr) < 0) {
+    if (_check_load(bpf, opcode2size(instruction->opcode), addr) < 0) {
         return BPF_ILLEGAL_MEM;
     }
 
@@ -251,7 +260,7 @@ static int _store(const bpf_t *bpf, const bpf_instruction_t *instruction, uint64
     uint8_t *dst = (uint8_t*)(uintptr_t)regmap[instruction->dst];
     intptr_t addr = (intptr_t)(dst + instruction->offset);
 
-    if (_check_store(bpf, instruction->opcode, addr) < 0) {
+    if (_check_store(bpf, opcode2size(instruction->opcode), addr) < 0) {
         return BPF_ILLEGAL_MEM;
     }
 
@@ -279,7 +288,7 @@ static int _store_x(const bpf_t *bpf, const bpf_instruction_t *instruction, uint
     uint8_t *dst = (uint8_t*)(uintptr_t)regmap[instruction->dst];
     intptr_t addr = (intptr_t)(dst + instruction->offset);
 
-    if (_check_store(bpf, instruction->opcode, addr) < 0) {
+    if (_check_store(bpf, opcode2size(instruction->opcode), addr) < 0) {
         return BPF_ILLEGAL_MEM;
     }
 
@@ -337,22 +346,20 @@ static int _instruction(bpf_t *bpf, uint64_t *regmap,
 
 int bpf_run(bpf_t *bpf, const void *ctx, int64_t *result)
 {
-    bpf->instruction_count = 0;
     uint64_t regmap[11] = { 0 };
     regmap[1] = (uint64_t)(uintptr_t)ctx;
     regmap[10] = (uint64_t)(uintptr_t)(bpf->stack + bpf->stack_size);
     bool end = false;
 
-    res = bpf_verify_preflight(bpf);
+    int res = bpf_verify_preflight(bpf);
     if (res < 0) {
         return res;
     }
 
-    const bpf_instruction_t *pc = (const bpf_instruction_t*)bpf->application;
+    const bpf_instruction_t *pc= (const bpf_instruction_t*)rbpf_text(bpf);
 
     while (!end) {
         int res = _instruction(bpf, regmap, &pc);
-        bpf->instruction_count++;
         if (res < 0) {
             if (pc->opcode == 0x85) {
                 bpf_call_t call = _bpf_get_call(pc->immediate);
@@ -383,7 +390,6 @@ int bpf_run(bpf_t *bpf, const void *ctx, int64_t *result)
         }
     }
 
-    DEBUG("Number of instructions: %"PRIu32"\n", bpf->instruction_count);
     *result = regmap[0];
     return BPF_OK;
 }
