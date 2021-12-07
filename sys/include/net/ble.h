@@ -97,6 +97,7 @@ extern "C" {
 #define BLE_GATT_SVC_HRS                    (0x180d)    /**< heart rate service */
 #define BLE_GATT_SVC_BAS                    (0x180f)    /**< battery service */
 #define BLE_GATT_SVC_IPSS                   (0x1820)    /**< IP protocol support */
+#define BLE_GATT_SVC_ENVIRON                (0x181a)    /**< Environmental sensing */
 /* XXX: custom services not defined by the BT SIG (random values) */
 #define BLE_GATT_SVC_NDNSS                  (0x7e5e)    /**< NDN support service */
 /* add more on demand */
@@ -118,6 +119,7 @@ extern "C" {
 #define BLE_GATT_CHAR_MANUFACTURER_NAME     (0x2a29)    /**< manufacturer name */
 #define BLE_GATT_CHAR_HEART_RATE_MEASURE    (0x2a37)    /**< heart rate measurement */
 #define BLE_GATT_CHAR_BODY_SENSE_LOC        (0x2a38)    /**< body sensor location */
+#define BLE_GATT_CHAR_TEMPERATURE           (0x2a6e)    /**< Temperature measurement */
 /** @} */
 
 /**
