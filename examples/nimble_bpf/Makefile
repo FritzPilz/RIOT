@@ -26,6 +26,7 @@ USEMODULE += saul_default
 USEMODULE += ztimer_usec
 
 BLOBS += bpf/temp_sens.bin
+BLOBS += bpf/hrs_sens.bin
 
 # Comment this out to disable code in RIOT that does safety checking
 # which is not needed in a production environment but helps in the

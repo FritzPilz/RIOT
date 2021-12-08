@@ -37,6 +37,7 @@
 #include "services/gatt/ble_svc_gatt.h"
 
 #include "blob/bpf/temp_sens.bin.h"
+#include "blob/bpf/hrs_sens.bin.h"
 
 #define HRS_FLAGS_DEFAULT       (0x01)      /* 16-bit BPM value */
 #define SENSOR_LOCATION         (0x02)      /* wrist sensor */
@@ -67,6 +68,13 @@ static bpf_t _temp_bpf = {
     .stack_size = sizeof(_bpf_stack),
 };
 
+static bpf_t _hrs_bpf = {
+    .application = hrs_sens_bin,
+    .application_len = hrs_sens_bin_len,
+    .stack = _bpf_stack,
+    .stack_size = sizeof(_bpf_stack),
+};
+
 
 static event_queue_t _eq;
 static event_t _update_evt;
@@ -75,7 +83,6 @@ static event_timeout_t _update_timeout_evt;
 static uint16_t _conn_handle;
 static uint16_t _hrs_val_handle;
 
-static int step = BPM_STEP;
 
 static int _hrs_handler(uint16_t conn_handle, uint16_t attr_handle,
                         struct ble_gatt_access_ctxt *ctxt, void *arg);
@@ -325,20 +332,24 @@ static void _hr_update(event_t *e)
     (void)e;
     struct os_mbuf *om;
 
-    /* our mock-up heart rate is going up and down */
-    if ((_hr_data.bpm == BPM_MIN) || (_hr_data.bpm == BPM_MAX)) {
-        step *= -1;
+    int64_t result;
+
+    int res = bpf_execute_ctx(&_hrs_bpf, NULL, 0, &result);
+    if (res < 0) {
+        puts("[NOTIFY] heart rate service error\n");
     }
-    _hr_data.bpm += step;
+    else {
+        _hr_data.bpm = result;
 
-    printf("[NOTIFY] heart rate service: measurement %i\n", (int)_hr_data.bpm);
+        printf("[NOTIFY] heart rate service: measurement %i\n", (int)_hr_data.bpm);
 
-    /* send heart rate data notification to GATT client */
-    om = ble_hs_mbuf_from_flat(&_hr_data, sizeof(_hr_data));
-    assert(om != NULL);
-    int res = ble_gattc_notify_custom(_conn_handle, _hrs_val_handle, om);
-    assert(res == 0);
-    (void)res;
+        /* send heart rate data notification to GATT client */
+        om = ble_hs_mbuf_from_flat(&_hr_data, sizeof(_hr_data));
+        assert(om != NULL);
+        res = ble_gattc_notify_custom(_conn_handle, _hrs_val_handle, om);
+        assert(res == 0);
+        (void)res;
+    }
 
     /* schedule next update event */
     event_timeout_set(&_update_timeout_evt, UPDATE_INTERVAL);
@@ -353,6 +364,7 @@ int main(void)
 
     bpf_init();
     bpf_setup(&_temp_bpf);
+    bpf_setup(&_hrs_bpf);
 
     /* setup local event queue (for handling heart rate updates) */
     event_queue_init(&_eq);
