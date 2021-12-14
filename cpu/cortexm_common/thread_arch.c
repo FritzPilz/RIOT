@@ -471,6 +471,8 @@ void __attribute__((naked)) __attribute__((used)) isr_svc(void)
 #endif
 }
 
+void do_priviliged_stuff(void);
+
 static void __attribute__((used)) _svc_dispatch(unsigned int *svc_args)
 {
     /* stack frame:
@@ -496,6 +498,12 @@ static void __attribute__((used)) _svc_dispatch(unsigned int *svc_args)
         case 1: /* SVC number used by cpu_switch_context_exit */
             SCB->ICSR = SCB_ICSR_PENDSVSET_Msk;
             break;
+	//TODO: Delete as soon as I know how to configure the SAU
+	case: 2
+	      do_priviliged_stuff();
+	case: 3
+	    asm("mrc p15, 0, r0, c1, c1, 0");
+	    break;
         default:
             DEBUG("svc: unhandled SVC #%u\n", svc_number);
             break;
