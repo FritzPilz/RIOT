@@ -8,6 +8,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdint.h>
+#include <stdbool.h>
 
 #include <string.h>
 
@@ -18,8 +19,7 @@
 
 #include <thread.h>
 
-/*provide some test program*/
-#include "blob/main.wasm.h"
+
 
 #define DEFAULT_THREAD_STACKSIZE (6 * 1024)
 #define DEFAULT_THREAD_PRIORITY 50
@@ -194,10 +194,12 @@ int wamr_run(void *bytecode, size_t bytecode_len, int argc, char **argv){
 }
 
 
-int wamr_run_cp(const void *bytecode, size_t bytecode_len, int argc, char **argv){
+int wamr_run_cp(const void *bytecode, size_t bytecode_len, int argc, char *argv[]){
     /* we need the bytecode to be writable while loading
      * loading adds size information to stack POPs */
     uint8_t * wasm_buf = malloc(bytecode_len);
+    if (!wasm_buf) return -1;
+
     memcpy(wasm_buf, bytecode, bytecode_len);
     /* no copy need if architecture has const in writable mem */
     /* wasm_buf = (uint8_t *) main_wasm; */
@@ -205,32 +207,21 @@ int wamr_run_cp(const void *bytecode, size_t bytecode_len, int argc, char **argv
     unsigned wasm_buf_size = bytecode_len;
 
     /* iwasm uses argv[0] casted to an int to store mains return value */
-
-    int ret = wamr_run(wasm_buf, wasm_buf_size, argc, argv);
+    static char * empty = "";
+    char ** parv;
+    if(argc > 0){
+        parv =  malloc(sizeof(argv[0]) * argc);
+        if (!parv) return -1;
+        memcpy(parv, argv, sizeof(argv[0]) * argc);
+    }else{
+        argc = 1;
+        parv = malloc(sizeof(argv[0]) * argc);
+        if (!parv) return -1;
+        parv[0] = empty;
+    }
+    int ret = wamr_run(wasm_buf, wasm_buf_size, argc, parv);
+    free(parv);
     free(wasm_buf);
+
     return ret;
-}
-
-
-#define telltruth(X) ((X) ? "true" : "false")
-#include "blob/hello.wasm.h"
-
-int main(void)
-{
-    printf("iwasm_thread_initilised: %s\n", telltruth(iwasm_start_thread()));
-
-    {
-        int app_argc = 1;
-        char *app_argv1 = "test";
-        char **app_argv = {&app_argv1};
-        int ret = wamr_run_cp(main_wasm, main_wasm_len, app_argc, app_argv);
-        printf("ret = %d\n", ret);
-    }
-    {
-        int app_argc = 1;
-        char *app_argv1 = "test";
-        char **app_argv = {&app_argv1};
-        int ret = wamr_run_cp(hello_wasm, hello_wasm_len, app_argc, app_argv);
-        printf("ret = %d\n", ret);
-    }
 }
