@@ -38,9 +38,10 @@
 static uint8_t _bpf_stack[512];
 
 #if BPF_COQ
-static struct memory_region init_memory_region0 = {.start_addr = 0LLU, .block_size = 0LLU };
-static struct memory_region init_memory_region1 = {.start_addr = 0LLU, .block_size = sizeof(_bpf_stack) };
-static struct memory_region init_memory_region2 = {.start_addr = 0LLU, .block_size = 0LLU };
+static struct memory_region mr_stack = {.start_addr = (uintptr_t)_bpf_stack,
+                                        .block_size = sizeof(_bpf_stack),
+                                        .block_perm = Freeable,
+                                        .block_ptr = _bpf_stack};
 #endif
 
 static const test_content_t tests[] = {
@@ -126,18 +127,16 @@ int main(void)
            "Test", "duration", "code", "us/instr", "instr per sec");
     for (size_t test_idx = 0; test_idx < ARRAY_SIZE(tests); test_idx++) {
 #if BPF_COQ
-       struct memory_regions init_memory_regions = {
-            .bpf_ctx = &init_memory_region0,
-            .bpf_stk = &init_memory_region1,
-            .content = &init_memory_region2
-       };
-       init_memory_region1.start_addr = (intptr_t)_bpf_stack;
-       struct bpf_state st = {
-            .state_pc = 0LLU,
+        struct memory_region memory_regions[] = { mr_stack };
+        struct bpf_state st = {
+            .state_pc = 0,
             .regsmap = {0LLU, 0LLU, 0LLU, 0LLU, 0LLU, 0LLU, 0LLU, 0LLU, 0LLU, 0LLU, (intptr_t)_bpf_stack},
-            .bpf_flag = BPF_OK,
-            .mrs = &init_memory_regions
-       };
+            .bpf_flag = vBPF_OK,
+            .mrs = memory_regions,
+            .mrs_num = ARRAY_SIZE(memory_regions),
+            .ins = test_app.text,
+            .ins_len = sizeof(test_app.text),
+        };
 #else
         bpf_t bpf = {
             .application = (uint8_t*)&test_app,
@@ -153,7 +152,7 @@ int main(void)
 
         uint32_t begin = ztimer_now(ZTIMER_USEC); // unsigned long long -> uint64_t
 #if BPF_COQ
-        int result = bpf_interpreter(&st, test_app.text, sizeof(test_app.text), 10000);
+        int result = bpf_interpreter(&st, 10000);
 #else
         int result = bpf_execute_ctx(&bpf, NULL, 0, &res);
 #endif

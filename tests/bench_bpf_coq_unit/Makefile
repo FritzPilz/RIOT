@@ -2,6 +2,7 @@ include ../Makefile.tests_common
 
 USEMODULE += embunit
 USEMODULE += bpf
+USEMODULE += test_utils_interactive_sync
 
 USEMODULE += ztimer_usec
 USEMODULE += saul
@@ -9,7 +10,7 @@ USEMODULE += saul_reg
 USEMODULE += saul_default
 USEMODULE += printf_float
 
-BPF_COQ ?= 0
+BPF_COQ ?= 1
 
 ifeq (1,$(BPF_COQ))
 EXTERNAL_MODULE_DIRS += external
