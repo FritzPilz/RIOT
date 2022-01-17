@@ -164,7 +164,7 @@ class DivImmInstruction(AluImmInstruction):
 
 class DivInstruction(AluInstruction):
     OPERAND = '/'
-    OPCODE = 0x4f
+    OPCODE = 0x3f
 
 
 class OrImmInstruction(AluImmInstruction):
