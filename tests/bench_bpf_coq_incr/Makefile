@@ -13,6 +13,7 @@ USEMODULE += printf_float
 BLOBS += bpf/average.bin
 
 BPF_COQ ?= 1
+CSV ?= 1
 
 ifeq (1,$(BPF_COQ))
 EXTERNAL_MODULE_DIRS += external
@@ -21,9 +22,10 @@ else
 USEMODULE += bpf
 endif
 
-NUM_ITERATIONS ?= 100
+NUM_ITERATIONS ?= 100 
 NUM_VARIABLES ?= 100
 
 CFLAGS += -I$(CURDIR) -DNUM_ITERATIONS=$(NUM_ITERATIONS) -DNUM_VARIABLES=$(NUM_VARIABLES) -DBPF_COQ=$(BPF_COQ)
+CFLAGS += -DCSV_OUT=$(CSV)
 
 include $(RIOTBASE)/Makefile.include

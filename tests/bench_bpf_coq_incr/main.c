@@ -60,8 +60,12 @@ static struct memory_region mr_stack = {.start_addr = (uintptr_t)_bpf_stack,
 
 int main(void)
 {
+#if CSV_OUT
+    puts("\"test\",\"duration\",\"code\",\"usperexec\",\"kexecspersec\"");
+#else
     printf("| %-5s | %-8s | %-6s | %-6s | %-16s |\n",
            "Test", "duration", "code", "us/exec", "execs per sec");
+#endif
     for (size_t test_idx = 1; test_idx <= NUM_VARIABLES; test_idx++) {
         ctx.num_variables = test_idx;
 #if BPF_COQ
@@ -69,15 +73,6 @@ int main(void)
         rbpf_header_t *header = (rbpf_header_t*)average_bin;
         const void * text = (uint8_t*)header + sizeof(rbpf_header_t) + header->data_len + header->rodata_len;
 
-        struct bpf_state st = {
-            .state_pc = 0,
-            .regsmap = {0LLU, 0LLU, 0LLU, 0LLU, 0LLU, 0LLU, 0LLU, 0LLU, 0LLU, 0LLU, (intptr_t)_bpf_stack+512},
-            .bpf_flag = vBPF_OK,
-            .mrs = memory_regions,
-            .mrs_num = ARRAY_SIZE(memory_regions),
-            .ins = text,
-            .ins_len = header->text_len,
-        };
 #else
         bpf_t bpf = {
             .application = (uint8_t*)average_bin,
@@ -90,10 +85,20 @@ int main(void)
 #endif
 
         uint32_t begin = ztimer_now(ZTIMER_USEC); // unsigned long long -> uint64_t
-        int result = 0;
+        volatile int result = 0;
         for (size_t i = 0; i < NUM_ITERATIONS; i++) {
 #if BPF_COQ
+            struct bpf_state st = {
+                .state_pc = 0,
+                .regsmap = {0LLU, 0LLU, 0LLU, 0LLU, 0LLU, 0LLU, 0LLU, 0LLU, 0LLU, 0LLU, (intptr_t)_bpf_stack+512},
+                .bpf_flag = vBPF_OK,
+                .mrs = memory_regions,
+                .mrs_num = ARRAY_SIZE(memory_regions),
+                .ins = text,
+                .ins_len = header->text_len,
+            };
             result = bpf_interpreter(&st, 10000);
+            result = st.bpf_flag;
 #else
             result = bpf_execute_ctx(&bpf, &ctx, sizeof(ctx), &res);
 #endif
@@ -102,7 +107,11 @@ int main(void)
         float duration = (float)(end-begin);
         float us_per_op = duration/NUM_ITERATIONS;
         float kops_per_sec = (float)(NUM_ITERATIONS*US_PER_MS) / duration;
+#if CSV_OUT
+        printf("\"%u\",\"%f\",\"%d\",\"%f\",\"%f\"\n",
+#else
         printf("| %5u | %2.4fms | %6d | %2.4fus | %7.2f kops/sec |\n",
+#endif
                 test_idx,
                 duration/US_PER_MS, (signed)result, us_per_op, kops_per_sec);
     }

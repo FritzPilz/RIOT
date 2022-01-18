@@ -145,8 +145,12 @@ static test_application_t test_app;
 
 int main(void)
 {
+#if CSV_OUT
+    puts("\"test\",\"duration\",\"code\",\"usperinst\",\"instrpersec\"");
+#else
     printf("| %-16s | %-8s | %-6s | %-6s | %-16s |\n",
            "Test", "duration", "code", "us/instr", "instr per sec");
+#endif
     for (size_t test_idx = 0; test_idx < ARRAY_SIZE(tests); test_idx++) {
 #if BPF_COQ
         struct memory_region memory_regions[] = { mr_stack };
@@ -182,9 +186,14 @@ int main(void)
         float duration = (float)(end-begin);
         float us_per_op = duration/NUM_INSTRUCTIONS;
         float kops_per_sec = (float)(NUM_INSTRUCTIONS*US_PER_MS) / duration;
+#if CSV_OUT
+        printf("\"%s\",\"%f\",\"%d\",\"%f\",\"%f\"\n",
+#else
         printf("| %-16s | %2.4fms | %6d | %2.4fus | %7.2f kops/sec |\n",
+#endif
                 tests[test_idx].name,
                 duration/US_PER_MS, (signed)result, us_per_op, kops_per_sec);
+
     }
 
     return 0;
