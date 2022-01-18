@@ -386,8 +386,13 @@ static void step_opcode_alu64(struct bpf_state* st, unsigned long long dst64, un
         return;
       }
     case 128:
-      upd_reg(st, dst, -dst64);
-      return;
+      if (op == 135) {
+        upd_reg(st, dst, -dst64);
+        return;
+      } else {
+        upd_flag(st, -1);
+        return;
+      }
     case 144:
       if (src64 != 0LLU) {
         upd_reg(st, dst, dst64 % src64);
@@ -471,8 +476,13 @@ static void step_opcode_alu32(struct bpf_state* st, unsigned int dst32, unsigned
         return;
       }
     case 128:
-      upd_reg(st, dst, (unsigned long long) (unsigned int) -dst32);
-      return;
+      if (op == 132) {
+        upd_reg(st, dst, (unsigned long long) (unsigned int) -dst32);
+        return;
+      } else {
+        upd_flag(st, -1);
+        return;
+      }
     case 144:
       if (src32 != 0U) {
         upd_reg(st, dst,
@@ -506,97 +516,50 @@ static void step_opcode_alu32(struct bpf_state* st, unsigned int dst32, unsigned
   }
 }
 
-static void step_opcode_branch(struct bpf_state* st, unsigned long long dst64, unsigned long long src64, int pc, int ofs, unsigned char op)
+static _Bool step_opcode_branch(struct bpf_state* st, unsigned long long dst64, unsigned long long src64, unsigned char op)
 {
   unsigned char opcode_jmp;
   opcode_jmp = get_opcode_branch(op);
   switch (opcode_jmp) {
     case 0:
-      upd_pc(st, pc + ofs);
-      return;
+      if (op == 5) {
+        return 1;
+      } else {
+        upd_flag(st, -1);
+        return 0;
+      }
     case 16:
-      if (dst64 == src64) {
-        upd_pc(st, pc + ofs);
-        return;
-      } else {
-        return;
-      }
+      return dst64 == src64;
     case 32:
-      if (dst64 > src64) {
-        upd_pc(st, pc + ofs);
-        return;
-      } else {
-        return;
-      }
+      return dst64 > src64;
     case 48:
-      if (dst64 >= src64) {
-        upd_pc(st, pc + ofs);
-        return;
-      } else {
-        return;
-      }
+      return dst64 >= src64;
     case 160:
-      if (dst64 < src64) {
-        upd_pc(st, pc + ofs);
-        return;
-      } else {
-        return;
-      }
+      return dst64 < src64;
     case 176:
-      if (dst64 <= src64) {
-        upd_pc(st, pc + ofs);
-        return;
-      } else {
-        return;
-      }
+      return dst64 <= src64;
     case 64:
-      if ((dst64 & src64) != 0LLU) {
-        upd_pc(st, pc + ofs);
-        return;
-      } else {
-        return;
-      }
+      return (dst64 & src64) != 0LLU;
     case 80:
-      if (dst64 != src64) {
-        upd_pc(st, pc + ofs);
-        return;
-      } else {
-        return;
-      }
+      return dst64 != src64;
     case 96:
-      if ((long long) dst64 > (long long) src64) {
-        upd_pc(st, pc + ofs);
-        return;
-      } else {
-        return;
-      }
+      return (long long) dst64 > (long long) src64;
     case 112:
-      if ((long long) dst64 >= (long long) src64) {
-        upd_pc(st, pc + ofs);
-        return;
-      } else {
-        return;
-      }
+      return (long long) dst64 >= (long long) src64;
     case 192:
-      if ((long long) dst64 < (long long) src64) {
-        upd_pc(st, pc + ofs);
-        return;
-      } else {
-        return;
-      }
+      return (long long) dst64 < (long long) src64;
     case 208:
-      if ((long long) dst64 <= (long long) src64) {
-        upd_pc(st, pc + ofs);
-        return;
-      } else {
-        return;
-      }
+      return (long long) dst64 <= (long long) src64;
     case 144:
-      upd_flag(st, 1);
-      return;
+      if (op == 149) {
+        upd_flag(st, 1);
+        return 0;
+      } else {
+        return 0;
+      }
     default:
       upd_flag(st, -1);
-      return;
+      return 0;
     
   }
 }
@@ -798,6 +761,7 @@ static void step(struct bpf_state* st)
   unsigned int dst32;
   unsigned int src32;
   int ofs;
+  _Bool res;
   unsigned int addr;
   pc = eval_pc(st);
   ins = eval_ins(st, pc);
@@ -843,13 +807,23 @@ static void step(struct bpf_state* st)
       if (is_imm) {
         imm = get_immediate(ins);
         imm64 = eval_immediate(imm);
-        step_opcode_branch(st, dst64, imm64, pc, ofs, op);
-        return;
+        res = step_opcode_branch(st, dst64, imm64, op);
+        if (res) {
+          upd_pc(st, pc + ofs);
+          return;
+        } else {
+          return;
+        }
       } else {
         src = get_src(ins);
         src64 = eval_reg(st, src);
-        step_opcode_branch(st, dst64, src64, pc, ofs, op);
-        return;
+        res = step_opcode_branch(st, dst64, src64, op);
+        if (res) {
+          upd_pc(st, pc + ofs);
+          return;
+        } else {
+          return;
+        }
       }
     case 0:
       dst = get_dst(ins);
@@ -903,9 +877,9 @@ static void bpf_interpreter_aux(struct bpf_state* st, unsigned int fuel)
     pc = eval_pc(st);
     if (0U <= pc && pc < len) {
       step(st); //print_bpf_state(st);
-      upd_pc_incr(st);
       f = eval_flag(st);
       if (f == 0) {
+        upd_pc_incr(st);
         bpf_interpreter_aux(st, fuel0);
         return;
       } else {

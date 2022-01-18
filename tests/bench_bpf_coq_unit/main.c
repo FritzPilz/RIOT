@@ -47,6 +47,30 @@ static struct memory_region mr_stack = {.start_addr = (uintptr_t)_bpf_stack,
 static const test_content_t tests[] = {
     {
         .instruction = {
+            .opcode = 0x87,
+        },
+        .name = "ALU neg64",
+    },
+    {
+        .instruction = {
+            .opcode = 0x8f,
+        },
+        .name = "ALU neg64 inc",
+    },
+    {
+        .instruction = {
+            .opcode = 0x8c,
+        },
+        .name = "ALU neg32 inc",
+    },
+    {
+        .instruction = {
+            .opcode = 0x0d,
+        },
+        .name = "ALU ja inc",
+    },
+    {
+        .instruction = {
             .opcode = 0x07,
         },
         .name = "ALU Add",
@@ -88,7 +112,7 @@ static const test_content_t tests[] = {
             .opcode = 0x7b,
             .dst = 10,
             .src = 0,
-            .offset = -8,
+            .offset = -16,
         },
         .name = "MEM stxdw",
     },
@@ -130,7 +154,7 @@ int main(void)
         struct memory_region memory_regions[] = { mr_stack };
         struct bpf_state st = {
             .state_pc = 0,
-            .regsmap = {0LLU, 0LLU, 0LLU, 0LLU, 0LLU, 0LLU, 0LLU, 0LLU, 0LLU, 0LLU, (intptr_t)_bpf_stack},
+            .regsmap = {0LLU, 0LLU, 0LLU, 0LLU, 0LLU, 0LLU, 0LLU, 0LLU, 0LLU, 0LLU, (intptr_t)_bpf_stack+512},
             .bpf_flag = vBPF_OK,
             .mrs = memory_regions,
             .mrs_num = ARRAY_SIZE(memory_regions),
