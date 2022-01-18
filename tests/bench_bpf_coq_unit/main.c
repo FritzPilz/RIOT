@@ -53,24 +53,6 @@ static const test_content_t tests[] = {
     },
     {
         .instruction = {
-            .opcode = 0x8f,
-        },
-        .name = "ALU neg64 inc",
-    },
-    {
-        .instruction = {
-            .opcode = 0x8c,
-        },
-        .name = "ALU neg32 inc",
-    },
-    {
-        .instruction = {
-            .opcode = 0x0d,
-        },
-        .name = "ALU ja inc",
-    },
-    {
-        .instruction = {
             .opcode = 0x07,
         },
         .name = "ALU Add",
@@ -88,6 +70,22 @@ static const test_content_t tests[] = {
             .immediate = 45,
         },
         .name = "ALU mul imm",
+    },
+    {
+        .instruction = {
+            .opcode = 0x77,
+            .dst = 0,
+            .immediate = 5,
+        },
+        .name = "ALU rsh imm",
+    },
+    {
+        .instruction = {
+            .opcode = 0x37,
+            .dst = 0,
+            .immediate = 5,
+        },
+        .name = "ALU div imm",
     },
     {
         .instruction = {
