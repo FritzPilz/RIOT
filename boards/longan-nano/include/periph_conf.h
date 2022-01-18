@@ -27,11 +27,8 @@
 extern "C" {
 #endif
 
-#define CLOCK_HSE           MHZ(8)
+#define CLOCK_HXTAL         MHZ(8)
 #define CLOCK_CORECLOCK     MHZ(104)           /**< CPU clock frequency in Hz */
-#define CLOCK_AHB           CLOCK_CORECLOCK    /**< Frequency of the AHB bus in Hz */
-#define CLOCK_APB1          CLOCK_CORECLOCK/2  /**< Frequency of the APB1 bus in Hz */
-#define CLOCK_APB2          CLOCK_CORECLOCK    /**< Frequency of the APB2 bus in Hz */
 
 /**
  * @name   Timer configuration
