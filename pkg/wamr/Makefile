@@ -39,6 +39,8 @@ else ifeq ($(CPU_ARCH),xtensa)
   WAMR_BUILD_TARGET = XTENSA
 else ifeq ($(CPU_ARCH),rv32)
   WAMR_BUILD_TARGET = RISCV32
+else
+  $(error "WASM is not supported for architecture $(CPU_ARCH)")
 endif
 
 ifeq ($(QUIET),0)
@@ -57,6 +59,7 @@ WAMR_CMAKE_FLAGS += "-DRIOT_INCLUDES=$(RIOT_INCLUDES)"\
                      -DCMAKE_SYSTEM_PROCESSOR="$(MCPU)" \
                      -DCMAKE_C_COMPILER=$(CC) \
                      -DCMAKE_C_COMPILER_WORKS=TRUE \
+                     #
 
 all: $(BINDIR)/libwamr.a
 
