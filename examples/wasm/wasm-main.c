@@ -1,3 +1,11 @@
+/*
+ * Copyright (C) 2020 TU Bergakademie Freiberg Karl Fessel
+ *
+ * This file is subject to the terms and conditions of the GNU Lesser
+ * General Public License v2.1. See the file LICENSE in the top level
+ * directory for more details.
+ */
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
@@ -25,7 +33,7 @@ int main(void)
     printf("iwasm_initilised: %s\n", telltruth(iwasm_runtime_init()));
 
     int app_argc = 2;
-    const char *app_argv[] = {"test","bob"};
+    const char *app_argv[] = {"test", "bob"};
     int ret = wamr_run_cp(test_wasm, test_wasm_len, app_argc, app_argv);
     printf("ret = %d\n", ret);
     ret = wamr_run_cp(hello_wasm, hello_wasm_len, app_argc, app_argv);

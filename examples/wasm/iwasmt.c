@@ -18,7 +18,6 @@
 
 #include <thread.h>
 
-
 /* execs the main function in an instantiated module */
 static int iwasm_instance_exec_main(wasm_module_inst_t module_inst, int argc, char **argv)
 {
@@ -30,12 +29,14 @@ static int iwasm_instance_exec_main(wasm_module_inst_t module_inst, int argc, ch
         puts(exception);
         return -1;
     }
-    if(argc > 0) ret = *((int*)argv);
+    if (argc > 0) {
+        ret = *((int*)argv);
+    }
     return ret;
 }
 
 /* execs the main function of a loaded module */
-int iwasm_module_exec_main(wasm_module_t wasm_module , int argc, char **argv)
+int iwasm_module_exec_main(wasm_module_t wasm_module, int argc, char **argv)
 {
     wasm_module_inst_t wasm_module_inst = NULL;
     int ret = 0;
@@ -130,7 +131,9 @@ int wamr_run_cp(const void *bytecode, size_t bytecode_len, int argc, char *argv[
     /* we need the bytecode to be writable while loading
      * loading adds size information to stack POPs */
     uint8_t * wasm_buf = malloc(bytecode_len);
-    if (!wasm_buf) return -1;
+    if (!wasm_buf) {
+        return -1;
+    }
 
     memcpy(wasm_buf, bytecode, bytecode_len);
     /* no copy need if architecture has const in writable mem */
@@ -141,14 +144,17 @@ int wamr_run_cp(const void *bytecode, size_t bytecode_len, int argc, char *argv[
     /* iwasm uses argv[0] cast to an int to store mains return value */
     static char * empty = "";
     char ** parv;
-    if(argc > 0){
+    if (argc > 0) {
         parv =  malloc(sizeof(argv[0]) * argc);
         if (!parv) return -1;
         memcpy(parv, argv, sizeof(argv[0]) * argc);
-    }else{
+    }
+    else {
         argc = 1;
         parv = malloc(sizeof(argv[0]) * argc);
-        if (!parv) return -1;
+        if (!parv) {
+            return -1;
+        }
         parv[0] = empty;
     }
     int ret = wamr_run(wasm_buf, wasm_buf_size, argc, parv);
