@@ -37,6 +37,25 @@ ENTRY(reset_handler_default)
 _backup_ram_start_addr = DEFINED( _backup_ram_start_addr ) ? _backup_ram_start_addr : 0x0 ;
 _backup_ram_len = DEFINED( _backup_ram_len ) ? _backup_ram_len : 0x0 ;
 
+/*MEMORY
+{
+	external (w!rx) : ORIGIN = 0x08000000 , LENGTH = 0x03FFFFFF
+}
+SECTIONS
+{
+    . = ALIGN(4);
+    . = 0x08000000;
+    .secure :
+    {} > external
+    . = 0x09000000;
+    .non-secure :
+    {} > external
+    . = 0x0A000000;
+    .nsc :
+    {} > external
+
+}*/
+
 /* not all Cortex-M platforms use cortexm.ld yet */
 MEMORY
 {
@@ -52,6 +71,20 @@ SECTIONS
         _sfixed = .;
         _isr_vectors = DEFINED(_isr_vectors) ? _isr_vectors : . ;
         KEEP(*(SORT(.vectors*)))
+	
+	. = ALIGN(32);
+	PROVIDE(__START__ = .);
+	KEEP(*(.secure))
+	. = ALIGN(32);
+	PROVIDE(__SECURE__ = .);
+	. = . + 31;
+	KEEP(*(.non-secure))
+	. = ALIGN(32);
+	PROVIDE(__NS__ = .);
+	KEEP(*(.nsc))
+	. = ALIGN(32);
+	PROVIDE(__NSC__ = .);
+	
         *(.text .text.* .gnu.linkonce.t.*)
         *(.glue_7t) *(.glue_7)
         *(.rodata .rodata* .gnu.linkonce.r.*)
@@ -92,6 +125,8 @@ SECTIONS
         KEEP (*(EXCLUDE_FILE (*crtend.o) .dtors))
         KEEP (*(SORT(.dtors.*)))
         KEEP (*crtend.o(.dtors))
+	
+
 
         . = ALIGN(4);
         _efixed = .;            /* End of text section */
