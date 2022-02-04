@@ -4,19 +4,13 @@
  * SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
  */
 
-#include <stdlib.h>
-#include <stdio.h>
-#include <stdint.h>
 #include <stdbool.h>
-
+#include <stdint.h>
+#include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wstrict-prototypes"
 #include "wasm_export.h"
-#pragma GCC diagnostic pop
-
-#include <thread.h>
 
 /* execs the main function in an instantiated module */
 static int iwasm_instance_exec_main(wasm_module_inst_t module_inst, int argc, char **argv)
@@ -56,7 +50,7 @@ int iwasm_module_exec_main(wasm_module_t wasm_module, int argc, char **argv)
 }
 
 /* bytecode needs to be writeable*/
-int iwasm_bytecode_exec_main(uint8_t * bytecode, size_t bytecode_len, int argc, char **argv)
+int iwasm_bytecode_exec_main(uint8_t *bytecode, size_t bytecode_len, int argc, char **argv)
 {
     int ret = 0;
     wasm_module_t wasm_module = NULL;
@@ -64,7 +58,7 @@ int iwasm_bytecode_exec_main(uint8_t * bytecode, size_t bytecode_len, int argc, 
     {   /* load WASM module */
         char error_buf[128];
         if (!(wasm_module = wasm_runtime_load(bytecode, bytecode_len,
-                                          error_buf, sizeof(error_buf)))) {
+                                              error_buf, sizeof(error_buf)))) {
             puts(error_buf);
             return -1;
         }
@@ -114,13 +108,12 @@ bool iwasm_runtime_init(void)
 void iwasm_runtime_destroy(void)
 {
     wasm_runtime_destroy();
-
 }
 
 /* this seems to be a very direct interpretation of "i like to have a wamr_run" */
 int wamr_run(void *bytecode, size_t bytecode_len, int argc, char **argv)
 {
-    return iwasm_bytecode_exec_main((uint8_t * )bytecode, bytecode_len, argc, argv);
+    return iwasm_bytecode_exec_main((uint8_t *)bytecode, bytecode_len, argc, argv);
 }
 
 /* this creates a copy of bytecode and argv
@@ -146,7 +139,9 @@ int wamr_run_cp(const void *bytecode, size_t bytecode_len, int argc, char *argv[
     char ** parv;
     if (argc > 0) {
         parv =  malloc(sizeof(argv[0]) * argc);
-        if (!parv) return -1;
+        if (!parv){
+            return -1;
+        }
         memcpy(parv, argv, sizeof(argv[0]) * argc);
     }
     else {

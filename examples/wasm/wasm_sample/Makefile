@@ -5,16 +5,16 @@ ifneq ($(shell (command -v wasm-ld)),)
   WASM-LD ?= wasm-ld
   else
     ifneq ($(shell (command -v wasm-ld-11)),)
-    LLVM_VERSION = 11
+    LLVM_VERSION := 11
     else
       ifneq ($(shell (command -v wasm-ld-10)),)
-      LLVM_VERSION = 10
+      LLVM_VERSION := 10
       else
         ifneq ($(shell (command -v wasm-ld-9)),)
-        LLVM_VERSION = 9
+        LLVM_VERSION := 9
         else
           ifneq ($(shell (command -v wasm-ld-8)),)
-          LLVM_VERSION = 8
+          LLVM_VERSION := 8
           endif
       endif
     endif
@@ -30,9 +30,9 @@ else
   CLANGPP ?= clang++
 endif
 
-WASM-LD ?= echo !! NO wasm-ld(-VERSION) found !!; false
+WASM-LD ?= echo "!! NO wasm-ld(-VERSION) found !!"; false
 
-LINK_FLAGS = -z stack-size=4096 \
+LINK_FLAGS := -z stack-size=4096 \
 		--export main \
 		--export=__heap_base \
 		--export=__data_end \
@@ -56,7 +56,7 @@ LINK_FLAGS = -z stack-size=4096 \
 #	-> heap needs a second page
 # wasm-ld 8 and 11 do not need --initial-memory=64kB
 
-COMPILE_FLAGS = -Wall \
+COMPILE_FLAGS := -Wall \
 		--target=wasm32-unknown-unknown-wasm \
 		-emit-llvm \
 		-Os \
