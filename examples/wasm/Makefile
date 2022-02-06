@@ -23,6 +23,8 @@ DEVELHELP ?= 1
 # Change this to 0 show compiler invocation lines by default:
 QUIET ?= 1
 
+all: hello.wasm
+
 hello.wasm: wasm_sample/hello.c
 	make -C wasm_sample hello.wasm
 	mv wasm_sample/hello.wasm .
