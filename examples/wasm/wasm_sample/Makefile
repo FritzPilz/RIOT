@@ -30,7 +30,10 @@ else
   CLANGPP ?= clang++
 endif
 
-WASM-LD ?= echo "!! NO wasm-ld(-VERSION) found !!"; false
+ifeq ($(WASM-LD),)
+  WASM-LD ?= echo "!! NO wasm-ld(-VERSION) found !!"; false
+  COPY_HELLO := YES
+endif
 
 LINK_FLAGS := -z stack-size=4096 \
 		--export main \
@@ -70,6 +73,16 @@ COMPILE_FLAGS := -Wall \
 #		--nostdlib \
 #		--nostdinc \
 #		-std=c++14 \
+
+ifeq ($(COPY_HELLO),YES)
+hello.wasm: hello_prebuild.wasm
+	@echo "!! NO wasm-ld(-VERSION) found  !!"
+	@echo "!! copying hello_prebuild.wasm !! "
+	cp hello_prebuild.wasm hello.wasm
+else
+hello_prebuild.wasm: hello.wasm
+	cp hello.wasm hello_prebuild.wasm
+endif
 
 %.show: %.wasm
 	wasm2wat $<
