@@ -18,7 +18,7 @@ all: $(F12R_BINS)
 .PHONY: clean
 
 clean:
-	rm -f $(F12R_OBJS)
+	rm -f $(F12R_OBJS) $(F12R_BINS)
 
 INC_FLAGS = -nostdinc -isystem `$(CLANG) -print-file-name=include`
 
