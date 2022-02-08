@@ -75,8 +75,9 @@ __attribute__((section(".secure"))) void secure_test(void)
 		ztimer_sleep(ZTIMER_USEC, 500*1000);
 		LED1_TOGGLE;
 	}
-	__asm(	"orr lr, lr, #0 \n\t"
-		"BXNS LR 	\n\t"	);
+	/*__asm(	"orr lr, lr, #0 \n\t"
+		"BXNS LR 	\n\t"	);*/
+	__asm(	"BXNS LR	\n\t");
 }
 
 __attribute__((section(".secure"))) __attribute__((noinline)) int main(void)
@@ -95,14 +96,19 @@ __attribute__((section(".secure"))) __attribute__((noinline)) int main(void)
 		ztimer_sleep(ZTIMER_USEC, 500*1000);
 		LED1_TOGGLE;
 	}
-	ztimer_sleep(ZTIMER_USEC, 5000*1000);
+	//ztimer_sleep(ZTIMER_USEC, 5000*1000);
 	do_priviliged_stuff(1);
-	__asm(	"push {r0, r1}		\n\t"
+	/*__asm(	"push {r0, r1}		\n\t"
 		"ldr r0, =func_test	\n\t"
 		"movs r1, #1		\n\t"
 		"bics r0, r1		\n\t"
 		"BLXNS r0		\n\t"
 		"pop {r0, r1}		\n\t"
+	);*/
+	__asm(	"LDR r0, =func_test	\n\t"
+		"MOVS r1, #1		\n\t"
+		"BICS r0, r1		\n\t"
+		"BLXNS =func_test		\n\t"
 	);
 	do_priviliged_stuff(0);
 	while(1){
