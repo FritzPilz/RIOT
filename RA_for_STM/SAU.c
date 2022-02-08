@@ -1,0 +1,86 @@
+#include "include/SAU.h"
+
+__attribute__((section(".secure"))) unsigned int set_RNR(unsigned int region);
+__attribute__((section(".secure"))) unsigned int set_RBAR(unsigned int str);
+__attribute__((section(".secure"))) unsigned int set_RLAR(unsigned int end, unsigned int nsc);
+
+unsigned int read_memory(unsigned int location)
+{
+	return *(unsigned int *)location;
+}
+
+void write_memory(unsigned int location, unsigned int value)
+{
+	*(unsigned int *)location = value;
+	return;
+}
+
+void enable_SAU(void)
+{
+	unsigned int tmp = read_memory(SAU_CTRL);
+	tmp = tmp | 0x1;
+	write_memory(SAU_CTRL, 0x1);
+	return;
+}
+
+unsigned int* declare_NS(unsigned int str,unsigned int end,unsigned int region,unsigned int nsc,unsigned int * res)
+{
+	//check for valid arguments
+	if(region > 7){
+		//puts("Invalid region-number, NS memory is not set.\n");
+		return (unsigned int *)0;
+	}
+	res[0] = set_RNR(region);
+	res[1] = set_RBAR(str);
+	res[2] = set_RLAR(end, nsc);
+	return res;
+}
+
+void disable_SAU(void)
+{
+	unsigned int tmp = read_memory(SAU_CTRL);
+	tmp = tmp & 0xFFFFFFF0;
+	write_memory(SAU_CTRL, tmp);
+	return;
+}
+
+unsigned int set_RNR(unsigned int region)
+{
+	unsigned int tmp = read_memory(SAU_RNR);
+	tmp = tmp & 0xFFFFFF00;
+	/* My understanding is that each memory region is accessible by setting exactly
+	 * one bit of the 8 region bits. It is implied due to the fact that the
+	 * documentation mentions only 8 regions.*/
+	unsigned int region_mask = 1 << (region-1);
+	tmp = tmp | region_mask;
+	write_memory(SAU_RNR, tmp);
+	return tmp;
+}
+
+unsigned int set_RBAR(unsigned int str)
+{
+	unsigned int tmp = read_memory(SAU_RBAR);
+	tmp = tmp & 0x0000001F;
+	str = str & 0xFFFFFFE0;
+	tmp = tmp | str;
+	write_memory(SAU_RBAR, tmp);
+	return tmp;
+}
+
+unsigned int set_RLAR(unsigned int end, unsigned int nsc)
+{
+	unsigned int tmp = read_memory(SAU_RLAR);
+	tmp = tmp & 0x0000001C;
+	end = end & 0xFFFFFFF0;
+	//end = end | 0x20;
+	tmp = end | tmp;
+	if(nsc){
+		tmp = tmp | 0x2;
+	}
+	tmp = tmp | 0x1;
+	#ifdef DEBUG
+	#endif
+	write_memory(SAU_RLAR, tmp);
+	tmp = tmp | 0x1F;
+	return tmp;
+}	

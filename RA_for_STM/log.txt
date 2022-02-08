@@ -1,0 +1,63 @@
+Building application "RA_for_STM" for "nucleo-l552ze-q" with MCU "stm32".
+
+make -f /home/fritz/Schreibtisch/Bachelor-Arbeit/STM/RIOT/cpu/stm32/Makefile.cmsis
+make[1]: Verzeichnis „/home/fritz/Schreibtisch/Bachelor-Arbeit/STM/RIOT/RA_for_STM“ wird betreten
+make[1]: Verzeichnis „/home/fritz/Schreibtisch/Bachelor-Arbeit/STM/RIOT/RA_for_STM“ wird verlassen
+'/home/fritz/Schreibtisch/Bachelor-Arbeit/STM/RIOT/dist/tools/genconfigheader/genconfigheader.sh' -DDEVELHELP -Werror -DCPU_FAM_STM32L5 -DSTM32L552xx -DCPU_LINE_STM32L552xx -DSTM32_FLASHSIZE=524288U -D__SYSTEM_STM32L5XX_H -mno-thumb-interwork -mcpu=cortex-m33 -mlittle-endian -mthumb -mfloat-abi=soft -ffunction-sections -fdata-sections -fno-builtin -fshort-enums -ggdb -g3 -Os -DCPU_MODEL_STM32L552ZE -DCPU_CORE_CORTEX_M33 -DRIOT_APPLICATION=\"RA_for_STM\" -DBOARD_NUCLEO_L552ZE_Q=\"nucleo-l552ze-q\" -DRIOT_BOARD=BOARD_NUCLEO_L552ZE_Q -DCPU_STM32=\"stm32\" -DRIOT_CPU=CPU_STM32 -DMCU_STM32=\"stm32\" -DRIOT_MCU=MCU_STM32 -std=c11 -fwrapv -Wstrict-overflow -fno-common -ffunction-sections -fdata-sections -Wall -Wextra -Wmissing-include-dirs -fno-delete-null-pointer-checks -fdiagnostics-color -Wstrict-prototypes -Wold-style-definition -gz -Wformat=2 -Wformat-overflow -Wformat-truncation -Wcast-align -DSLOT0_LEN=0x3f800 -DSLOT0_OFFSET=0x1000 -DSLOT1_LEN=0x3f800 -DSLOT1_OFFSET=264192 -DNUM_SLOTS=2 -I/home/fritz/Schreibtisch/Bachelor-Arbeit/STM/RIOT/RA_for_STM/bin/nucleo-l552ze-q/riotbuild -include '/home/fritz/Schreibtisch/Bachelor-Arbeit/STM/RIOT/RA_for_STM/bin/nucleo-l552ze-q/riotbuild/riotbuild.h' -DRIOT_VERSION=\"2022.01-devel-1061-gdeb25\" -DRIOT_VERSION_CODE=RIOT_VERSION_NUM\(2022,01,0,0\) -DMODULE_AUTO_INIT -DMODULE_BOARD -DMODULE_BOARDS_COMMON_NUCLEO -DMODULE_CORE -DMODULE_CORE_INIT -DMODULE_CORE_MSG -DMODULE_CORE_PANIC -DMODULE_CORTEXM_COMMON -DMODULE_CORTEXM_COMMON_PERIPH -DMODULE_CPU -DMODULE_MALLOC_THREAD_SAFE -DMODULE_NEWLIB -DMODULE_NEWLIB_NANO -DMODULE_NEWLIB_SYSCALLS_DEFAULT -DMODULE_PERIPH -DMODULE_PERIPH_COMMON -DMODULE_PERIPH_GPIO -DMODULE_PERIPH_INIT -DMODULE_PERIPH_INIT_GPIO -DMODULE_PERIPH_INIT_LPUART -DMODULE_PERIPH_INIT_PM -DMODULE_PERIPH_INIT_UART -DMODULE_PERIPH_LPUART -DMODULE_PERIPH_PM -DMODULE_PERIPH_UART -DMODULE_PM_LAYERED -DMODULE_STDIO_UART -DMODULE_STM32_CLK -DMODULE_STM32_VECTORS -DMODULE_SYS \
+	| '/home/fritz/Schreibtisch/Bachelor-Arbeit/STM/RIOT/dist/tools/lazysponge/lazysponge.py' --verbose '/home/fritz/Schreibtisch/Bachelor-Arbeit/STM/RIOT/RA_for_STM/bin/nucleo-l552ze-q/riotbuild/riotbuild.h.in'
+DIRS=" " APPLICATION_BLOBS="" \
+  "make" -C /home/fritz/Schreibtisch/Bachelor-Arbeit/STM/RIOT/RA_for_STM -f /home/fritz/Schreibtisch/Bachelor-Arbeit/STM/RIOT/makefiles/application.inc.mk
+make[1]: Verzeichnis „/home/fritz/Schreibtisch/Bachelor-Arbeit/STM/RIOT/RA_for_STM“ wird betreten
+"make" -C /home/fritz/Schreibtisch/Bachelor-Arbeit/STM/RIOT/boards/nucleo-l552ze-q
+make[2]: Verzeichnis „/home/fritz/Schreibtisch/Bachelor-Arbeit/STM/RIOT/boards/nucleo-l552ze-q“ wird betreten
+"make" -C /home/fritz/Schreibtisch/Bachelor-Arbeit/STM/RIOT/boards/common/nucleo
+make[3]: Verzeichnis „/home/fritz/Schreibtisch/Bachelor-Arbeit/STM/RIOT/boards/common/nucleo“ wird betreten
+make[3]: Verzeichnis „/home/fritz/Schreibtisch/Bachelor-Arbeit/STM/RIOT/boards/common/nucleo“ wird verlassen
+make[2]: Verzeichnis „/home/fritz/Schreibtisch/Bachelor-Arbeit/STM/RIOT/boards/nucleo-l552ze-q“ wird verlassen
+"make" -C /home/fritz/Schreibtisch/Bachelor-Arbeit/STM/RIOT/core
+make[2]: Verzeichnis „/home/fritz/Schreibtisch/Bachelor-Arbeit/STM/RIOT/core“ wird betreten
+make[2]: Verzeichnis „/home/fritz/Schreibtisch/Bachelor-Arbeit/STM/RIOT/core“ wird verlassen
+"make" -C /home/fritz/Schreibtisch/Bachelor-Arbeit/STM/RIOT/cpu/stm32
+make[2]: Verzeichnis „/home/fritz/Schreibtisch/Bachelor-Arbeit/STM/RIOT/cpu/stm32“ wird betreten
+"make" -C /home/fritz/Schreibtisch/Bachelor-Arbeit/STM/RIOT/cpu/cortexm_common
+make[3]: Verzeichnis „/home/fritz/Schreibtisch/Bachelor-Arbeit/STM/RIOT/cpu/cortexm_common“ wird betreten
+"make" -C /home/fritz/Schreibtisch/Bachelor-Arbeit/STM/RIOT/cpu/cortexm_common/periph
+make[4]: Verzeichnis „/home/fritz/Schreibtisch/Bachelor-Arbeit/STM/RIOT/cpu/cortexm_common/periph“ wird betreten
+make[4]: Verzeichnis „/home/fritz/Schreibtisch/Bachelor-Arbeit/STM/RIOT/cpu/cortexm_common/periph“ wird verlassen
+make[3]: Verzeichnis „/home/fritz/Schreibtisch/Bachelor-Arbeit/STM/RIOT/cpu/cortexm_common“ wird verlassen
+"make" -C /home/fritz/Schreibtisch/Bachelor-Arbeit/STM/RIOT/cpu/stm32/periph
+make[3]: Verzeichnis „/home/fritz/Schreibtisch/Bachelor-Arbeit/STM/RIOT/cpu/stm32/periph“ wird betreten
+make[3]: Verzeichnis „/home/fritz/Schreibtisch/Bachelor-Arbeit/STM/RIOT/cpu/stm32/periph“ wird verlassen
+"make" -C /home/fritz/Schreibtisch/Bachelor-Arbeit/STM/RIOT/cpu/stm32/stmclk
+make[3]: Verzeichnis „/home/fritz/Schreibtisch/Bachelor-Arbeit/STM/RIOT/cpu/stm32/stmclk“ wird betreten
+make[3]: Verzeichnis „/home/fritz/Schreibtisch/Bachelor-Arbeit/STM/RIOT/cpu/stm32/stmclk“ wird verlassen
+"make" -C /home/fritz/Schreibtisch/Bachelor-Arbeit/STM/RIOT/cpu/stm32/vectors
+make[3]: Verzeichnis „/home/fritz/Schreibtisch/Bachelor-Arbeit/STM/RIOT/cpu/stm32/vectors“ wird betreten
+make[3]: Verzeichnis „/home/fritz/Schreibtisch/Bachelor-Arbeit/STM/RIOT/cpu/stm32/vectors“ wird verlassen
+make[2]: Verzeichnis „/home/fritz/Schreibtisch/Bachelor-Arbeit/STM/RIOT/cpu/stm32“ wird verlassen
+"make" -C /home/fritz/Schreibtisch/Bachelor-Arbeit/STM/RIOT/drivers
+make[2]: Verzeichnis „/home/fritz/Schreibtisch/Bachelor-Arbeit/STM/RIOT/drivers“ wird betreten
+"make" -C /home/fritz/Schreibtisch/Bachelor-Arbeit/STM/RIOT/drivers/periph_common
+make[3]: Verzeichnis „/home/fritz/Schreibtisch/Bachelor-Arbeit/STM/RIOT/drivers/periph_common“ wird betreten
+make[3]: Verzeichnis „/home/fritz/Schreibtisch/Bachelor-Arbeit/STM/RIOT/drivers/periph_common“ wird verlassen
+make[2]: Verzeichnis „/home/fritz/Schreibtisch/Bachelor-Arbeit/STM/RIOT/drivers“ wird verlassen
+"make" -C /home/fritz/Schreibtisch/Bachelor-Arbeit/STM/RIOT/sys
+make[2]: Verzeichnis „/home/fritz/Schreibtisch/Bachelor-Arbeit/STM/RIOT/sys“ wird betreten
+"make" -C /home/fritz/Schreibtisch/Bachelor-Arbeit/STM/RIOT/sys/auto_init
+make[3]: Verzeichnis „/home/fritz/Schreibtisch/Bachelor-Arbeit/STM/RIOT/sys/auto_init“ wird betreten
+make[3]: Verzeichnis „/home/fritz/Schreibtisch/Bachelor-Arbeit/STM/RIOT/sys/auto_init“ wird verlassen
+"make" -C /home/fritz/Schreibtisch/Bachelor-Arbeit/STM/RIOT/sys/malloc_thread_safe
+make[3]: Verzeichnis „/home/fritz/Schreibtisch/Bachelor-Arbeit/STM/RIOT/sys/malloc_thread_safe“ wird betreten
+make[3]: Verzeichnis „/home/fritz/Schreibtisch/Bachelor-Arbeit/STM/RIOT/sys/malloc_thread_safe“ wird verlassen
+"make" -C /home/fritz/Schreibtisch/Bachelor-Arbeit/STM/RIOT/sys/newlib_syscalls_default
+make[3]: Verzeichnis „/home/fritz/Schreibtisch/Bachelor-Arbeit/STM/RIOT/sys/newlib_syscalls_default“ wird betreten
+make[3]: Verzeichnis „/home/fritz/Schreibtisch/Bachelor-Arbeit/STM/RIOT/sys/newlib_syscalls_default“ wird verlassen
+"make" -C /home/fritz/Schreibtisch/Bachelor-Arbeit/STM/RIOT/sys/pm_layered
+make[3]: Verzeichnis „/home/fritz/Schreibtisch/Bachelor-Arbeit/STM/RIOT/sys/pm_layered“ wird betreten
+make[3]: Verzeichnis „/home/fritz/Schreibtisch/Bachelor-Arbeit/STM/RIOT/sys/pm_layered“ wird verlassen
+"make" -C /home/fritz/Schreibtisch/Bachelor-Arbeit/STM/RIOT/sys/stdio_uart
+make[3]: Verzeichnis „/home/fritz/Schreibtisch/Bachelor-Arbeit/STM/RIOT/sys/stdio_uart“ wird betreten
+make[3]: Verzeichnis „/home/fritz/Schreibtisch/Bachelor-Arbeit/STM/RIOT/sys/stdio_uart“ wird verlassen
+make[2]: Verzeichnis „/home/fritz/Schreibtisch/Bachelor-Arbeit/STM/RIOT/sys“ wird verlassen
+make[1]: Verzeichnis „/home/fritz/Schreibtisch/Bachelor-Arbeit/STM/RIOT/RA_for_STM“ wird verlassen
+arm-none-eabi-gcc $(find /home/fritz/Schreibtisch/Bachelor-Arbeit/STM/RIOT/RA_for_STM/bin/nucleo-l552ze-q/application_RA_for_STM/ /home/fritz/Schreibtisch/Bachelor-Arbeit/STM/RIOT/RA_for_STM/bin/nucleo-l552ze-q/auto_init/ /home/fritz/Schreibtisch/Bachelor-Arbeit/STM/RIOT/RA_for_STM/bin/nucleo-l552ze-q/board/ /home/fritz/Schreibtisch/Bachelor-Arbeit/STM/RIOT/RA_for_STM/bin/nucleo-l552ze-q/boards_common_nucleo/ /home/fritz/Schreibtisch/Bachelor-Arbeit/STM/RIOT/RA_for_STM/bin/nucleo-l552ze-q/core/ /home/fritz/Schreibtisch/Bachelor-Arbeit/STM/RIOT/RA_for_STM/bin/nucleo-l552ze-q/cortexm_common/ /home/fritz/Schreibtisch/Bachelor-Arbeit/STM/RIOT/RA_for_STM/bin/nucleo-l552ze-q/cortexm_common_periph/ /home/fritz/Schreibtisch/Bachelor-Arbeit/STM/RIOT/RA_for_STM/bin/nucleo-l552ze-q/cpu/ /home/fritz/Schreibtisch/Bachelor-Arbeit/STM/RIOT/RA_for_STM/bin/nucleo-l552ze-q/malloc_thread_safe/ /home/fritz/Schreibtisch/Bachelor-Arbeit/STM/RIOT/RA_for_STM/bin/nucleo-l552ze-q/newlib_syscalls_default/ /home/fritz/Schreibtisch/Bachelor-Arbeit/STM/RIOT/RA_for_STM/bin/nucleo-l552ze-q/periph/ /home/fritz/Schreibtisch/Bachelor-Arbeit/STM/RIOT/RA_for_STM/bin/nucleo-l552ze-q/pm_layered/ /home/fritz/Schreibtisch/Bachelor-Arbeit/STM/RIOT/RA_for_STM/bin/nucleo-l552ze-q/stdio_uart/ /home/fritz/Schreibtisch/Bachelor-Arbeit/STM/RIOT/RA_for_STM/bin/nucleo-l552ze-q/stm32_clk/ /home/fritz/Schreibtisch/Bachelor-Arbeit/STM/RIOT/RA_for_STM/bin/nucleo-l552ze-q/stm32_vectors/ /home/fritz/Schreibtisch/Bachelor-Arbeit/STM/RIOT/RA_for_STM/bin/nucleo-l552ze-q/sys/ /home/fritz/Schreibtisch/Bachelor-Arbeit/STM/RIOT/RA_for_STM/bin/nucleo-l552ze-q/periph_common/ -name "*.o" 2> /dev/null | sort)  -lm -L/home/fritz/Schreibtisch/Bachelor-Arbeit/STM/RIOT/cpu/stm32/ldscripts -L/home/fritz/Schreibtisch/Bachelor-Arbeit/STM/RIOT/cpu/cortexm_common/ldscripts -Tstm32.ld -Wl,--fatal-warnings -mcpu=cortex-m33 -mlittle-endian -mthumb -mfloat-abi=soft -ggdb -g3 -Os -static -lgcc -nostartfiles -Wl,--gc-sections -Wl,--defsym=_rom_start_addr=0x08000000 -Wl,--defsym=_ram_start_addr=0x20000000 -Wl,--defsym=_rom_length=512K -Wl,--defsym=_ram_length=262144 -Wl,--defsym=_rom_offset=$((0x1000 + 0x800)) -Wl,--defsym=_fw_rom_length=$((SLOT0_LEN - 0x800)) -L/home/fritz/Schreibtisch/Bachelor-Arbeit/STM/RIOT/core/ldscripts -Wl,-wrap=malloc -Wl,-wrap=calloc -Wl,-wrap=realloc -Wl,-wrap=free -specs=nano.specs -lc -Wl,-Map=/home/fritz/Schreibtisch/Bachelor-Arbeit/STM/RIOT/RA_for_STM/bin/nucleo-l552ze-q/RA_for_STM.map -o /home/fritz/Schreibtisch/Bachelor-Arbeit/STM/RIOT/RA_for_STM/bin/nucleo-l552ze-q/RA_for_STM-slot0.elf
