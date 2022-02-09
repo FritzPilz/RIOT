@@ -59,7 +59,6 @@ __attribute__((noinline)) __attribute((section(".secure"))) void do_priviliged_s
 		unsigned int res[3];
 		declare_NS((unsigned int)__NS__, (unsigned int)__NSC__-1, 1, 1, res);
 		declare_NS((unsigned int)__SECURE__, (unsigned int)__NS__-1, 2, 0, res);
-		declare_NS(0x8000000, (unsigned int)__START__-1, 3, 0, res);
 		enable_SAU();
 	}
 	else
