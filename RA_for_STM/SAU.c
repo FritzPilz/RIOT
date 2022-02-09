@@ -17,8 +17,8 @@ void write_memory(unsigned int location, unsigned int value)
 
 void enable_SAU(void)
 {
-	unsigned int tmp = read_memory(SAU_CTRL);
-	tmp = tmp | 0x1;
+	//unsigned int tmp = read_memory(SAU_CTRL);
+	//tmp = tmp | 0x1;
 	write_memory(SAU_CTRL, 0x1);
 	return;
 }
@@ -39,7 +39,7 @@ unsigned int* declare_NS(unsigned int str,unsigned int end,unsigned int region,u
 void disable_SAU(void)
 {
 	unsigned int tmp = read_memory(SAU_CTRL);
-	tmp = tmp & 0xFFFFFFF0;
+	tmp = tmp & 0xFFFFFFFC;
 	write_memory(SAU_CTRL, tmp);
 	return;
 }
@@ -59,28 +59,19 @@ unsigned int set_RNR(unsigned int region)
 
 unsigned int set_RBAR(unsigned int str)
 {
-	unsigned int tmp = read_memory(SAU_RBAR);
-	tmp = tmp & 0x0000001F;
 	str = str & 0xFFFFFFE0;
-	tmp = tmp | str;
-	write_memory(SAU_RBAR, tmp);
-	return tmp;
+	write_memory(SAU_RBAR, str);
+	return str;
 }
 
 unsigned int set_RLAR(unsigned int end, unsigned int nsc)
 {
-	unsigned int tmp = read_memory(SAU_RLAR);
-	tmp = tmp & 0x0000001C;
 	end = end & 0xFFFFFFF0;
-	//end = end | 0x20;
-	tmp = end | tmp;
 	if(nsc){
-		tmp = tmp | 0x2;
+		end = end | 0x2;
 	}
-	tmp = tmp | 0x1;
-	#ifdef DEBUG
-	#endif
-	write_memory(SAU_RLAR, tmp);
-	tmp = tmp | 0x1F;
-	return tmp;
+	end = end | 0x1;
+	write_memory(SAU_RLAR, end);
+	end = end | 0x1F;
+	return end;
 }	

@@ -77,7 +77,6 @@ SECTIONS
 	KEEP(*(.secure))
 	. = ALIGN(32);
 	PROVIDE(__SECURE__ = .);
-	. = . + 31;
 	KEEP(*(.non-secure))
 	. = ALIGN(32);
 	PROVIDE(__NS__ = .);

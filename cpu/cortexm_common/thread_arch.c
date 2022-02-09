@@ -463,15 +463,13 @@ void __attribute__((naked)) __attribute__((used)) isr_svc(void)
     __asm__ volatile (
     ".thumb_func            \n"
     "tst    lr, #4          \n" /* switch bit4(lr) == 1):   */
-    "ite    eq              \n"
-    "mrseq  r0, msp         \n" /* case 1: r0 = msp         */
-    "mrsne  r0, psp         \n" /* case 0: r0 = psp         */
+
     "b      _svc_dispatch   \n" /* return svc_dispatch()    */
     );
 #endif
 }
 
-void do_priviliged_stuff(void);
+void do_priviliged_stuff(int enable);
 
 static void __attribute__((used)) _svc_dispatch(unsigned int *svc_args)
 {
@@ -500,8 +498,10 @@ static void __attribute__((used)) _svc_dispatch(unsigned int *svc_args)
             break;
 	//TODO: Delete as soon as I know how to configure the SAU
 	case: 2
-	      do_priviliged_stuff();
+	      do_priviliged_stuff(1);
 	case: 3
+	      do_priviliged_stuff(0);
+	case: 4
 	    asm("mrc p15, 0, r0, c1, c1, 0");
 	    break;
         default:

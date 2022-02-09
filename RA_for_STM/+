@@ -31,35 +31,30 @@ __attribute__((noinline)) int get_board_state(void)
 {
 	int res = 0;
 	__asm
-	(	"svc 4		\n\t"
+	(	"svc 3		\n\t"
 		"mov %0, r0	\n\t" :
 		"=r" (res)
 	);
 	return res;
 }
 
-__attribute__((noinline)) __attribute__((section(".secure"))) void start_SAU(void)
+__attribute__((noinline)) __attribute__((section(".secure"))) void priviliged_syscall(void)
 {
-	__asm ( "svc 2 \n\t"	);
-}
-
-
-__attribute__((noinline)) __attribute__((section(".secure"))) void end_SAU(void)
-{
-	__asm(	"svc 3 \n\t"	);
+	__asm ( "svc 2 \n\t" );
 }
 
 __attribute__((noinline)) __attribute((section(".secure"))) void do_priviliged_stuff(int enable)
 {
 /* I have created symbols in the linker script which mark the beginning an the End of Sections
  * Those Markers are 32 Bit aligned. */
-	if(enable)
+	enable = SAU_flag;
+	if(SAU_flag)
 	{
 		SAU_flag = 0;
 		unsigned int res[3];
 		declare_NS((unsigned int)__NS__, (unsigned int)__NSC__-1, 1, 1, res);
 		declare_NS((unsigned int)__SECURE__, (unsigned int)__NS__-1, 2, 0, res);
-		declare_NS(0x8000000, (unsigned int)__START__-1, 3, 0, res);
+		declare_NS(0x8000000, (unsigned int)__START__-1, 2, 0, res);
 		enable_SAU();
 	}
 	else
@@ -106,13 +101,13 @@ __attribute__((section(".secure"))) __attribute__((noinline)) int main(void)
 		ztimer_sleep(ZTIMER_USEC, 500*1000);
 		LED1_TOGGLE;
 	}
-	start_SAU();
+	priviliged_syscall(1);
 	__asm(	"LDR r0, =func_test	\n\t"
 		"MOVS r1, #1		\n\t"
 		"BICS r0, r1		\n\t"
 		"BLXNS r0		\n\t"
 	);
-	end_SAU();
+	priviliged_syscall(0);
 	while(1){
 		LED2_TOGGLE;
 		ztimer_sleep(ZTIMER_USEC, 500*1000);
