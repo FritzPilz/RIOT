@@ -1,6 +1,6 @@
 #ifndef NONSECURE
 #define NONSECURE
 
-void func_test(void);
+void ns_test(void);
 
 #endif

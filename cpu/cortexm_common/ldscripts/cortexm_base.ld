@@ -72,17 +72,6 @@ SECTIONS
         _isr_vectors = DEFINED(_isr_vectors) ? _isr_vectors : . ;
         KEEP(*(SORT(.vectors*)))
 	
-	. = ALIGN(32);
-	PROVIDE(__START__ = .);
-	KEEP(*(.secure))
-	. = ALIGN(32);
-	PROVIDE(__SECURE__ = .);
-	KEEP(*(.non-secure))
-	. = ALIGN(32);
-	PROVIDE(__NS__ = .);
-	KEEP(*(.nsc))
-	. = ALIGN(32);
-	PROVIDE(__NSC__ = .);
 	
         *(.text .text.* .gnu.linkonce.t.*)
         *(.glue_7t) *(.glue_7)
@@ -124,7 +113,19 @@ SECTIONS
         KEEP (*(EXCLUDE_FILE (*crtend.o) .dtors))
         KEEP (*(SORT(.dtors.*)))
         KEEP (*crtend.o(.dtors))
-	
+
+	. = ALIGN(32);
+	PROVIDE(__START__ = .);
+	KEEP(*(.secure))
+	. = ALIGN(32);
+	PROVIDE(__SECURE__ = .);
+	KEEP(*(.non-secure))
+	. = ALIGN(32);
+	PROVIDE(__NS__ = .);
+	KEEP(*(.nsc))
+	. = ALIGN(32);
+	PROVIDE(__NSC__ = .);
+
 
 
         . = ALIGN(4);
