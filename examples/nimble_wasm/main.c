@@ -36,6 +36,7 @@
 #include "services/gatt/ble_svc_gatt.h"
 
 #include "blob/wasm/hello.wasm.h"
+#include "blob/wasm/hrs.wasm.h"
 #include "ps.h"
 #include "thread.h"
 
@@ -60,8 +61,11 @@ static struct __attribute__((packed)) {
 } _hr_data = { HRS_FLAGS_DEFAULT, (BPM_MIN + BPM_STEP) };
 
 static wasm_module_t temperature_module;
+static wasm_module_t hrs_module;
+static wasm_module_inst_t hrs_instance = NULL;
 
 static uint8_t temperature_bytecode[sizeof(hello_wasm)];
+static uint8_t hrs_bytecode[sizeof(hrs_wasm)];
 
 static event_queue_t _eq;
 static event_t _update_evt;
@@ -334,7 +338,13 @@ static void _hr_update(event_t *e)
     (void)e;
     struct os_mbuf *om;
 
-    int64_t result = 50;
+    int argc = 1;
+    char *argv[] = { "Test" };
+
+    int result = iwasm_instance_exec_main(hrs_instance, argc, argv);
+
+    printf("Resulting temperature %i\n", result);
+
     int res = 0;
 
     /*
@@ -369,11 +379,23 @@ int main(void)
 
     iwasm_runtime_init();
     memcpy(temperature_bytecode, hello_wasm, sizeof(temperature_bytecode));
+    memcpy(hrs_bytecode, hrs_wasm, sizeof(hrs_bytecode));
 
     char error_buf[128];
     if (!(temperature_module = wasm_runtime_load(temperature_bytecode, sizeof(temperature_bytecode),
-             error_buf, sizeof(error_buf)))) {
-            puts(error_buf);
+        error_buf, sizeof(error_buf)))) {
+        puts(error_buf);
+    }
+
+    if (!(hrs_module = wasm_runtime_load(hrs_bytecode, sizeof(hrs_bytecode),
+        error_buf, sizeof(error_buf)))) {
+        puts(error_buf);
+    }
+
+    if (!(hrs_instance = wasm_runtime_instantiate(hrs_module, 8 * 1024,
+        8 * 1024, error_buf, sizeof(error_buf)))) {
+        puts(error_buf);
+        return BLE_ATT_ERR_UNLIKELY;
     }
 
     /* setup local event queue (for handling heart rate updates) */

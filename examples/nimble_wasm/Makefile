@@ -28,6 +28,7 @@ USEMODULE += ztimer_usec
 USEMODULE += ps
 
 BLOBS += wasm/hello.wasm
+BLOBS += wasm/hrs.wasm
 
 CFLAGS += -DTHREAD_STACKSIZE_MAIN='(4 * 1024)'
 CFLAGS += -DNIMBLE_HOST_STACKSIZE='(4 * 1024)'
