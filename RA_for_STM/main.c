@@ -13,9 +13,6 @@
 #include "include/nsc.h"
 #include "include/SAU.h"
 
-#define CPUID 		0xE000ED00
-#define CPUID_NS 	0xE002ED00
-
 /* 
  * Inline Assembly: 
  * 
@@ -29,17 +26,6 @@
 
 extern char __START__[], __SECURE__[], __NS__[], __NSC__[];
 
-__attribute__((noinline)) int get_board_state(void)
-{
-	//Maybe didn't do what I expected it to do
-	int res = 0;
-	__asm
-	(	"svc 4		\n\t"
-		"mov %0, r0	\n\t" :
-		"=r" (res)
-	);
-	return res;
-}
 
 __attribute__((noinline)) __attribute__((section(".secure"))) void start_SAU(void)
 {
@@ -72,8 +58,9 @@ __attribute__((noinline)) __attribute((section(".secure"))) void do_priviliged_s
 
 __attribute__((section(".secure"))) void secure_test(void)
 {
+	char buffer[33];
 	int status = get_board_state();
-	status = status & 0x1;
+	puts(__itoa(status, buffer, 16));
 	
 	if(status)
 	{
@@ -98,32 +85,9 @@ __attribute__((section(".secure"))) void secure_test(void)
 __attribute__((section(".secure"))) __attribute__((noinline)) int main(void)
 {
 	int status = get_board_state();
-	status = status & 0x1;
 	char buffer[33];
 
-	unsigned int* cpuid = (unsigned int *)CPUID;
-	unsigned int* cpuid_ns = (unsigned int *)CPUID_NS;
-
-	puts(__itoa(*cpuid,buffer,16));
-	puts(__itoa(*cpuid_ns,buffer,16));
-
-	if(status)
-	{
-		ztimer_sleep(ZTIMER_USEC, 500*1000);
-		LED2_TOGGLE;
-		ztimer_sleep(ZTIMER_USEC, 500*1000);
-		LED2_TOGGLE;
-	}
-	else
-	{
-		ztimer_sleep(ZTIMER_USEC, 500*1000);
-		LED1_TOGGLE;
-		ztimer_sleep(ZTIMER_USEC, 500*1000);
-		LED1_TOGGLE;
-	}
-	//start_SAU();
-	
-	cpuid_ns = (unsigned int *)CPUID_NS;
+	start_SAU();
 	
 	if(status)
 	{
@@ -142,29 +106,16 @@ __attribute__((section(".secure"))) __attribute__((noinline)) int main(void)
 
 	puts("Address of func_test:");
 	puts(__itoa((unsigned int)ns_test,buffer,16));
+	puts(__itoa(status, buffer, 16));
 	__asm(	"LDR r0, =ns_test	\n\t"
 		"MOVS r1, #0x0		\n\t"
 		"BICS r0, r1		\n\t"
 		"BL =ns_test		\n\t"
 	);
 	ns_test();
-	//end_SAU();
-	if(status)
-	{
-		ztimer_sleep(ZTIMER_USEC, 500*1000);
-		LED2_TOGGLE;
-		ztimer_sleep(ZTIMER_USEC, 500*1000);
-		LED2_TOGGLE;
-	}
-	else
-	{
-		ztimer_sleep(ZTIMER_USEC, 500*1000);
-		LED1_TOGGLE;
-		ztimer_sleep(ZTIMER_USEC, 500*1000);
-		LED1_TOGGLE;
-	}while(1){
+	end_SAU();
+	while(1){
 		LED2_TOGGLE;
 		ztimer_sleep(ZTIMER_USEC, 500*1000);
 	}
-	return 0;
 }

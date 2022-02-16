@@ -206,6 +206,7 @@ void reset_handler_default(void)
 #endif
 
     /* startup the kernel */
+    while(1);
     kernel_init();
 }
 
