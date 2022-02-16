@@ -66,7 +66,7 @@ static char mp_heap[MP_RIOT_HEAPSIZE];
 
 
 static mp_obj_t mp_temperature;
-//static mp_obj_t mp_hrs;
+static mp_obj_t mp_hrs;
 
 static struct __attribute__((packed)) {
     uint8_t flags;
@@ -351,9 +351,32 @@ static void _hr_update(event_t *e)
     (void)e;
     struct os_mbuf *om;
 
-    int64_t result = 50;
+    int result = 0;
+    uint32_t stack_dummy;
+    mp_stack_set_top((char*)&stack_dummy);
 
-    int res = 1;
+    /* Make MicroPython's stack limit somewhat smaller than actual stack limit */
+    mp_stack_set_limit(THREAD_STACKSIZE_MAIN - 256);
+
+    mp_obj_t mp_result = MP_OBJ_SMALL_INT_VALUE(0);
+    //mp_obj_t mp_arg = mp_obj_new_float(SAUL_SENSE_TEMP);
+
+    static const char func[] = "get_heart_rate";
+    mp_obj_t function = mp_obj_new_str_via_qstr(func, strlen(func));
+
+    int res = 0;
+    nlr_buf_t nlr;
+    if (nlr_push(&nlr) == 0) {
+        mp_obj_t func_heart_rate = mp_load_name(MP_OBJ_QSTR_VALUE(function));
+        mp_result = mp_call_function_0(func_heart_rate);
+        nlr_pop();
+        result = mp_obj_get_int(mp_result);
+    } else {
+        // uncaught exception
+        mp_obj_print_exception(&mp_plat_print, (mp_obj_t)nlr.ret_val);
+        res = -1;
+    }
+
     if (res < 0) {
         puts("[NOTIFY] heart rate service error\n");
     }
@@ -408,8 +431,9 @@ int main(void)
     mp_stack_set_limit(THREAD_STACKSIZE_MAIN - MP_STACK_SAFEAREA);
     mp_riot_init(mp_heap, sizeof(mp_heap));
 
+    mp_do_str((const char *)hrs_py, hrs_py_len);
     mp_do_str((const char *)temperature_py, temperature_py_len);
-    //mp_hrs = _mp_from_str((const char *)hrs_py, hrs_py_len);
+    mp_hrs = _mp_from_str((const char *)hrs_py, hrs_py_len);
     mp_temperature = _mp_from_str((const char *)temperature_py, temperature_py_len);
 
     /* setup local event queue (for handling heart rate updates) */
