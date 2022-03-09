@@ -7,27 +7,20 @@
 #include "include/nsc.h"
 #include "include/secure.h"
 
-__attribute__((section(".non-secure"))) __attribute__((noinline)) int get_board_state(void)
+__attribute__((section(".non-secure"))) __attribute__((noinline)) int get_board_state_NS(void)
 {
-	int cpuid_ns = *(int *)CPUID_NS;
-	return (unsigned int) cpuid_ns;
+	return *(unsigned int *) CPUID_NS;
 }
 
-__attribute__((section(".non-secure"))) __attribute__((noinline)) void ns_test(void)
+__attribute__((section(".non-secure"))) __attribute__((noinline)) __attribute__((optimize("O0"))) void ns_test(void)
 //Should be executed in Non-Secure state
 {
-	ztimer_sleep(ZTIMER_USEC, 500*1000);
-	LED0_TOGGLE;
-	ztimer_sleep(ZTIMER_USEC, 500*1000);
-	LED0_TOGGLE;
-
-	unsigned int status = get_board_state();
-	//status = status & 0x1;
+	unsigned int volatile status = get_board_state_NS();
 	
 	char buffer[33];
 	puts(__itoa(status,buffer,16));
 
-	if(status)
+	if(!status)
 	{
 		ztimer_sleep(ZTIMER_USEC, 500*1000);
 		LED0_TOGGLE;
@@ -43,7 +36,5 @@ __attribute__((section(".non-secure"))) __attribute__((noinline)) void ns_test(v
 
 	}
 	ztimer_sleep(ZTIMER_USEC, 500*1000);
-	//veneer_func();
-	__asm ( "BL =veneer_func \n\t" );
-	//secure_test();
+	secure_test();
 }

@@ -96,6 +96,7 @@ __attribute__((weak)) void post_startup (void)
 
 void reset_handler_default(void)
 {
+
     uint32_t *dst;
     const uint32_t *src = &_etext;
 
@@ -203,10 +204,9 @@ void reset_handler_default(void)
     /* initialize std-c library (this must be done after board_init) */
     extern void __libc_init_array(void);
     __libc_init_array();
-#endif
+#endif 
 
     /* startup the kernel */
-    while(1);
     kernel_init();
 }
 

@@ -19,4 +19,7 @@ QUIET ?= 1
 # Use a timer for the leds
 FEATURES_OPTIONAL += periph_timer
 
+# Add support for crossing security states
+CFLAGS += -mcmse
+
 include $(RIOTBASE)/Makefile.include

@@ -499,11 +499,15 @@ static void __attribute__((used)) _svc_dispatch(unsigned int *svc_args)
 	//TODO: Delete as soon as I know how to configure the SAU
 	case: 2
 	      do_priviliged_stuff(1);
+	      break;
 	case: 3
 	      do_priviliged_stuff(0);
+	      break;
 	case: 4
-	    asm("mrc p15, 0, r0, c1, c1, 0");
-	    break;
+	      //Sets the SUIDEN and the SUINIDEN to allow invasive and non-invasive debugging in secure mode
+	      __asm(	"movs r0, #3			\n\t"
+			"mcr cp15, 0, r0, c1, c1, 1	\n\t");
+	      break;
         default:
             DEBUG("svc: unhandled SVC #%u\n", svc_number);
             break;

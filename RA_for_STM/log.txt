@@ -1,63 +1,571 @@
-Building application "RA_for_STM" for "nucleo-l552ze-q" with MCU "stm32".
-
-make -f /home/fritz/Schreibtisch/Bachelor-Arbeit/STM/RIOT/cpu/stm32/Makefile.cmsis
-make[1]: Verzeichnis „/home/fritz/Schreibtisch/Bachelor-Arbeit/STM/RIOT/RA_for_STM“ wird betreten
-make[1]: Verzeichnis „/home/fritz/Schreibtisch/Bachelor-Arbeit/STM/RIOT/RA_for_STM“ wird verlassen
-'/home/fritz/Schreibtisch/Bachelor-Arbeit/STM/RIOT/dist/tools/genconfigheader/genconfigheader.sh' -DDEVELHELP -Werror -DCPU_FAM_STM32L5 -DSTM32L552xx -DCPU_LINE_STM32L552xx -DSTM32_FLASHSIZE=524288U -D__SYSTEM_STM32L5XX_H -mno-thumb-interwork -mcpu=cortex-m33 -mlittle-endian -mthumb -mfloat-abi=soft -ffunction-sections -fdata-sections -fno-builtin -fshort-enums -ggdb -g3 -Os -DCPU_MODEL_STM32L552ZE -DCPU_CORE_CORTEX_M33 -DRIOT_APPLICATION=\"RA_for_STM\" -DBOARD_NUCLEO_L552ZE_Q=\"nucleo-l552ze-q\" -DRIOT_BOARD=BOARD_NUCLEO_L552ZE_Q -DCPU_STM32=\"stm32\" -DRIOT_CPU=CPU_STM32 -DMCU_STM32=\"stm32\" -DRIOT_MCU=MCU_STM32 -std=c11 -fwrapv -Wstrict-overflow -fno-common -ffunction-sections -fdata-sections -Wall -Wextra -Wmissing-include-dirs -fno-delete-null-pointer-checks -fdiagnostics-color -Wstrict-prototypes -Wold-style-definition -gz -Wformat=2 -Wformat-overflow -Wformat-truncation -Wcast-align -DSLOT0_LEN=0x3f800 -DSLOT0_OFFSET=0x1000 -DSLOT1_LEN=0x3f800 -DSLOT1_OFFSET=264192 -DNUM_SLOTS=2 -I/home/fritz/Schreibtisch/Bachelor-Arbeit/STM/RIOT/RA_for_STM/bin/nucleo-l552ze-q/riotbuild -include '/home/fritz/Schreibtisch/Bachelor-Arbeit/STM/RIOT/RA_for_STM/bin/nucleo-l552ze-q/riotbuild/riotbuild.h' -DRIOT_VERSION=\"2022.01-devel-1061-gdeb25\" -DRIOT_VERSION_CODE=RIOT_VERSION_NUM\(2022,01,0,0\) -DMODULE_AUTO_INIT -DMODULE_BOARD -DMODULE_BOARDS_COMMON_NUCLEO -DMODULE_CORE -DMODULE_CORE_INIT -DMODULE_CORE_MSG -DMODULE_CORE_PANIC -DMODULE_CORTEXM_COMMON -DMODULE_CORTEXM_COMMON_PERIPH -DMODULE_CPU -DMODULE_MALLOC_THREAD_SAFE -DMODULE_NEWLIB -DMODULE_NEWLIB_NANO -DMODULE_NEWLIB_SYSCALLS_DEFAULT -DMODULE_PERIPH -DMODULE_PERIPH_COMMON -DMODULE_PERIPH_GPIO -DMODULE_PERIPH_INIT -DMODULE_PERIPH_INIT_GPIO -DMODULE_PERIPH_INIT_LPUART -DMODULE_PERIPH_INIT_PM -DMODULE_PERIPH_INIT_UART -DMODULE_PERIPH_LPUART -DMODULE_PERIPH_PM -DMODULE_PERIPH_UART -DMODULE_PM_LAYERED -DMODULE_STDIO_UART -DMODULE_STM32_CLK -DMODULE_STM32_VECTORS -DMODULE_SYS \
-	| '/home/fritz/Schreibtisch/Bachelor-Arbeit/STM/RIOT/dist/tools/lazysponge/lazysponge.py' --verbose '/home/fritz/Schreibtisch/Bachelor-Arbeit/STM/RIOT/RA_for_STM/bin/nucleo-l552ze-q/riotbuild/riotbuild.h.in'
-DIRS=" " APPLICATION_BLOBS="" \
-  "make" -C /home/fritz/Schreibtisch/Bachelor-Arbeit/STM/RIOT/RA_for_STM -f /home/fritz/Schreibtisch/Bachelor-Arbeit/STM/RIOT/makefiles/application.inc.mk
-make[1]: Verzeichnis „/home/fritz/Schreibtisch/Bachelor-Arbeit/STM/RIOT/RA_for_STM“ wird betreten
-"make" -C /home/fritz/Schreibtisch/Bachelor-Arbeit/STM/RIOT/boards/nucleo-l552ze-q
-make[2]: Verzeichnis „/home/fritz/Schreibtisch/Bachelor-Arbeit/STM/RIOT/boards/nucleo-l552ze-q“ wird betreten
-"make" -C /home/fritz/Schreibtisch/Bachelor-Arbeit/STM/RIOT/boards/common/nucleo
-make[3]: Verzeichnis „/home/fritz/Schreibtisch/Bachelor-Arbeit/STM/RIOT/boards/common/nucleo“ wird betreten
-make[3]: Verzeichnis „/home/fritz/Schreibtisch/Bachelor-Arbeit/STM/RIOT/boards/common/nucleo“ wird verlassen
-make[2]: Verzeichnis „/home/fritz/Schreibtisch/Bachelor-Arbeit/STM/RIOT/boards/nucleo-l552ze-q“ wird verlassen
-"make" -C /home/fritz/Schreibtisch/Bachelor-Arbeit/STM/RIOT/core
-make[2]: Verzeichnis „/home/fritz/Schreibtisch/Bachelor-Arbeit/STM/RIOT/core“ wird betreten
-make[2]: Verzeichnis „/home/fritz/Schreibtisch/Bachelor-Arbeit/STM/RIOT/core“ wird verlassen
-"make" -C /home/fritz/Schreibtisch/Bachelor-Arbeit/STM/RIOT/cpu/stm32
-make[2]: Verzeichnis „/home/fritz/Schreibtisch/Bachelor-Arbeit/STM/RIOT/cpu/stm32“ wird betreten
-"make" -C /home/fritz/Schreibtisch/Bachelor-Arbeit/STM/RIOT/cpu/cortexm_common
-make[3]: Verzeichnis „/home/fritz/Schreibtisch/Bachelor-Arbeit/STM/RIOT/cpu/cortexm_common“ wird betreten
-"make" -C /home/fritz/Schreibtisch/Bachelor-Arbeit/STM/RIOT/cpu/cortexm_common/periph
-make[4]: Verzeichnis „/home/fritz/Schreibtisch/Bachelor-Arbeit/STM/RIOT/cpu/cortexm_common/periph“ wird betreten
-make[4]: Verzeichnis „/home/fritz/Schreibtisch/Bachelor-Arbeit/STM/RIOT/cpu/cortexm_common/periph“ wird verlassen
-make[3]: Verzeichnis „/home/fritz/Schreibtisch/Bachelor-Arbeit/STM/RIOT/cpu/cortexm_common“ wird verlassen
-"make" -C /home/fritz/Schreibtisch/Bachelor-Arbeit/STM/RIOT/cpu/stm32/periph
-make[3]: Verzeichnis „/home/fritz/Schreibtisch/Bachelor-Arbeit/STM/RIOT/cpu/stm32/periph“ wird betreten
-make[3]: Verzeichnis „/home/fritz/Schreibtisch/Bachelor-Arbeit/STM/RIOT/cpu/stm32/periph“ wird verlassen
-"make" -C /home/fritz/Schreibtisch/Bachelor-Arbeit/STM/RIOT/cpu/stm32/stmclk
-make[3]: Verzeichnis „/home/fritz/Schreibtisch/Bachelor-Arbeit/STM/RIOT/cpu/stm32/stmclk“ wird betreten
-make[3]: Verzeichnis „/home/fritz/Schreibtisch/Bachelor-Arbeit/STM/RIOT/cpu/stm32/stmclk“ wird verlassen
-"make" -C /home/fritz/Schreibtisch/Bachelor-Arbeit/STM/RIOT/cpu/stm32/vectors
-make[3]: Verzeichnis „/home/fritz/Schreibtisch/Bachelor-Arbeit/STM/RIOT/cpu/stm32/vectors“ wird betreten
-make[3]: Verzeichnis „/home/fritz/Schreibtisch/Bachelor-Arbeit/STM/RIOT/cpu/stm32/vectors“ wird verlassen
-make[2]: Verzeichnis „/home/fritz/Schreibtisch/Bachelor-Arbeit/STM/RIOT/cpu/stm32“ wird verlassen
-"make" -C /home/fritz/Schreibtisch/Bachelor-Arbeit/STM/RIOT/drivers
-make[2]: Verzeichnis „/home/fritz/Schreibtisch/Bachelor-Arbeit/STM/RIOT/drivers“ wird betreten
-"make" -C /home/fritz/Schreibtisch/Bachelor-Arbeit/STM/RIOT/drivers/periph_common
-make[3]: Verzeichnis „/home/fritz/Schreibtisch/Bachelor-Arbeit/STM/RIOT/drivers/periph_common“ wird betreten
-make[3]: Verzeichnis „/home/fritz/Schreibtisch/Bachelor-Arbeit/STM/RIOT/drivers/periph_common“ wird verlassen
-make[2]: Verzeichnis „/home/fritz/Schreibtisch/Bachelor-Arbeit/STM/RIOT/drivers“ wird verlassen
-"make" -C /home/fritz/Schreibtisch/Bachelor-Arbeit/STM/RIOT/sys
-make[2]: Verzeichnis „/home/fritz/Schreibtisch/Bachelor-Arbeit/STM/RIOT/sys“ wird betreten
-"make" -C /home/fritz/Schreibtisch/Bachelor-Arbeit/STM/RIOT/sys/auto_init
-make[3]: Verzeichnis „/home/fritz/Schreibtisch/Bachelor-Arbeit/STM/RIOT/sys/auto_init“ wird betreten
-make[3]: Verzeichnis „/home/fritz/Schreibtisch/Bachelor-Arbeit/STM/RIOT/sys/auto_init“ wird verlassen
-"make" -C /home/fritz/Schreibtisch/Bachelor-Arbeit/STM/RIOT/sys/malloc_thread_safe
-make[3]: Verzeichnis „/home/fritz/Schreibtisch/Bachelor-Arbeit/STM/RIOT/sys/malloc_thread_safe“ wird betreten
-make[3]: Verzeichnis „/home/fritz/Schreibtisch/Bachelor-Arbeit/STM/RIOT/sys/malloc_thread_safe“ wird verlassen
-"make" -C /home/fritz/Schreibtisch/Bachelor-Arbeit/STM/RIOT/sys/newlib_syscalls_default
-make[3]: Verzeichnis „/home/fritz/Schreibtisch/Bachelor-Arbeit/STM/RIOT/sys/newlib_syscalls_default“ wird betreten
-make[3]: Verzeichnis „/home/fritz/Schreibtisch/Bachelor-Arbeit/STM/RIOT/sys/newlib_syscalls_default“ wird verlassen
-"make" -C /home/fritz/Schreibtisch/Bachelor-Arbeit/STM/RIOT/sys/pm_layered
-make[3]: Verzeichnis „/home/fritz/Schreibtisch/Bachelor-Arbeit/STM/RIOT/sys/pm_layered“ wird betreten
-make[3]: Verzeichnis „/home/fritz/Schreibtisch/Bachelor-Arbeit/STM/RIOT/sys/pm_layered“ wird verlassen
-"make" -C /home/fritz/Schreibtisch/Bachelor-Arbeit/STM/RIOT/sys/stdio_uart
-make[3]: Verzeichnis „/home/fritz/Schreibtisch/Bachelor-Arbeit/STM/RIOT/sys/stdio_uart“ wird betreten
-make[3]: Verzeichnis „/home/fritz/Schreibtisch/Bachelor-Arbeit/STM/RIOT/sys/stdio_uart“ wird verlassen
-make[2]: Verzeichnis „/home/fritz/Schreibtisch/Bachelor-Arbeit/STM/RIOT/sys“ wird verlassen
-make[1]: Verzeichnis „/home/fritz/Schreibtisch/Bachelor-Arbeit/STM/RIOT/RA_for_STM“ wird verlassen
-arm-none-eabi-gcc $(find /home/fritz/Schreibtisch/Bachelor-Arbeit/STM/RIOT/RA_for_STM/bin/nucleo-l552ze-q/application_RA_for_STM/ /home/fritz/Schreibtisch/Bachelor-Arbeit/STM/RIOT/RA_for_STM/bin/nucleo-l552ze-q/auto_init/ /home/fritz/Schreibtisch/Bachelor-Arbeit/STM/RIOT/RA_for_STM/bin/nucleo-l552ze-q/board/ /home/fritz/Schreibtisch/Bachelor-Arbeit/STM/RIOT/RA_for_STM/bin/nucleo-l552ze-q/boards_common_nucleo/ /home/fritz/Schreibtisch/Bachelor-Arbeit/STM/RIOT/RA_for_STM/bin/nucleo-l552ze-q/core/ /home/fritz/Schreibtisch/Bachelor-Arbeit/STM/RIOT/RA_for_STM/bin/nucleo-l552ze-q/cortexm_common/ /home/fritz/Schreibtisch/Bachelor-Arbeit/STM/RIOT/RA_for_STM/bin/nucleo-l552ze-q/cortexm_common_periph/ /home/fritz/Schreibtisch/Bachelor-Arbeit/STM/RIOT/RA_for_STM/bin/nucleo-l552ze-q/cpu/ /home/fritz/Schreibtisch/Bachelor-Arbeit/STM/RIOT/RA_for_STM/bin/nucleo-l552ze-q/malloc_thread_safe/ /home/fritz/Schreibtisch/Bachelor-Arbeit/STM/RIOT/RA_for_STM/bin/nucleo-l552ze-q/newlib_syscalls_default/ /home/fritz/Schreibtisch/Bachelor-Arbeit/STM/RIOT/RA_for_STM/bin/nucleo-l552ze-q/periph/ /home/fritz/Schreibtisch/Bachelor-Arbeit/STM/RIOT/RA_for_STM/bin/nucleo-l552ze-q/pm_layered/ /home/fritz/Schreibtisch/Bachelor-Arbeit/STM/RIOT/RA_for_STM/bin/nucleo-l552ze-q/stdio_uart/ /home/fritz/Schreibtisch/Bachelor-Arbeit/STM/RIOT/RA_for_STM/bin/nucleo-l552ze-q/stm32_clk/ /home/fritz/Schreibtisch/Bachelor-Arbeit/STM/RIOT/RA_for_STM/bin/nucleo-l552ze-q/stm32_vectors/ /home/fritz/Schreibtisch/Bachelor-Arbeit/STM/RIOT/RA_for_STM/bin/nucleo-l552ze-q/sys/ /home/fritz/Schreibtisch/Bachelor-Arbeit/STM/RIOT/RA_for_STM/bin/nucleo-l552ze-q/periph_common/ -name "*.o" 2> /dev/null | sort)  -lm -L/home/fritz/Schreibtisch/Bachelor-Arbeit/STM/RIOT/cpu/stm32/ldscripts -L/home/fritz/Schreibtisch/Bachelor-Arbeit/STM/RIOT/cpu/cortexm_common/ldscripts -Tstm32.ld -Wl,--fatal-warnings -mcpu=cortex-m33 -mlittle-endian -mthumb -mfloat-abi=soft -ggdb -g3 -Os -static -lgcc -nostartfiles -Wl,--gc-sections -Wl,--defsym=_rom_start_addr=0x08000000 -Wl,--defsym=_ram_start_addr=0x20000000 -Wl,--defsym=_rom_length=512K -Wl,--defsym=_ram_length=262144 -Wl,--defsym=_rom_offset=$((0x1000 + 0x800)) -Wl,--defsym=_fw_rom_length=$((SLOT0_LEN - 0x800)) -L/home/fritz/Schreibtisch/Bachelor-Arbeit/STM/RIOT/core/ldscripts -Wl,-wrap=malloc -Wl,-wrap=calloc -Wl,-wrap=realloc -Wl,-wrap=free -specs=nano.specs -lc -Wl,-Map=/home/fritz/Schreibtisch/Bachelor-Arbeit/STM/RIOT/RA_for_STM/bin/nucleo-l552ze-q/RA_for_STM.map -o /home/fritz/Schreibtisch/Bachelor-Arbeit/STM/RIOT/RA_for_STM/bin/nucleo-l552ze-q/RA_for_STM-slot0.elf
+Übereinstimmungen in Binärdatei ../tests/riotboot/bin/nucleo-l552ze-q/tests_riotboot.elf
+Übereinstimmungen in Binärdatei ../tests/riotboot/bin/nucleo-l552ze-q/tests_riotboot-slot0.elf
+Übereinstimmungen in Binärdatei ../tests/riotboot/bin/nucleo-l552ze-q/tests_riotboot-slot1.elf
+../build/stm32/cmsis/l5/Include/stm32l552xx.h:3158:#define ADC_CFGR_AWD1CH_1              (0x02UL << ADC_CFGR_AWD1CH_Pos)         /*!< 0x08000000 */
+../build/stm32/cmsis/l5/Include/stm32l552xx.h:3264:#define ADC_SMPR1_SMP9_0               (0x1UL << ADC_SMPR1_SMP9_Pos)           /*!< 0x08000000 */
+../build/stm32/cmsis/l5/Include/stm32l552xx.h:3367:#define ADC_TR1_HT1_11                 (0x800UL << ADC_TR1_HT1_Pos)            /*!< 0x08000000 */
+../build/stm32/cmsis/l5/Include/stm32l552xx.h:3461:#define ADC_SQR1_SQ4_3                 (0x08UL << ADC_SQR1_SQ4_Pos)            /*!< 0x08000000 */
+../build/stm32/cmsis/l5/Include/stm32l552xx.h:3507:#define ADC_SQR2_SQ9_3                 (0x08UL << ADC_SQR2_SQ9_Pos)            /*!< 0x08000000 */
+../build/stm32/cmsis/l5/Include/stm32l552xx.h:3553:#define ADC_SQR3_SQ14_3                (0x08UL << ADC_SQR3_SQ14_Pos)           /*!< 0x08000000 */
+../build/stm32/cmsis/l5/Include/stm32l552xx.h:3648:#define ADC_JSQR_JSQ4_1                (0x02UL << ADC_JSQR_JSQ4_Pos)           /*!< 0x08000000 */
+../build/stm32/cmsis/l5/Include/stm32l552xx.h:3674:#define ADC_OFR1_OFFSET1_CH_1          (0x02UL << ADC_OFR1_OFFSET1_CH_Pos)     /*!< 0x08000000 */
+../build/stm32/cmsis/l5/Include/stm32l552xx.h:3704:#define ADC_OFR2_OFFSET2_CH_1          (0x02UL << ADC_OFR2_OFFSET2_CH_Pos)     /*!< 0x08000000 */
+../build/stm32/cmsis/l5/Include/stm32l552xx.h:3734:#define ADC_OFR3_OFFSET3_CH_1          (0x02UL << ADC_OFR3_OFFSET3_CH_Pos)     /*!< 0x08000000 */
+../build/stm32/cmsis/l5/Include/stm32l552xx.h:3764:#define ADC_OFR4_OFFSET4_CH_1          (0x02UL << ADC_OFR4_OFFSET4_CH_Pos)     /*!< 0x08000000 */
+../build/stm32/cmsis/l5/Include/stm32l552xx.h:4109:#define ADC_CDR_RDATA_SLV_11           (0x0800UL << ADC_CDR_RDATA_SLV_Pos)     /*!< 0x08000000 */
+../build/stm32/cmsis/l5/Include/stm32l552xx.h:4338:#define DAC_CR_MAMP2_3              (0x8UL << DAC_CR_MAMP2_Pos)                /*!< 0x08000000 */
+../build/stm32/cmsis/l5/Include/stm32l552xx.h:4994:#define DMA_ISR_TEIF7_Msk      (0x1UL << DMA_ISR_TEIF7_Pos)                    /*!< 0x08000000 */
+../build/stm32/cmsis/l5/Include/stm32l552xx.h:5092:#define DMA_IFCR_CTEIF7_Msk    (0x1UL << DMA_IFCR_CTEIF7_Pos)                  /*!< 0x08000000 */
+../build/stm32/cmsis/l5/Include/stm32l552xx.h:5244:#define DMAMUX_CxCR_SYNC_ID_3                        (0x08UL << DMAMUX_CxCR_SYNC_ID_Pos)/*!< 0x08000000 */
+../build/stm32/cmsis/l5/Include/stm32l552xx.h:5484:#define EXTI_RTSR1_RT27_Msk          (0x1UL << EXTI_RTSR1_RT27_Pos)            /*!< 0x08000000 */
+../build/stm32/cmsis/l5/Include/stm32l552xx.h:5605:#define EXTI_FTSR1_FT27_Msk          (0x1UL << EXTI_FTSR1_FT27_Pos)            /*!< 0x08000000 */
+../build/stm32/cmsis/l5/Include/stm32l552xx.h:5726:#define EXTI_SWIER1_SWI27_Msk        (0x1UL << EXTI_SWIER1_SWI27_Pos)          /*!< 0x08000000 */
+../build/stm32/cmsis/l5/Include/stm32l552xx.h:5847:#define EXTI_RPR1_RPIF27_Msk         (0x1UL << EXTI_RPR1_RPIF27_Pos)           /*!< 0x08000000 */
+../build/stm32/cmsis/l5/Include/stm32l552xx.h:5968:#define EXTI_FPR1_FPIF27_Msk         (0x1UL << EXTI_FPR1_FPIF27_Pos)           /*!< 0x08000000 */
+../build/stm32/cmsis/l5/Include/stm32l552xx.h:6101:#define EXTI_SECCFGR1_SEC27_Msk      (0x1UL << EXTI_SECCFGR1_SEC27_Pos)        /*!< 0x08000000 */
+../build/stm32/cmsis/l5/Include/stm32l552xx.h:6234:#define EXTI_PRIVCFGR1_PRIV27_Msk    (0x1UL << EXTI_PRIVCFGR1_PRIV27_Pos)      /*!< 0x08000000 */
+../build/stm32/cmsis/l5/Include/stm32l552xx.h:6476:#define EXTI_IMR1_IM27_Msk           (0x1UL << EXTI_IMR1_IM27_Pos)             /*!< 0x08000000 */
+../build/stm32/cmsis/l5/Include/stm32l552xx.h:6612:#define EXTI_EMR1_EM27_Msk           (0x1UL << EXTI_EMR1_EM27_Pos)             /*!< 0x08000000 */
+../build/stm32/cmsis/l5/Include/stm32l552xx.h:7372:#define FLASH_NSCR_OBL_LAUNCH_Msk         (0x1UL << FLASH_NSCR_OBL_LAUNCH_Pos) /*!< 0x08000000 */
+../build/stm32/cmsis/l5/Include/stm32l552xx.h:7494:#define FLASH_OPTR_nBOOT0_Msk             (0x1UL << FLASH_OPTR_nBOOT0_Pos)     /*!< 0x08000000 */
+../build/stm32/cmsis/l5/Include/stm32l552xx.h:7724:#define FMC_BTRx_DATLAT_3          (0x8UL << FMC_BTRx_DATLAT_Pos)              /*!< 0x08000000 */
+../build/stm32/cmsis/l5/Include/stm32l552xx.h:7918:#define FMC_PMEM_MEMHIZ_3          (0x08UL << FMC_PMEM_MEMHIZ_Pos)             /*!< 0x08000000 */
+../build/stm32/cmsis/l5/Include/stm32l552xx.h:7967:#define FMC_PATT_ATTHIZ_3          (0x08UL << FMC_PATT_ATTHIZ_Pos)             /*!< 0x08000000 */
+../build/stm32/cmsis/l5/Include/stm32l552xx.h:8053:#define GPIO_MODER_MODE13_1            (0x2UL << GPIO_MODER_MODE13_Pos)        /*!< 0x08000000 */
+../build/stm32/cmsis/l5/Include/stm32l552xx.h:8185:#define GPIO_OSPEEDR_OSPEED13_1        (0x2UL << GPIO_OSPEEDR_OSPEED13_Pos)    /*!< 0x08000000 */
+../build/stm32/cmsis/l5/Include/stm32l552xx.h:8267:#define GPIO_PUPDR_PUPD13_1            (0x2UL << GPIO_PUPDR_PUPD13_Pos)        /*!< 0x08000000 */
+../build/stm32/cmsis/l5/Include/stm32l552xx.h:8462:#define GPIO_BSRR_BR11_Msk             (0x1UL << GPIO_BSRR_BR11_Pos)           /*!< 0x08000000 */
+../build/stm32/cmsis/l5/Include/stm32l552xx.h:8579:#define GPIO_AFRL_AFSEL6_3             (0x8UL << GPIO_AFRL_AFSEL6_Pos)         /*!< 0x08000000 */
+../build/stm32/cmsis/l5/Include/stm32l552xx.h:8637:#define GPIO_AFRH_AFSEL14_3            (0x8UL << GPIO_AFRH_AFSEL14_Pos)        /*!< 0x08000000 */
+../build/stm32/cmsis/l5/Include/stm32l552xx.h:9645:#define OCTOSPI_CCR_DDTR_Msk           (0x1UL << OCTOSPI_CCR_DDTR_Pos)         /*!< 0x08000000 */
+../build/stm32/cmsis/l5/Include/stm32l552xx.h:9730:#define OCTOSPI_WPCCR_DDTR_Msk         (0x1UL << OCTOSPI_WPCCR_DDTR_Pos)       /*!< 0x08000000 */
+../build/stm32/cmsis/l5/Include/stm32l552xx.h:9807:#define OCTOSPI_WCCR_DDTR_Msk          (0x1UL << OCTOSPI_WCCR_DDTR_Pos)        /*!< 0x08000000 */
+../build/stm32/cmsis/l5/Include/stm32l552xx.h:11086:#define RCC_CR_PLLSAI1RDY_Msk                (0x1UL << RCC_CR_PLLSAI1RDY_Pos)  /*!< 0x08000000 */
+../build/stm32/cmsis/l5/Include/stm32l552xx.h:11145:#define RCC_ICSCR_HSITRIM_3                  (0x08UL << RCC_ICSCR_HSITRIM_Pos) /*!< 0x08000000 */
+../build/stm32/cmsis/l5/Include/stm32l552xx.h:11201:#define RCC_CFGR_MCOSEL_3                    (0x8UL << RCC_CFGR_MCOSEL_Pos)    /*!< 0x08000000 */
+../build/stm32/cmsis/l5/Include/stm32l552xx.h:11264:#define RCC_PLLCFGR_PLLPDIV_0                (0x01UL << RCC_PLLCFGR_PLLPDIV_Pos)/*!< 0x08000000 */
+../build/stm32/cmsis/l5/Include/stm32l552xx.h:11324:#define RCC_PLLSAI1CFGR_PLLSAI1PDIV_0        (0x01UL << RCC_PLLSAI1CFGR_PLLSAI1PDIV_Pos)/*!< 0x08000000 */
+../build/stm32/cmsis/l5/Include/stm32l552xx.h:11366:#define RCC_PLLSAI2CFGR_PLLSAI2PDIV_0        (0x01UL << RCC_PLLSAI2CFGR_PLLSAI2PDIV_Pos)/*!< 0x08000000 */
+../build/stm32/cmsis/l5/Include/stm32l552xx.h:12133:#define RCC_CCIPR1_CLK48MSEL_1               (0x2UL << RCC_CCIPR1_CLK48MSEL_Pos) /*!< 0x08000000 */
+../build/stm32/cmsis/l5/Include/stm32l552xx.h:12219:#define RCC_CSR_BORRSTF_Msk                  (0x1UL << RCC_CSR_BORRSTF_Pos)    /*!< 0x08000000 */
+../build/stm32/cmsis/l5/Include/stm32l552xx.h:13074:#define RTC_ALRMAR_DU_3              (0x8UL << RTC_ALRMAR_DU_Pos)              /*!< 0x08000000 */
+../build/stm32/cmsis/l5/Include/stm32l552xx.h:13133:#define RTC_ALRMASSR_MASKSS_3        (0x8UL << RTC_ALRMASSR_MASKSS_Pos)        /*!< 0x08000000 */
+../build/stm32/cmsis/l5/Include/stm32l552xx.h:13156:#define RTC_ALRMBR_DU_3              (0x8UL << RTC_ALRMBR_DU_Pos)              /*!< 0x08000000 */
+../build/stm32/cmsis/l5/Include/stm32l552xx.h:13215:#define RTC_ALRMBSSR_MASKSS_3        (0x8UL << RTC_ALRMBSSR_MASKSS_Pos)        /*!< 0x08000000 */
+../build/stm32/cmsis/l5/Include/stm32l552xx.h:13726:#define TAMP_ATCR2_ATOSEL7_1         (0x2UL << TAMP_ATCR2_ATOSEL7_Pos)         /*!< 0x08000000 */
+../build/stm32/cmsis/l5/Include/stm32l552xx.h:14800:#define TIM_BDTR_BK2DSRM_Msk      (0x1UL << TIM_BDTR_BK2DSRM_Pos)              /*!< 0x08000000 */
+../build/stm32/cmsis/l5/Include/stm32l552xx.h:15147:#define TSC_CR_CTPL_3            (0x8UL << TSC_CR_CTPL_Pos)                    /*!< 0x08000000 */
+../build/stm32/cmsis/l5/Include/stm32l552xx.h:15264:#define TSC_IOHCR_G7_IO4_Msk     (0x1UL << TSC_IOHCR_G7_IO4_Pos)               /*!< 0x08000000 */
+../build/stm32/cmsis/l5/Include/stm32l552xx.h:15362:#define TSC_IOASCR_G7_IO4_Msk    (0x1UL << TSC_IOASCR_G7_IO4_Pos)              /*!< 0x08000000 */
+../build/stm32/cmsis/l5/Include/stm32l552xx.h:15460:#define TSC_IOSCR_G7_IO4_Msk     (0x1UL << TSC_IOSCR_G7_IO4_Pos)               /*!< 0x08000000 */
+../build/stm32/cmsis/l5/Include/stm32l552xx.h:15558:#define TSC_IOCCR_G7_IO4_Msk     (0x1UL << TSC_IOCCR_G7_IO4_Pos)               /*!< 0x08000000 */
+../build/stm32/cmsis/l5/Include/stm32l552xx.h:15710:#define SAI_xCR1_MCKEN_Msk         (0x1UL << SAI_xCR1_MCKEN_Pos)               /*!< 0x08000000 */
+../build/stm32/cmsis/l5/Include/stm32l552xx.h:16185:#define SYSCFG_SWPR_P27WP_Msk           (0x1UL << SYSCFG_SWPR_P27WP_Pos)       /*!< 0x08000000 */
+../build/stm32/cmsis/l5/Include/stm32l552xx.h:16283:#define SYSCFG_SWPR2_P59WP_Msk          (0x1UL << SYSCFG_SWPR2_P59WP_Pos)      /*!< 0x08000000 */
+../build/stm32/cmsis/l5/Include/stm32l552xx.h:17175:#define GTZC_MPCBB_LCKVTR1_LCKSB27_Msk  (0x01UL << GTZC_MPCBB_LCKVTR1_LCKSB27_Pos)   /*!< 0x08000000 */
+../build/stm32/cmsis/l5/Include/stm32l552xx.h:17241:#define GTZC_MPCBB_LCKVTR2_LCKSB59_Msk  (0x01UL << GTZC_MPCBB_LCKVTR2_LCKSB59_Pos)   /*!< 0x08000000 */
+../build/stm32/cmsis/l5/Include/stm32l552xx.h:17513:#define SDMMC_STA_IDMATE_Msk            (0x1UL << SDMMC_STA_IDMATE_Pos)        /*!< 0x08000000 */
+../build/stm32/cmsis/l5/Include/stm32l552xx.h:17575:#define SDMMC_ICR_IDMATEC_Msk           (0x1UL << SDMMC_ICR_IDMATEC_Pos)       /*!< 0x08000000 */
+../build/stm32/cmsis/l5/Include/stm32l552xx.h:17738:#define UCPD_CFG1_RXORDSETEN_7              (0x080UL << UCPD_CFG1_RXORDSETEN_Pos)/*!< 0x08000000 */
+../build/stm32/cmsis/l5/Include/stm32l552xx.h:18126:#define USART_CR1_EOBIE_Msk             (0x1UL << USART_CR1_EOBIE_Pos)          /*!< 0x08000000 */
+../build/stm32/cmsis/l5/Include/stm32l552xx.h:18282:#define USART_CR3_RXFTCFG_2             (0x4UL << USART_CR3_RXFTCFG_Pos)        /*!< 0x08000000 */
+../build/stm32/cmsis/l5/Include/stm32l552xx.h:18419:#define USART_ISR_TXFT_Msk              (0x1UL << USART_ISR_TXFT_Pos)           /*!< 0x08000000 */
+../build/stm32/cmsis/l5/Include/stm32l562xx.h:3302:#define ADC_CFGR_AWD1CH_1              (0x02UL << ADC_CFGR_AWD1CH_Pos)         /*!< 0x08000000 */
+../build/stm32/cmsis/l5/Include/stm32l562xx.h:3408:#define ADC_SMPR1_SMP9_0               (0x1UL << ADC_SMPR1_SMP9_Pos)           /*!< 0x08000000 */
+../build/stm32/cmsis/l5/Include/stm32l562xx.h:3511:#define ADC_TR1_HT1_11                 (0x800UL << ADC_TR1_HT1_Pos)            /*!< 0x08000000 */
+../build/stm32/cmsis/l5/Include/stm32l562xx.h:3605:#define ADC_SQR1_SQ4_3                 (0x08UL << ADC_SQR1_SQ4_Pos)            /*!< 0x08000000 */
+../build/stm32/cmsis/l5/Include/stm32l562xx.h:3651:#define ADC_SQR2_SQ9_3                 (0x08UL << ADC_SQR2_SQ9_Pos)            /*!< 0x08000000 */
+../build/stm32/cmsis/l5/Include/stm32l562xx.h:3697:#define ADC_SQR3_SQ14_3                (0x08UL << ADC_SQR3_SQ14_Pos)           /*!< 0x08000000 */
+../build/stm32/cmsis/l5/Include/stm32l562xx.h:3792:#define ADC_JSQR_JSQ4_1                (0x02UL << ADC_JSQR_JSQ4_Pos)           /*!< 0x08000000 */
+../build/stm32/cmsis/l5/Include/stm32l562xx.h:3818:#define ADC_OFR1_OFFSET1_CH_1          (0x02UL << ADC_OFR1_OFFSET1_CH_Pos)     /*!< 0x08000000 */
+../build/stm32/cmsis/l5/Include/stm32l562xx.h:3848:#define ADC_OFR2_OFFSET2_CH_1          (0x02UL << ADC_OFR2_OFFSET2_CH_Pos)     /*!< 0x08000000 */
+../build/stm32/cmsis/l5/Include/stm32l562xx.h:3878:#define ADC_OFR3_OFFSET3_CH_1          (0x02UL << ADC_OFR3_OFFSET3_CH_Pos)     /*!< 0x08000000 */
+../build/stm32/cmsis/l5/Include/stm32l562xx.h:3908:#define ADC_OFR4_OFFSET4_CH_1          (0x02UL << ADC_OFR4_OFFSET4_CH_Pos)     /*!< 0x08000000 */
+../build/stm32/cmsis/l5/Include/stm32l562xx.h:4253:#define ADC_CDR_RDATA_SLV_11           (0x0800UL << ADC_CDR_RDATA_SLV_Pos)     /*!< 0x08000000 */
+../build/stm32/cmsis/l5/Include/stm32l562xx.h:4670:#define DAC_CR_MAMP2_3              (0x8UL << DAC_CR_MAMP2_Pos)                /*!< 0x08000000 */
+../build/stm32/cmsis/l5/Include/stm32l562xx.h:5326:#define DMA_ISR_TEIF7_Msk      (0x1UL << DMA_ISR_TEIF7_Pos)                    /*!< 0x08000000 */
+../build/stm32/cmsis/l5/Include/stm32l562xx.h:5424:#define DMA_IFCR_CTEIF7_Msk    (0x1UL << DMA_IFCR_CTEIF7_Pos)                  /*!< 0x08000000 */
+../build/stm32/cmsis/l5/Include/stm32l562xx.h:5576:#define DMAMUX_CxCR_SYNC_ID_3                        (0x08UL << DMAMUX_CxCR_SYNC_ID_Pos)/*!< 0x08000000 */
+../build/stm32/cmsis/l5/Include/stm32l562xx.h:5816:#define EXTI_RTSR1_RT27_Msk          (0x1UL << EXTI_RTSR1_RT27_Pos)            /*!< 0x08000000 */
+../build/stm32/cmsis/l5/Include/stm32l562xx.h:5937:#define EXTI_FTSR1_FT27_Msk          (0x1UL << EXTI_FTSR1_FT27_Pos)            /*!< 0x08000000 */
+../build/stm32/cmsis/l5/Include/stm32l562xx.h:6058:#define EXTI_SWIER1_SWI27_Msk        (0x1UL << EXTI_SWIER1_SWI27_Pos)          /*!< 0x08000000 */
+../build/stm32/cmsis/l5/Include/stm32l562xx.h:6179:#define EXTI_RPR1_RPIF27_Msk         (0x1UL << EXTI_RPR1_RPIF27_Pos)           /*!< 0x08000000 */
+../build/stm32/cmsis/l5/Include/stm32l562xx.h:6300:#define EXTI_FPR1_FPIF27_Msk         (0x1UL << EXTI_FPR1_FPIF27_Pos)           /*!< 0x08000000 */
+../build/stm32/cmsis/l5/Include/stm32l562xx.h:6433:#define EXTI_SECCFGR1_SEC27_Msk      (0x1UL << EXTI_SECCFGR1_SEC27_Pos)        /*!< 0x08000000 */
+../build/stm32/cmsis/l5/Include/stm32l562xx.h:6566:#define EXTI_PRIVCFGR1_PRIV27_Msk    (0x1UL << EXTI_PRIVCFGR1_PRIV27_Pos)      /*!< 0x08000000 */
+../build/stm32/cmsis/l5/Include/stm32l562xx.h:6808:#define EXTI_IMR1_IM27_Msk           (0x1UL << EXTI_IMR1_IM27_Pos)             /*!< 0x08000000 */
+../build/stm32/cmsis/l5/Include/stm32l562xx.h:6944:#define EXTI_EMR1_EM27_Msk           (0x1UL << EXTI_EMR1_EM27_Pos)             /*!< 0x08000000 */
+../build/stm32/cmsis/l5/Include/stm32l562xx.h:7704:#define FLASH_NSCR_OBL_LAUNCH_Msk         (0x1UL << FLASH_NSCR_OBL_LAUNCH_Pos) /*!< 0x08000000 */
+../build/stm32/cmsis/l5/Include/stm32l562xx.h:7826:#define FLASH_OPTR_nBOOT0_Msk             (0x1UL << FLASH_OPTR_nBOOT0_Pos)     /*!< 0x08000000 */
+../build/stm32/cmsis/l5/Include/stm32l562xx.h:8056:#define FMC_BTRx_DATLAT_3          (0x8UL << FMC_BTRx_DATLAT_Pos)              /*!< 0x08000000 */
+../build/stm32/cmsis/l5/Include/stm32l562xx.h:8250:#define FMC_PMEM_MEMHIZ_3          (0x08UL << FMC_PMEM_MEMHIZ_Pos)             /*!< 0x08000000 */
+../build/stm32/cmsis/l5/Include/stm32l562xx.h:8299:#define FMC_PATT_ATTHIZ_3          (0x08UL << FMC_PATT_ATTHIZ_Pos)             /*!< 0x08000000 */
+../build/stm32/cmsis/l5/Include/stm32l562xx.h:8385:#define GPIO_MODER_MODE13_1            (0x2UL << GPIO_MODER_MODE13_Pos)        /*!< 0x08000000 */
+../build/stm32/cmsis/l5/Include/stm32l562xx.h:8517:#define GPIO_OSPEEDR_OSPEED13_1        (0x2UL << GPIO_OSPEEDR_OSPEED13_Pos)    /*!< 0x08000000 */
+../build/stm32/cmsis/l5/Include/stm32l562xx.h:8599:#define GPIO_PUPDR_PUPD13_1            (0x2UL << GPIO_PUPDR_PUPD13_Pos)        /*!< 0x08000000 */
+../build/stm32/cmsis/l5/Include/stm32l562xx.h:8794:#define GPIO_BSRR_BR11_Msk             (0x1UL << GPIO_BSRR_BR11_Pos)           /*!< 0x08000000 */
+../build/stm32/cmsis/l5/Include/stm32l562xx.h:8911:#define GPIO_AFRL_AFSEL6_3             (0x8UL << GPIO_AFRL_AFSEL6_Pos)         /*!< 0x08000000 */
+../build/stm32/cmsis/l5/Include/stm32l562xx.h:8969:#define GPIO_AFRH_AFSEL14_3            (0x8UL << GPIO_AFRH_AFSEL14_Pos)        /*!< 0x08000000 */
+../build/stm32/cmsis/l5/Include/stm32l562xx.h:9977:#define OCTOSPI_CCR_DDTR_Msk           (0x1UL << OCTOSPI_CCR_DDTR_Pos)         /*!< 0x08000000 */
+../build/stm32/cmsis/l5/Include/stm32l562xx.h:10062:#define OCTOSPI_WPCCR_DDTR_Msk         (0x1UL << OCTOSPI_WPCCR_DDTR_Pos)       /*!< 0x08000000 */
+../build/stm32/cmsis/l5/Include/stm32l562xx.h:10139:#define OCTOSPI_WCCR_DDTR_Msk          (0x1UL << OCTOSPI_WCCR_DDTR_Pos)        /*!< 0x08000000 */
+../build/stm32/cmsis/l5/Include/stm32l562xx.h:11789:#define RCC_CR_PLLSAI1RDY_Msk                (0x1UL << RCC_CR_PLLSAI1RDY_Pos)  /*!< 0x08000000 */
+../build/stm32/cmsis/l5/Include/stm32l562xx.h:11848:#define RCC_ICSCR_HSITRIM_3                  (0x08UL << RCC_ICSCR_HSITRIM_Pos) /*!< 0x08000000 */
+../build/stm32/cmsis/l5/Include/stm32l562xx.h:11904:#define RCC_CFGR_MCOSEL_3                    (0x8UL << RCC_CFGR_MCOSEL_Pos)    /*!< 0x08000000 */
+../build/stm32/cmsis/l5/Include/stm32l562xx.h:11967:#define RCC_PLLCFGR_PLLPDIV_0                (0x01UL << RCC_PLLCFGR_PLLPDIV_Pos)/*!< 0x08000000 */
+../build/stm32/cmsis/l5/Include/stm32l562xx.h:12027:#define RCC_PLLSAI1CFGR_PLLSAI1PDIV_0        (0x01UL << RCC_PLLSAI1CFGR_PLLSAI1PDIV_Pos)/*!< 0x08000000 */
+../build/stm32/cmsis/l5/Include/stm32l562xx.h:12069:#define RCC_PLLSAI2CFGR_PLLSAI2PDIV_0        (0x01UL << RCC_PLLSAI2CFGR_PLLSAI2PDIV_Pos)/*!< 0x08000000 */
+../build/stm32/cmsis/l5/Include/stm32l562xx.h:12863:#define RCC_CCIPR1_CLK48MSEL_1               (0x2UL << RCC_CCIPR1_CLK48MSEL_Pos) /*!< 0x08000000 */
+../build/stm32/cmsis/l5/Include/stm32l562xx.h:12949:#define RCC_CSR_BORRSTF_Msk                  (0x1UL << RCC_CSR_BORRSTF_Pos)    /*!< 0x08000000 */
+../build/stm32/cmsis/l5/Include/stm32l562xx.h:13813:#define RTC_ALRMAR_DU_3              (0x8UL << RTC_ALRMAR_DU_Pos)              /*!< 0x08000000 */
+../build/stm32/cmsis/l5/Include/stm32l562xx.h:13872:#define RTC_ALRMASSR_MASKSS_3        (0x8UL << RTC_ALRMASSR_MASKSS_Pos)        /*!< 0x08000000 */
+../build/stm32/cmsis/l5/Include/stm32l562xx.h:13895:#define RTC_ALRMBR_DU_3              (0x8UL << RTC_ALRMBR_DU_Pos)              /*!< 0x08000000 */
+../build/stm32/cmsis/l5/Include/stm32l562xx.h:13954:#define RTC_ALRMBSSR_MASKSS_3        (0x8UL << RTC_ALRMBSSR_MASKSS_Pos)        /*!< 0x08000000 */
+../build/stm32/cmsis/l5/Include/stm32l562xx.h:14465:#define TAMP_ATCR2_ATOSEL7_1         (0x2UL << TAMP_ATCR2_ATOSEL7_Pos)         /*!< 0x08000000 */
+../build/stm32/cmsis/l5/Include/stm32l562xx.h:15539:#define TIM_BDTR_BK2DSRM_Msk      (0x1UL << TIM_BDTR_BK2DSRM_Pos)              /*!< 0x08000000 */
+../build/stm32/cmsis/l5/Include/stm32l562xx.h:15886:#define TSC_CR_CTPL_3            (0x8UL << TSC_CR_CTPL_Pos)                    /*!< 0x08000000 */
+../build/stm32/cmsis/l5/Include/stm32l562xx.h:16003:#define TSC_IOHCR_G7_IO4_Msk     (0x1UL << TSC_IOHCR_G7_IO4_Pos)               /*!< 0x08000000 */
+../build/stm32/cmsis/l5/Include/stm32l562xx.h:16101:#define TSC_IOASCR_G7_IO4_Msk    (0x1UL << TSC_IOASCR_G7_IO4_Pos)              /*!< 0x08000000 */
+../build/stm32/cmsis/l5/Include/stm32l562xx.h:16199:#define TSC_IOSCR_G7_IO4_Msk     (0x1UL << TSC_IOSCR_G7_IO4_Pos)               /*!< 0x08000000 */
+../build/stm32/cmsis/l5/Include/stm32l562xx.h:16297:#define TSC_IOCCR_G7_IO4_Msk     (0x1UL << TSC_IOCCR_G7_IO4_Pos)               /*!< 0x08000000 */
+../build/stm32/cmsis/l5/Include/stm32l562xx.h:16449:#define SAI_xCR1_MCKEN_Msk         (0x1UL << SAI_xCR1_MCKEN_Pos)               /*!< 0x08000000 */
+../build/stm32/cmsis/l5/Include/stm32l562xx.h:16924:#define SYSCFG_SWPR_P27WP_Msk           (0x1UL << SYSCFG_SWPR_P27WP_Pos)       /*!< 0x08000000 */
+../build/stm32/cmsis/l5/Include/stm32l562xx.h:17022:#define SYSCFG_SWPR2_P59WP_Msk          (0x1UL << SYSCFG_SWPR2_P59WP_Pos)      /*!< 0x08000000 */
+../build/stm32/cmsis/l5/Include/stm32l562xx.h:17946:#define GTZC_MPCBB_LCKVTR1_LCKSB27_Msk  (0x01UL << GTZC_MPCBB_LCKVTR1_LCKSB27_Pos)   /*!< 0x08000000 */
+../build/stm32/cmsis/l5/Include/stm32l562xx.h:18012:#define GTZC_MPCBB_LCKVTR2_LCKSB59_Msk  (0x01UL << GTZC_MPCBB_LCKVTR2_LCKSB59_Pos)   /*!< 0x08000000 */
+../build/stm32/cmsis/l5/Include/stm32l562xx.h:18284:#define SDMMC_STA_IDMATE_Msk            (0x1UL << SDMMC_STA_IDMATE_Pos)        /*!< 0x08000000 */
+../build/stm32/cmsis/l5/Include/stm32l562xx.h:18346:#define SDMMC_ICR_IDMATEC_Msk           (0x1UL << SDMMC_ICR_IDMATEC_Pos)       /*!< 0x08000000 */
+../build/stm32/cmsis/l5/Include/stm32l562xx.h:18509:#define UCPD_CFG1_RXORDSETEN_7              (0x080UL << UCPD_CFG1_RXORDSETEN_Pos)/*!< 0x08000000 */
+../build/stm32/cmsis/l5/Include/stm32l562xx.h:18897:#define USART_CR1_EOBIE_Msk             (0x1UL << USART_CR1_EOBIE_Pos)          /*!< 0x08000000 */
+../build/stm32/cmsis/l5/Include/stm32l562xx.h:19053:#define USART_CR3_RXFTCFG_2             (0x4UL << USART_CR3_RXFTCFG_Pos)        /*!< 0x08000000 */
+../build/stm32/cmsis/l5/Include/stm32l562xx.h:19190:#define USART_ISR_TXFT_Msk              (0x1UL << USART_ISR_TXFT_Pos)           /*!< 0x08000000 */
+../build/stm32/cmsis/l5/Source/Templates/arm/linker/stm32l562xe_flash.sct:5:LR_IROM1 0x08000000 0x00080000  {    ; load region size_region
+../build/stm32/cmsis/l5/Source/Templates/arm/linker/stm32l562xe_flash.sct:6:  ER_IROM1 0x08000000 0x00080000  {  ; load address = execution address
+../build/stm32/cmsis/l5/Source/Templates/arm/linker/stm32l552xc_flash.sct:5:LR_IROM1 0x08000000 0x00040000  {    ; load region size_region
+../build/stm32/cmsis/l5/Source/Templates/arm/linker/stm32l552xc_flash.sct:6:  ER_IROM1 0x08000000 0x00040000  {  ; load address = execution address
+../build/stm32/cmsis/l5/Source/Templates/arm/linker/stm32l552xe_flash.sct:5:LR_IROM1 0x08000000 0x00080000  {    ; load region size_region
+../build/stm32/cmsis/l5/Source/Templates/arm/linker/stm32l552xe_flash.sct:6:  ER_IROM1 0x08000000 0x00080000  {  ; load address = execution address
+../build/stm32/cmsis/l5/Source/Templates/iar/linker/stm32l552xe_flash.icf:5:define symbol __ICFEDIT_intvec_start__ = 0x08000000;
+../build/stm32/cmsis/l5/Source/Templates/iar/linker/stm32l552xe_flash.icf:7:define symbol __ICFEDIT_region_ROM_start__   = 0x08000000;
+../build/stm32/cmsis/l5/Source/Templates/iar/linker/stm32l562xe_flash.icf:5:define symbol __ICFEDIT_intvec_start__ = 0x08000000;
+../build/stm32/cmsis/l5/Source/Templates/iar/linker/stm32l562xe_flash.icf:7:define symbol __ICFEDIT_region_ROM_start__   = 0x08000000;
+../build/stm32/cmsis/l5/Source/Templates/iar/linker/stm32l552xc_flash.icf:5:define symbol __ICFEDIT_intvec_start__ = 0x08000000;
+../build/stm32/cmsis/l5/Source/Templates/iar/linker/stm32l552xc_flash.icf:7:define symbol __ICFEDIT_region_ROM_start__   = 0x08000000;
+../core/include/bitarithm.h:88:#define BIT27 0x08000000
+../sys/crypto/aes.c:816:    0x01000000, 0x02000000, 0x04000000, 0x08000000,
+../cpu/cc26xx_cc13xx/include/cc26xx_cc13xx_ccfg.h:92:#define CCFG_MODE_CONF_DCDC_RECHARGE_m                 0x08000000
+../cpu/fe310/include/vendor/pwm.h:31:#define PWM_CFG_CMP3GANG    0x08000000
+../cpu/fe310/include/vendor/platform.h:29:#define ITIM_MEM_ADDR 		    (0x08000000)
+../cpu/cc26x0_cc13x0/vendor/inc/hw_fcfg1.h:1710:#define FCFG1_FLASH_OTP_DATA4_DIS_IDLE_INT_WRT                      0x08000000
+../cpu/cc26x0_cc13x0/vendor/inc/hw_fcfg1.h:1712:#define FCFG1_FLASH_OTP_DATA4_DIS_IDLE_INT_WRT_M                    0x08000000
+../cpu/cc26x0_cc13x0/vendor/inc/hw_fcfg1.h:2454:#define FCFG1_OSC_CONF_ATESTLF_RCOSCLF_IBIAS_TRIM                   0x08000000
+../cpu/cc26x0_cc13x0/vendor/inc/hw_fcfg1.h:2456:#define FCFG1_OSC_CONF_ATESTLF_RCOSCLF_IBIAS_TRIM_M                 0x08000000
+../cpu/cc26x0_cc13x0/vendor/inc/hw_cpu_itm.h:741:#define CPU_ITM_TER_STIMENA27                                       0x08000000
+../cpu/cc26x0_cc13x0/vendor/inc/hw_cpu_itm.h:743:#define CPU_ITM_TER_STIMENA27_M                                     0x08000000
+../cpu/cc26x0_cc13x0/vendor/inc/hw_rfc_dbell.h:464:#define RFC_DBELL_RFCPEIFG_IRQ27                                    0x08000000
+../cpu/cc26x0_cc13x0/vendor/inc/hw_rfc_dbell.h:466:#define RFC_DBELL_RFCPEIFG_IRQ27_M                                  0x08000000
+../cpu/cc26x0_cc13x0/vendor/inc/hw_rfc_dbell.h:761:#define RFC_DBELL_RFCPEIEN_IRQ27                                    0x08000000
+../cpu/cc26x0_cc13x0/vendor/inc/hw_rfc_dbell.h:763:#define RFC_DBELL_RFCPEIEN_IRQ27_M                                  0x08000000
+../cpu/cc26x0_cc13x0/vendor/inc/hw_rfc_dbell.h:1059:#define RFC_DBELL_RFCPEISL_IRQ27                                    0x08000000
+../cpu/cc26x0_cc13x0/vendor/inc/hw_rfc_dbell.h:1061:#define RFC_DBELL_RFCPEISL_IRQ27_M                                  0x08000000
+../cpu/cc26x0_cc13x0/vendor/inc/hw_rfc_dbell.h:1063:#define RFC_DBELL_RFCPEISL_IRQ27_CPE1                               0x08000000
+../cpu/cc26x0_cc13x0/vendor/inc/hw_gpio.h:459:#define GPIO_DOUT31_0_DIO27                                         0x08000000
+../cpu/cc26x0_cc13x0/vendor/inc/hw_gpio.h:461:#define GPIO_DOUT31_0_DIO27_M                                       0x08000000
+../cpu/cc26x0_cc13x0/vendor/inc/hw_gpio.h:720:#define GPIO_DOUTSET31_0_DIO27                                      0x08000000
+../cpu/cc26x0_cc13x0/vendor/inc/hw_gpio.h:722:#define GPIO_DOUTSET31_0_DIO27_M                                    0x08000000
+../cpu/cc26x0_cc13x0/vendor/inc/hw_gpio.h:981:#define GPIO_DOUTCLR31_0_DIO27                                      0x08000000
+../cpu/cc26x0_cc13x0/vendor/inc/hw_gpio.h:983:#define GPIO_DOUTCLR31_0_DIO27_M                                    0x08000000
+../cpu/cc26x0_cc13x0/vendor/inc/hw_gpio.h:1242:#define GPIO_DOUTTGL31_0_DIO27                                      0x08000000
+../cpu/cc26x0_cc13x0/vendor/inc/hw_gpio.h:1244:#define GPIO_DOUTTGL31_0_DIO27_M                                    0x08000000
+../cpu/cc26x0_cc13x0/vendor/inc/hw_gpio.h:1503:#define GPIO_DIN31_0_DIO27                                          0x08000000
+../cpu/cc26x0_cc13x0/vendor/inc/hw_gpio.h:1505:#define GPIO_DIN31_0_DIO27_M                                        0x08000000
+../cpu/cc26x0_cc13x0/vendor/inc/hw_gpio.h:1764:#define GPIO_DOE31_0_DIO27                                          0x08000000
+../cpu/cc26x0_cc13x0/vendor/inc/hw_gpio.h:1766:#define GPIO_DOE31_0_DIO27_M                                        0x08000000
+../cpu/cc26x0_cc13x0/vendor/inc/hw_gpio.h:2025:#define GPIO_EVFLAGS31_0_DIO27                                      0x08000000
+../cpu/cc26x0_cc13x0/vendor/inc/hw_gpio.h:2027:#define GPIO_EVFLAGS31_0_DIO27_M                                    0x08000000
+../cpu/cc26x0_cc13x0/vendor/inc/hw_ccfg.h:321:#define CCFG_MODE_CONF_DCDC_RECHARGE                                0x08000000
+../cpu/cc26x0_cc13x0/vendor/inc/hw_ccfg.h:323:#define CCFG_MODE_CONF_DCDC_RECHARGE_M                              0x08000000
+../cpu/cc26x0_cc13x0/vendor/inc/hw_ccfg.h:914:#define CCFG_CCFG_PROT_31_0_WRT_PROT_SEC_27                         0x08000000
+../cpu/cc26x0_cc13x0/vendor/inc/hw_ccfg.h:916:#define CCFG_CCFG_PROT_31_0_WRT_PROT_SEC_27_M                       0x08000000
+../cpu/cc26x0_cc13x0/vendor/inc/hw_ccfg.h:1175:#define CCFG_CCFG_PROT_63_32_WRT_PROT_SEC_59                        0x08000000
+../cpu/cc26x0_cc13x0/vendor/inc/hw_ccfg.h:1177:#define CCFG_CCFG_PROT_63_32_WRT_PROT_SEC_59_M                      0x08000000
+../cpu/cc26x0_cc13x0/vendor/inc/hw_ccfg.h:1436:#define CCFG_CCFG_PROT_95_64_WRT_PROT_SEC_91                        0x08000000
+../cpu/cc26x0_cc13x0/vendor/inc/hw_ccfg.h:1438:#define CCFG_CCFG_PROT_95_64_WRT_PROT_SEC_91_M                      0x08000000
+../cpu/cc26x0_cc13x0/vendor/inc/hw_ccfg.h:1697:#define CCFG_CCFG_PROT_127_96_WRT_PROT_SEC_123                      0x08000000
+../cpu/cc26x0_cc13x0/vendor/inc/hw_ccfg.h:1699:#define CCFG_CCFG_PROT_127_96_WRT_PROT_SEC_123_M                    0x08000000
+../cpu/cc26x0_cc13x0/vendor/inc/hw_cpu_scs.h:445:#define CPU_SCS_NVIC_ISER0_SETENA27                                 0x08000000
+../cpu/cc26x0_cc13x0/vendor/inc/hw_cpu_scs.h:447:#define CPU_SCS_NVIC_ISER0_SETENA27_M                               0x08000000
+../cpu/cc26x0_cc13x0/vendor/inc/hw_cpu_scs.h:795:#define CPU_SCS_NVIC_ICER0_CLRENA27                                 0x08000000
+../cpu/cc26x0_cc13x0/vendor/inc/hw_cpu_scs.h:797:#define CPU_SCS_NVIC_ICER0_CLRENA27_M                               0x08000000
+../cpu/cc26x0_cc13x0/vendor/inc/hw_cpu_scs.h:1145:#define CPU_SCS_NVIC_ISPR0_SETPEND27                                0x08000000
+../cpu/cc26x0_cc13x0/vendor/inc/hw_cpu_scs.h:1147:#define CPU_SCS_NVIC_ISPR0_SETPEND27_M                              0x08000000
+../cpu/cc26x0_cc13x0/vendor/inc/hw_cpu_scs.h:1495:#define CPU_SCS_NVIC_ICPR0_CLRPEND27                                0x08000000
+../cpu/cc26x0_cc13x0/vendor/inc/hw_cpu_scs.h:1497:#define CPU_SCS_NVIC_ICPR0_CLRPEND27_M                              0x08000000
+../cpu/cc26x0_cc13x0/vendor/inc/hw_cpu_scs.h:1845:#define CPU_SCS_NVIC_IABR0_ACTIVE27                                 0x08000000
+../cpu/cc26x0_cc13x0/vendor/inc/hw_cpu_scs.h:1847:#define CPU_SCS_NVIC_IABR0_ACTIVE27_M                               0x08000000
+../cpu/cc26x0_cc13x0/vendor/inc/hw_cpu_scs.h:2503:#define CPU_SCS_ICSR_PENDSVCLR                                      0x08000000
+../cpu/cc26x0_cc13x0/vendor/inc/hw_cpu_scs.h:2505:#define CPU_SCS_ICSR_PENDSVCLR_M                                    0x08000000
+../cpu/cc26x0_cc13x0/vendor/inc/hw_ddi_0_osc.h:390:#define DDI_0_OSC_AMPCOMPCTL_AMPCOMP_SW_CTRL                        0x08000000
+../cpu/cc26x0_cc13x0/vendor/inc/hw_ddi_0_osc.h:391:#define DDI_0_OSC_AMPCOMPCTL_AMPCOMP_SW_CTRL_M                      0x08000000
+../cpu/cc26x0_cc13x0/vendor/inc/hw_nvic.h:200:#define NVIC_EN0_INT27          0x08000000  // Interrupt 27 enable
+../cpu/cc26x0_cc13x0/vendor/inc/hw_nvic.h:269:#define NVIC_DIS0_INT27         0x08000000  // Interrupt 27 disable
+../cpu/cc26x0_cc13x0/vendor/inc/hw_nvic.h:338:#define NVIC_PEND0_INT27        0x08000000  // Interrupt 27 pend
+../cpu/cc26x0_cc13x0/vendor/inc/hw_nvic.h:407:#define NVIC_UNPEND0_INT27      0x08000000  // Interrupt 27 unpend
+../cpu/cc26x0_cc13x0/vendor/inc/hw_nvic.h:476:#define NVIC_ACTIVE0_INT27      0x08000000  // Interrupt 27 active
+../cpu/cc26x0_cc13x0/vendor/inc/hw_nvic.h:729:#define NVIC_INT_CTRL_UNPEND_SV 0x08000000  // PendSV Clear Pending
+../cpu/cc26x0_cc13x0/vendor/inc/hw_aon_event.h:186:#define AON_EVENT_MCUWUSEL_WU3_EV_PAD8                              0x08000000
+../cpu/cc26x0_cc13x0/vendor/driverlib/gpio.h:137:#define GPIO_DIO_27_MASK        0x08000000  // GPIO DIO 27 mask
+../cpu/esp32/vendor/esp-idf/wpa_supplicant/src/crypto/aes-internal.c:739:    0x01000000, 0x02000000, 0x04000000, 0x08000000,
+../cpu/cortexm_common/ldscripts/cortexm_base.ld:42:	external (w!rx) : ORIGIN = 0x08000000 , LENGTH = 0x03FFFFFF
+../cpu/cortexm_common/ldscripts/cortexm_base.ld:47:    . = 0x08000000;
+Übereinstimmungen in Binärdatei ../cpu/cortexm_common/ldscripts/.cortexm_base.ld.swp
+../cpu/stm32/stm32_mem_lengths.mk:397:ROM_START_ADDR ?= 0x08000000
+../cpu/stm32/include/vendor/stm32mp157cxx_cm4.h:2811:#define MCU_AHB2_PERIPH_BASE        (PERIPH_BASE + 0x08000000)
+../cpu/stm32/include/vendor/stm32mp157cxx_cm4.h:3541:#define ADC_CR_LINCALRDYW6_Msk            (0x1U << ADC_CR_LINCALRDYW6_Pos)     /*!< 0x08000000 */
+../cpu/stm32/include/vendor/stm32mp157cxx_cm4.h:3629:#define ADC_CFGR_AWD1CH_1                 (0x02U << ADC_CFGR_AWD1CH_Pos)       /*!< 0x08000000 */
+../cpu/stm32/include/vendor/stm32mp157cxx_cm4.h:3770:#define ADC_SMPR1_SMP9_0                  (0x1U << ADC_SMPR1_SMP9_Pos)         /*!< 0x08000000 */
+../cpu/stm32/include/vendor/stm32mp157cxx_cm4.h:3841:#define ADC_SMPR2_SMP19_0                 (0x1U << ADC_SMPR2_SMP19_Pos)        /*!< 0x08000000 */
+../cpu/stm32/include/vendor/stm32mp157cxx_cm4.h:4088:#define ADC_SQR1_SQ4_3                    (0x08U << ADC_SQR1_SQ4_Pos)          /*!< 0x08000000 */
+../cpu/stm32/include/vendor/stm32mp157cxx_cm4.h:4134:#define ADC_SQR2_SQ9_3                    (0x08U << ADC_SQR2_SQ9_Pos)          /*!< 0x08000000 */
+../cpu/stm32/include/vendor/stm32mp157cxx_cm4.h:4180:#define ADC_SQR3_SQ14_3                   (0x08U << ADC_SQR3_SQ14_Pos)         /*!< 0x08000000 */
+../cpu/stm32/include/vendor/stm32mp157cxx_cm4.h:4232:#define ADC_DR_RDATA_27                   (0x8000000U << ADC_DR_RDATA_Pos)     /*!< 0x08000000 */
+../cpu/stm32/include/vendor/stm32mp157cxx_cm4.h:4290:#define ADC_JSQR_JSQ4_0                   (0x01U << ADC_JSQR_JSQ4_Pos)         /*!< 0x08000000 */
+../cpu/stm32/include/vendor/stm32mp157cxx_cm4.h:4331:#define ADC_OFR1_OFFSET1_CH_1             (0x02U << ADC_OFR1_OFFSET1_CH_Pos)   /*!< 0x08000000 */
+../cpu/stm32/include/vendor/stm32mp157cxx_cm4.h:4375:#define ADC_OFR2_OFFSET2_CH_1             (0x02U << ADC_OFR2_OFFSET2_CH_Pos)   /*!< 0x08000000 */
+../cpu/stm32/include/vendor/stm32mp157cxx_cm4.h:4419:#define ADC_OFR3_OFFSET3_CH_1             (0x02U << ADC_OFR3_OFFSET3_CH_Pos)   /*!< 0x08000000 */
+../cpu/stm32/include/vendor/stm32mp157cxx_cm4.h:4463:#define ADC_OFR4_OFFSET4_CH_1             (0x02U << ADC_OFR4_OFFSET4_CH_Pos)   /*!< 0x08000000 */
+../cpu/stm32/include/vendor/stm32mp157cxx_cm4.h:4503:#define ADC_JDR1_JDATA_27                 (0x8000000U << ADC_JDR1_JDATA_Pos)   /*!< 0x08000000 */
+../cpu/stm32/include/vendor/stm32mp157cxx_cm4.h:4540:#define ADC_JDR2_JDATA_27                 (0x8000000U << ADC_JDR2_JDATA_Pos)   /*!< 0x08000000 */
+../cpu/stm32/include/vendor/stm32mp157cxx_cm4.h:4577:#define ADC_JDR3_JDATA_27                 (0x8000000U << ADC_JDR3_JDATA_Pos)   /*!< 0x08000000 */
+../cpu/stm32/include/vendor/stm32mp157cxx_cm4.h:4614:#define ADC_JDR4_JDATA_27                 (0x8000000U << ADC_JDR4_JDATA_Pos)   /*!< 0x08000000 */
+../cpu/stm32/include/vendor/stm32mp157cxx_cm4.h:4917:#define ADC_CDR_RDATA_SLV_11           (0x0800U << ADC_CDR_RDATA_SLV_Pos) /*!< 0x08000000 */
+../cpu/stm32/include/vendor/stm32mp157cxx_cm4.h:4954:#define ADC_CDR2_RDATA_ALT_27          (0x08000000U << ADC_CDR2_RDATA_ALT_Pos) /*!< 0x08000000 */
+../cpu/stm32/include/vendor/stm32mp157cxx_cm4.h:5283:#define FDCAN_IR_PEA_Msk          (0x1U << FDCAN_IR_PEA_Pos)                   /*!< 0x08000000 */
+../cpu/stm32/include/vendor/stm32mp157cxx_cm4.h:5369:#define FDCAN_IE_PEAE_Msk         (0x1U << FDCAN_IE_PEAE_Pos)                  /*!< 0x08000000 */
+../cpu/stm32/include/vendor/stm32mp157cxx_cm4.h:5455:#define FDCAN_ILS_PEAL_Msk        (0x1U << FDCAN_ILS_PEAL_Pos)                 /*!< 0x08000000 */
+../cpu/stm32/include/vendor/stm32mp157cxx_cm4.h:5649:#define FDCAN_NDAT1_ND27_Msk      (0x1U << FDCAN_NDAT1_ND27_Pos)               /*!< 0x08000000 */
+../cpu/stm32/include/vendor/stm32mp157cxx_cm4.h:5747:#define FDCAN_NDAT2_ND59_Msk      (0x1U << FDCAN_NDAT2_ND59_Pos)               /*!< 0x08000000 */
+../cpu/stm32/include/vendor/stm32mp157cxx_cm4.h:6296:#define FDCAN_TTOST_GSI_Msk       (0x1U << FDCAN_TTOST_GSI_Pos)                /*!< 0x08000000 */
+../cpu/stm32/include/vendor/stm32mp157cxx_cm4.h:6937:#define DAC_CR_MAMP2_3              (0x8U << DAC_CR_MAMP2_Pos)                 /*!< 0x08000000 */
+../cpu/stm32/include/vendor/stm32mp157cxx_cm4.h:7847:#define ETH_MACCR_IPC_Msk                   (0x1U << ETH_MACCR_IPC_Pos)                         /*!< 0x08000000 */
+../cpu/stm32/include/vendor/stm32mp157cxx_cm4.h:7894:#define ETH_MACECR_EIPG_2                   (0x4U << ETH_MACECR_EIPG_Pos)                 /*!< 0x08000000 */
+../cpu/stm32/include/vendor/stm32mp157cxx_cm4.h:7987:#define ETH_MACHT0R_HT31T0_27               (0x8000000U << ETH_MACHT0R_HT31T0_Pos)              /*!< 0x08000000 */
+../cpu/stm32/include/vendor/stm32mp157cxx_cm4.h:8024:#define ETH_MACHT1R_HT63T32_27              (0x8000000U << ETH_MACHT1R_HT63T32_Pos)             /*!< 0x08000000 */
+../cpu/stm32/include/vendor/stm32mp157cxx_cm4.h:8080:#define ETH_MACVTR_ERIVLT_Msk               (0x1U << ETH_MACVTR_ERIVLT_Pos)                     /*!< 0x08000000 */
+../cpu/stm32/include/vendor/stm32mp157cxx_cm4.h:8212:#define ETH_MACQ0TXFCR_PT_11                (0x800U << ETH_MACQ0TXFCR_PT_Pos)               /*!< 0x08000000 */
+../cpu/stm32/include/vendor/stm32mp157cxx_cm4.h:8424:#define ETH_MACPCSR_RWKPTR_3                (0x8U << ETH_MACPCSR_RWKPTR_Pos)              /*!< 0x08000000 */
+../cpu/stm32/include/vendor/stm32mp157cxx_cm4.h:8461:#define ETH_MACRWKPFR_MACRWKPFR_27          (0x8000000U << ETH_MACRWKPFR_MACRWKPFR_Pos)         /*!< 0x08000000 */
+../cpu/stm32/include/vendor/stm32mp157cxx_cm4.h:8696:#define ETH_MACHWF1R_L3L4FNUM_0             (0x1U << ETH_MACHWF1R_L3L4FNUM_Pos)           /*!< 0x08000000 */
+../cpu/stm32/include/vendor/stm32mp157cxx_cm4.h:8791:#define ETH_MACMDIOAR_PSE_Msk               (0x1U << ETH_MACMDIOAR_PSE_Pos)                     /*!< 0x08000000 */
+../cpu/stm32/include/vendor/stm32mp157cxx_cm4.h:8828:#define ETH_MACMDIODR_RA_11                 (0x800U << ETH_MACMDIODR_RA_Pos)                /*!< 0x08000000 */
+../cpu/stm32/include/vendor/stm32mp157cxx_cm4.h:8889:#define ETH_MACA0LR_ADDRLO_27               (0x8000000U << ETH_MACA0LR_ADDRLO_Pos)              /*!< 0x08000000 */
+../cpu/stm32/include/vendor/stm32mp157cxx_cm4.h:8921:#define ETH_MACA1HR_MBC_3                   (0x8U << ETH_MACA1HR_MBC_Pos)                 /*!< 0x08000000 */
+../cpu/stm32/include/vendor/stm32mp157cxx_cm4.h:8962:#define ETH_MACA1LR_ADDRLO_27               (0x8000000U << ETH_MACA1LR_ADDRLO_Pos)              /*!< 0x08000000 */
+../cpu/stm32/include/vendor/stm32mp157cxx_cm4.h:8994:#define ETH_MACA2HR_MBC_3                   (0x8U << ETH_MACA2HR_MBC_Pos)                 /*!< 0x08000000 */
+../cpu/stm32/include/vendor/stm32mp157cxx_cm4.h:9035:#define ETH_MACA2LR_ADDRLO_27               (0x8000000U << ETH_MACA2LR_ADDRLO_Pos)              /*!< 0x08000000 */
+../cpu/stm32/include/vendor/stm32mp157cxx_cm4.h:9067:#define ETH_MACA3HR_MBC_3                   (0x8U << ETH_MACA3HR_MBC_Pos)                 /*!< 0x08000000 */
+../cpu/stm32/include/vendor/stm32mp157cxx_cm4.h:9108:#define ETH_MACA3LR_ADDRLO_27               (0x8000000U << ETH_MACA3LR_ADDRLO_Pos)              /*!< 0x08000000 */
+../cpu/stm32/include/vendor/stm32mp157cxx_cm4.h:9151:#define ETH_MMCRXIR_RXLPITRCIS_Msk          (0x1U << ETH_MMCRXIR_RXLPITRCIS_Pos)         /*!< 0x08000000 */
+../cpu/stm32/include/vendor/stm32mp157cxx_cm4.h:9168:#define ETH_MMCTXIR_TXLPITRCIS_Msk          (0x1U << ETH_MMCTXIR_TXLPITRCIS_Pos)         /*!< 0x08000000 */
+../cpu/stm32/include/vendor/stm32mp157cxx_cm4.h:9185:#define ETH_MMCRXIMR_RXLPITRCIM_Msk         (0x1U << ETH_MMCRXIMR_RXLPITRCIM_Pos)         /*!< 0x08000000 */
+../cpu/stm32/include/vendor/stm32mp157cxx_cm4.h:9202:#define ETH_MMCTXIMR_TXLPITRCIM_Msk         (0x1U << ETH_MMCTXIMR_TXLPITRCIM_Pos)        /*!< 0x08000000 */
+../cpu/stm32/include/vendor/stm32mp157cxx_cm4.h:9236:#define ETH_MMCTXSCGPR_TXSNGLCOLG_27        (0x8000000U << ETH_MMCTXSCGPR_TXSNGLCOLG_Pos)  /*!< 0x08000000 */
+../cpu/stm32/include/vendor/stm32mp157cxx_cm4.h:9273:#define ETH_MMCTXMCGPR_TXMULTCOLG_27        (0x8000000U << ETH_MMCTXMCGPR_TXMULTCOLG_Pos)  /*!< 0x08000000 */
+../cpu/stm32/include/vendor/stm32mp157cxx_cm4.h:9310:#define ETH_MMCTXPCGR_TXPKTG_27             (0x8000000U << ETH_MMCTXPCGR_TXPKTG_Pos)  /*!< 0x08000000 */
+../cpu/stm32/include/vendor/stm32mp157cxx_cm4.h:9347:#define ETH_MMCRXCRCEPR_RXCRCERR_27         (0x8000000U << ETH_MMCRXCRCEPR_RXCRCERR_Pos)  /*!< 0x08000000 */
+../cpu/stm32/include/vendor/stm32mp157cxx_cm4.h:9384:#define ETH_MMCRXAEPR_RXALGNERR_27          (0x8000000U << ETH_MMCRXAEPR_RXALGNERR_Pos)  /*!< 0x08000000 */
+../cpu/stm32/include/vendor/stm32mp157cxx_cm4.h:9421:#define ETH_MMCRXUPGR_RXUCASTG_27           (0x8000000U << ETH_MMCRXUPGR_RXUCASTG_Pos)  /*!< 0x08000000 */
+../cpu/stm32/include/vendor/stm32mp157cxx_cm4.h:9458:#define ETH_MMCTXLPIMSTR_TXLPIUSC_27        (0x8000000U << ETH_MMCTXLPIMSTR_TXLPIUSC_Pos)  /*!< 0x08000000 */
+../cpu/stm32/include/vendor/stm32mp157cxx_cm4.h:9495:#define ETH_MMCTXLPITCR_TXLPITRC_27         (0x8000000U << ETH_MMCTXLPITCR_TXLPITRC_Pos)  /*!< 0x08000000 */
+../cpu/stm32/include/vendor/stm32mp157cxx_cm4.h:9532:#define ETH_MMCRXLPIMSTR_RXLPIUSC_27        (0x8000000U << ETH_MMCRXLPIMSTR_RXLPIUSC_Pos)  /*!< 0x08000000 */
+../cpu/stm32/include/vendor/stm32mp157cxx_cm4.h:9569:#define ETH_MMCRXLPITCR_RXLPITRC_27         (0x8000000U << ETH_MMCRXLPITCR_RXLPITRC_Pos)  /*!< 0x08000000 */
+../cpu/stm32/include/vendor/stm32mp157cxx_cm4.h:9657:#define ETH_MACL4A0R_L4DP0_11               (0x800U << ETH_MACL4A0R_L4DP0_Pos)              /*!< 0x08000000 */
+../cpu/stm32/include/vendor/stm32mp157cxx_cm4.h:9694:#define ETH_MACL3A00R_L3A00_27              (0x8000000U << ETH_MACL3A00R_L3A00_Pos)             /*!< 0x08000000 */
+../cpu/stm32/include/vendor/stm32mp157cxx_cm4.h:9731:#define ETH_MACL3A10R_L3A10_27              (0x8000000U << ETH_MACL3A10R_L3A10_Pos)             /*!< 0x08000000 */
+../cpu/stm32/include/vendor/stm32mp157cxx_cm4.h:9768:#define ETH_MACL3A20_L3A20_27               (0x8000000U << ETH_MACL3A20_L3A20_Pos)              /*!< 0x08000000 */
+../cpu/stm32/include/vendor/stm32mp157cxx_cm4.h:9805:#define ETH_MACL3A30_L3A30_27               (0x8000000U << ETH_MACL3A30_L3A30_Pos)              /*!< 0x08000000 */
+../cpu/stm32/include/vendor/stm32mp157cxx_cm4.h:9893:#define ETH_MACL4A1R_L4DP1_11               (0x800U << ETH_MACL4A1R_L4DP1_Pos)              /*!< 0x08000000 */
+../cpu/stm32/include/vendor/stm32mp157cxx_cm4.h:9930:#define ETH_MACL3A01R_L3A01_27              (0x8000000U << ETH_MACL3A01R_L3A01_Pos)             /*!< 0x08000000 */
+../cpu/stm32/include/vendor/stm32mp157cxx_cm4.h:9967:#define ETH_MACL3A11R_L3A11_27              (0x8000000U << ETH_MACL3A11R_L3A11_Pos)             /*!< 0x08000000 */
+../cpu/stm32/include/vendor/stm32mp157cxx_cm4.h:10004:#define ETH_MACL3A21R_L3A21_27              (0x8000000U << ETH_MACL3A21R_L3A21_Pos)             /*!< 0x08000000 */
+../cpu/stm32/include/vendor/stm32mp157cxx_cm4.h:10041:#define ETH_MACL3A31R_L3A31_27              (0x8000000U << ETH_MACL3A31R_L3A31_Pos)             /*!< 0x08000000 */
+../cpu/stm32/include/vendor/stm32mp157cxx_cm4.h:10078:#define ETH_MACARPAR_ARPPA_27               (0x8000000U << ETH_MACARPAR_ARPPA_Pos)              /*!< 0x08000000 */
+../cpu/stm32/include/vendor/stm32mp157cxx_cm4.h:10197:#define ETH_MACSTSR_TSS_27                  (0x8000000U << ETH_MACSTSR_TSS_Pos)                 /*!< 0x08000000 */
+../cpu/stm32/include/vendor/stm32mp157cxx_cm4.h:10234:#define ETH_MACSTNR_TSSS_27                 (0x8000000U << ETH_MACSTNR_TSSS_Pos)                /*!< 0x08000000 */
+../cpu/stm32/include/vendor/stm32mp157cxx_cm4.h:10270:#define ETH_MACSTSUR_TSS_27                 (0x8000000U << ETH_MACSTSUR_TSS_Pos)                /*!< 0x08000000 */
+../cpu/stm32/include/vendor/stm32mp157cxx_cm4.h:10307:#define ETH_MACSTNUR_TSSS_27                (0x8000000U << ETH_MACSTNUR_TSSS_Pos)               /*!< 0x08000000 */
+../cpu/stm32/include/vendor/stm32mp157cxx_cm4.h:10346:#define ETH_MACTSAR_TSAR_27                 (0x8000000U << ETH_MACTSAR_TSAR_Pos)                /*!< 0x08000000 */
+../cpu/stm32/include/vendor/stm32mp157cxx_cm4.h:10383:#define ETH_MACTSSR_ATSNS_2                 (0x4U << ETH_MACTSSR_ATSNS_Pos)               /*!< 0x08000000 */
+../cpu/stm32/include/vendor/stm32mp157cxx_cm4.h:10418:#define ETH_MACTXTSSNR_TXTSSLO_27           (0x8000000U << ETH_MACTXTSSNR_TXTSSLO_Pos)          /*!< 0x08000000 */
+../cpu/stm32/include/vendor/stm32mp157cxx_cm4.h:10457:#define ETH_MACTXTSSSR_TXTSSHI_27           (0x8000000U << ETH_MACTXTSSSR_TXTSSHI_Pos)          /*!< 0x08000000 */
+../cpu/stm32/include/vendor/stm32mp157cxx_cm4.h:10511:#define ETH_MACATSNR_AUXTSLO_27             (0x8000000U << ETH_MACATSNR_AUXTSLO_Pos)            /*!< 0x08000000 */
+../cpu/stm32/include/vendor/stm32mp157cxx_cm4.h:10547:#define ETH_MACATSSR_AUXTSHI_27             (0x8000000U << ETH_MACATSSR_AUXTSHI_Pos)            /*!< 0x08000000 */
+../cpu/stm32/include/vendor/stm32mp157cxx_cm4.h:10584:#define ETH_MACTSIACR_OSTIAC_27             (0x8000000U << ETH_MACTSIACR_OSTIAC_Pos)            /*!< 0x08000000 */
+../cpu/stm32/include/vendor/stm32mp157cxx_cm4.h:10621:#define ETH_MACTSEACR_OSTEAC_27             (0x8000000U << ETH_MACTSEACR_OSTEAC_Pos)            /*!< 0x08000000 */
+../cpu/stm32/include/vendor/stm32mp157cxx_cm4.h:10658:#define ETH_MACTSICNR_TSIC_27               (0x8000000U << ETH_MACTSICNR_TSIC_Pos)              /*!< 0x08000000 */
+../cpu/stm32/include/vendor/stm32mp157cxx_cm4.h:10695:#define ETH_MACTSECNR_TSEC_27               (0x8000000U << ETH_MACTSECNR_TSEC_Pos)              /*!< 0x08000000 */
+../cpu/stm32/include/vendor/stm32mp157cxx_cm4.h:10764:#define ETH_MACPPSTTSR_TSTRH0_27            (0x8000000U << ETH_MACPPSTTSR_TSTRH0_Pos)           /*!< 0x08000000 */
+../cpu/stm32/include/vendor/stm32mp157cxx_cm4.h:10801:#define ETH_MACPPSTTNR_TTSL0_27             (0x8000000U << ETH_MACPPSTTNR_TTSL0_Pos)            /*!< 0x08000000 */
+../cpu/stm32/include/vendor/stm32mp157cxx_cm4.h:10840:#define ETH_MACPPSIR_PPSINT0_27             (0x8000000U << ETH_MACPPSIR_PPSINT0_Pos)            /*!< 0x08000000 */
+../cpu/stm32/include/vendor/stm32mp157cxx_cm4.h:10877:#define ETH_MACPPSWR_PPSWIDTH0_27           (0x8000000U << ETH_MACPPSWR_PPSWIDTH0_Pos)          /*!< 0x08000000 */
+../cpu/stm32/include/vendor/stm32mp157cxx_cm4.h:10945:#define ETH_MACSPI0R_SPI0_27                (0x8000000U << ETH_MACSPI0R_SPI0_Pos)               /*!< 0x08000000 */
+../cpu/stm32/include/vendor/stm32mp157cxx_cm4.h:10982:#define ETH_MACSPI1R_SPI1_27                (0x8000000U << ETH_MACSPI1R_SPI1_Pos)               /*!< 0x08000000 */
+../cpu/stm32/include/vendor/stm32mp157cxx_cm4.h:11033:#define ETH_MACLMIR_LMPDRI_3                (0x8U << ETH_MACLMIR_LMPDRI_Pos)              /*!< 0x08000000 */
+../cpu/stm32/include/vendor/stm32mp157cxx_cm4.h:11270:#define ETH_MTLRXQ0MPOCR_MISCNTOVF_Msk      (0x1U << ETH_MTLRXQ0MPOCR_MISCNTOVF_Pos)            /*!< 0x08000000 */
+../cpu/stm32/include/vendor/stm32mp157cxx_cm4.h:11301:#define ETH_MTLRXQ0DR_PRXQ_11               (0x800U << ETH_MTLRXQ0DR_PRXQ_Pos)              /*!< 0x08000000 */
+../cpu/stm32/include/vendor/stm32mp157cxx_cm4.h:11516:#define ETH_MTLTXQ1HCR_HC_27                (0x8000000U << ETH_MTLTXQ1HCR_HC_Pos)               /*!< 0x08000000 */
+../cpu/stm32/include/vendor/stm32mp157cxx_cm4.h:11550:#define ETH_MTLTXQ1LCR_LC_27                (0x8000000U << ETH_MTLTXQ1LCR_LC_Pos)               /*!< 0x08000000 */
+../cpu/stm32/include/vendor/stm32mp157cxx_cm4.h:11647:#define ETH_MTLRXQ1MPOCR_MISCNTOVF_Msk      (0x1U << ETH_MTLRXQ1MPOCR_MISCNTOVF_Pos)            /*!< 0x08000000 */
+../cpu/stm32/include/vendor/stm32mp157cxx_cm4.h:11678:#define ETH_MTLRXQ1DR_PRXQ_11               (0x800U << ETH_MTLRXQ1DR_PRXQ_Pos)              /*!< 0x08000000 */
+../cpu/stm32/include/vendor/stm32mp157cxx_cm4.h:11867:#define ETH_DMAA4RXACR_RDC_3                (0x8U << ETH_DMAA4RXACR_RDC_Pos)              /*!< 0x08000000 */
+../cpu/stm32/include/vendor/stm32mp157cxx_cm4.h:11949:#define ETH_DMAC0TXCR_TQOS_3                (0x8U << ETH_DMAC0TXCR_TQOS_Pos)              /*!< 0x08000000 */
+../cpu/stm32/include/vendor/stm32mp157cxx_cm4.h:11987:#define ETH_DMAC0RXCR_RQOS_3                (0x8U << ETH_DMAC0RXCR_RQOS_Pos)              /*!< 0x08000000 */
+../cpu/stm32/include/vendor/stm32mp157cxx_cm4.h:12020:#define ETH_DMAC0TXDLAR_TDESLA_24           (0x1000000U << ETH_DMAC0TXDLAR_TDESLA_Pos)          /*!< 0x08000000 */
+../cpu/stm32/include/vendor/stm32mp157cxx_cm4.h:12054:#define ETH_DMAC0RXDLAR_RDESLA_24           (0x1000000U << ETH_DMAC0RXDLAR_RDESLA_Pos)          /*!< 0x08000000 */
+../cpu/stm32/include/vendor/stm32mp157cxx_cm4.h:12088:#define ETH_DMAC0TXDTPR_TDT_24              (0x1000000U << ETH_DMAC0TXDTPR_TDT_Pos)             /*!< 0x08000000 */
+../cpu/stm32/include/vendor/stm32mp157cxx_cm4.h:12122:#define ETH_DMAC0RXDTPR_RDT_24              (0x1000000U << ETH_DMAC0RXDTPR_RDT_Pos)             /*!< 0x08000000 */
+../cpu/stm32/include/vendor/stm32mp157cxx_cm4.h:12258:#define ETH_DMAC0CATXDR_CURTDESAPTR_27      (0x8000000U << ETH_DMAC0CATXDR_CURTDESAPTR_Pos)     /*!< 0x08000000 */
+../cpu/stm32/include/vendor/stm32mp157cxx_cm4.h:12295:#define ETH_DMAC0CARXDR_CURRDESAPTR_27      (0x8000000U << ETH_DMAC0CARXDR_CURRDESAPTR_Pos)     /*!< 0x08000000 */
+../cpu/stm32/include/vendor/stm32mp157cxx_cm4.h:12332:#define ETH_DMAC0CATXBR_CURTBUFAPTR_27      (0x8000000U << ETH_DMAC0CATXBR_CURTBUFAPTR_Pos)     /*!< 0x08000000 */
+../cpu/stm32/include/vendor/stm32mp157cxx_cm4.h:12369:#define ETH_DMAC0CARXBR_CURRBUFAPTR_27      (0x8000000U << ETH_DMAC0CARXBR_CURRBUFAPTR_Pos)     /*!< 0x08000000 */
+../cpu/stm32/include/vendor/stm32mp157cxx_cm4.h:12506:#define ETH_DMAC1TXCR_TQOS_3                (0x8U << ETH_DMAC1TXCR_TQOS_Pos)              /*!< 0x08000000 */
+../cpu/stm32/include/vendor/stm32mp157cxx_cm4.h:12536:#define ETH_DMAC1TXDLAR_TDESLA_24           (0x1000000U << ETH_DMAC1TXDLAR_TDESLA_Pos)          /*!< 0x08000000 */
+../cpu/stm32/include/vendor/stm32mp157cxx_cm4.h:12570:#define ETH_DMAC1TXDTPR_TDT_24              (0x1000000U << ETH_DMAC1TXDTPR_TDT_Pos)             /*!< 0x08000000 */
+../cpu/stm32/include/vendor/stm32mp157cxx_cm4.h:12678:#define ETH_DMAC1CATXDR_CURTDESAPTR_27      (0x8000000U << ETH_DMAC1CATXDR_CURTDESAPTR_Pos)     /*!< 0x08000000 */
+../cpu/stm32/include/vendor/stm32mp157cxx_cm4.h:12715:#define ETH_DMAC1CATXBR_CURTBUFAPTR_27      (0x8000000U << ETH_DMAC1CATXBR_CURTBUFAPTR_Pos)     /*!< 0x08000000 */
+../cpu/stm32/include/vendor/stm32mp157cxx_cm4.h:12925:#define DMA_LISR_TCIF3_Msk       (0x1U << DMA_LISR_TCIF3_Pos)                  /*!< 0x08000000 */
+../cpu/stm32/include/vendor/stm32mp157cxx_cm4.h:12987:#define DMA_HISR_TCIF7_Msk       (0x1U << DMA_HISR_TCIF7_Pos)                  /*!< 0x08000000 */
+../cpu/stm32/include/vendor/stm32mp157cxx_cm4.h:13049:#define DMA_LIFCR_CTCIF3_Msk     (0x1U << DMA_LIFCR_CTCIF3_Pos)                /*!< 0x08000000 */
+../cpu/stm32/include/vendor/stm32mp157cxx_cm4.h:13111:#define DMA_HIFCR_CTCIF7_Msk     (0x1U << DMA_HIFCR_CTCIF7_Pos)                /*!< 0x08000000 */
+../cpu/stm32/include/vendor/stm32mp157cxx_cm4.h:13271:#define DMAMUX_CxCR_SYNC_ID_3          (0x08U << DMAMUX_CxCR_SYNC_ID_Pos)      /*!< 0x08000000 */
+../cpu/stm32/include/vendor/stm32mp157cxx_cm4.h:14670:#define EXTI_IMR1_IM27_Msk         (0x1U << EXTI_IMR1_IM27_Pos)                /*!< 0x08000000 */
+../cpu/stm32/include/vendor/stm32mp157cxx_cm4.h:14767:#define EXTI_IMR2_IM59_Msk         (0x1U << EXTI_IMR2_IM59_Pos)                /*!< 0x08000000 */
+../cpu/stm32/include/vendor/stm32mp157cxx_cm4.h:14934:#define EXTI_EMR1_EM27_Msk         (0x1U << EXTI_EMR1_EM27_Pos)                /*!< 0x08000000 */
+../cpu/stm32/include/vendor/stm32mp157cxx_cm4.h:15031:#define EXTI_EMR2_EM59_Msk         (0x1U << EXTI_EMR2_EM59_Pos)                /*!< 0x08000000 */
+../cpu/stm32/include/vendor/stm32mp157cxx_cm4.h:15591:#define EXTI_EXTICR1_EXTI3_PI_Msk     (0x1U << EXTI_EXTICR1_EXTI3_PI_Pos)      /*!< 0x08000000 */
+../cpu/stm32/include/vendor/stm32mp157cxx_cm4.h:15758:#define EXTI_EXTICR2_EXTI7_PI_Msk     (0x1U << EXTI_EXTICR2_EXTI7_PI_Pos)      /*!< 0x08000000 */
+../cpu/stm32/include/vendor/stm32mp157cxx_cm4.h:15907:#define EXTI_EXTICR3_EXTI11_PI_Msk    (0x1U << EXTI_EXTICR3_EXTI11_PI_Pos)     /*!< 0x08000000 */
+../cpu/stm32/include/vendor/stm32mp157cxx_cm4.h:16050:#define EXTI_EXTICR4_EXTI15_PI_Msk    (0x1U << EXTI_EXTICR4_EXTI15_PI_Pos)     /*!< 0x08000000 */
+../cpu/stm32/include/vendor/stm32mp157cxx_cm4.h:16426:#define FMC_BTR1_DATLAT_3          (0x8U << FMC_BTR1_DATLAT_Pos)               /*!< 0x08000000 */
+../cpu/stm32/include/vendor/stm32mp157cxx_cm4.h:16491:#define FMC_BTR2_DATLAT_3          (0x8U << FMC_BTR2_DATLAT_Pos)               /*!< 0x08000000 */
+../cpu/stm32/include/vendor/stm32mp157cxx_cm4.h:16556:#define FMC_BTR3_DATLAT_3          (0x8U << FMC_BTR3_DATLAT_Pos)               /*!< 0x08000000 */
+../cpu/stm32/include/vendor/stm32mp157cxx_cm4.h:16621:#define FMC_BTR4_DATLAT_3          (0x8U << FMC_BTR4_DATLAT_Pos)               /*!< 0x08000000 */
+../cpu/stm32/include/vendor/stm32mp157cxx_cm4.h:16699:#define FMC_BWTR1_DATLAT_3         (0x8U << FMC_BWTR1_DATLAT_Pos)              /*!< 0x08000000 */
+../cpu/stm32/include/vendor/stm32mp157cxx_cm4.h:16765:#define FMC_BWTR2_DATLAT_3         (0x8U << FMC_BWTR2_DATLAT_Pos)              /*!< 0x08000000 */
+../cpu/stm32/include/vendor/stm32mp157cxx_cm4.h:16822:#define FMC_BWTR3_DATLAT_3         (0x8U << FMC_BWTR3_DATLAT_Pos)              /*!< 0x08000000 */
+../cpu/stm32/include/vendor/stm32mp157cxx_cm4.h:16879:#define FMC_BWTR4_DATLAT_3         (0x8U << FMC_BWTR4_DATLAT_Pos)              /*!< 0x08000000 */
+../cpu/stm32/include/vendor/stm32mp157cxx_cm4.h:17007:#define FMC_PMEM_MEMHIZ3_3         (0x08U << FMC_PMEM_MEMHIZ3_Pos)             /*!< 0x08000000 */
+../cpu/stm32/include/vendor/stm32mp157cxx_cm4.h:17056:#define FMC_PATT_ATTHIZ3_3         (0x08U << FMC_PATT_ATTHIZ3_Pos)             /*!< 0x08000000 */
+../cpu/stm32/include/vendor/stm32mp157cxx_cm4.h:17105:#define FMC_PIO4_IOHIZ4_3          (0x08U << FMC_PIO4_IOHIZ4_Pos)              /*!< 0x08000000 */
+../cpu/stm32/include/vendor/stm32mp157cxx_cm4.h:17217:#define GPIO_MODER_MODER13_1             (0x2U << GPIO_MODER_MODER13_Pos)      /*!< 0x08000000 */
+../cpu/stm32/include/vendor/stm32mp157cxx_cm4.h:17364:#define GPIO_OSPEEDR_OSPEEDR13_1        (0x2U << GPIO_OSPEEDR_OSPEEDR13_Pos) /*!< 0x08000000 */
+../cpu/stm32/include/vendor/stm32mp157cxx_cm4.h:17461:#define GPIO_PUPDR_PUPDR13_1             (0x2U << GPIO_PUPDR_PUPDR13_Pos)      /*!< 0x08000000 */
+../cpu/stm32/include/vendor/stm32mp157cxx_cm4.h:17658:#define GPIO_BSRR_BR11_Msk             (0x1U << GPIO_BSRR_BR11_Pos)            /*!< 0x08000000 */
+../cpu/stm32/include/vendor/stm32mp157cxx_cm4.h:17775:#define GPIO_AFRL_AFR6_3             (0x8U << GPIO_AFRL_AFR6_Pos)          /*!< 0x08000000 */
+../cpu/stm32/include/vendor/stm32mp157cxx_cm4.h:17833:#define GPIO_AFRH_AFR14_3            (0x8U << GPIO_AFRH_AFR14_Pos)         /*!< 0x08000000 */
+../cpu/stm32/include/vendor/stm32mp157cxx_cm4.h:18032:#define GPIO_HWCFGR8_AF_PRIO14_3      (0x8U << GPIO_HWCFGR8_AF_PRIO14_Pos) /*!< 0x08000000 */
+../cpu/stm32/include/vendor/stm32mp157cxx_cm4.h:18090:#define GPIO_HWCFGR7_AF_PRIO6_3       (0x8U << GPIO_HWCFGR7_AF_PRIO6_Pos) /*!< 0x08000000 */
+../cpu/stm32/include/vendor/stm32mp157cxx_cm4.h:18130:#define GPIO_HWCFGR6_MODER_RES_27     (0x8000000U << GPIO_HWCFGR6_MODER_RES_Pos)  /*!< 0x08000000 */
+../cpu/stm32/include/vendor/stm32mp157cxx_cm4.h:18167:#define GPIO_HWCFGR5_PUPDR_RES_27     (0x8000000U << GPIO_HWCFGR5_PUPDR_RES_Pos)  /*!< 0x08000000 */
+../cpu/stm32/include/vendor/stm32mp157cxx_cm4.h:18204:#define GPIO_HWCFGR4_OSPEED_RES_27    (0x8000000U << GPIO_HWCFGR4_OSPEED_RES_Pos)   /*!< 0x08000000 */
+../cpu/stm32/include/vendor/stm32mp157cxx_cm4.h:18244:#define GPIO_HWCFGR3_OTYPER_RES_11    (0x800U << GPIO_HWCFGR3_OTYPER_RES_Pos)   /*!< 0x08000000 */
+../cpu/stm32/include/vendor/stm32mp157cxx_cm4.h:18281:#define GPIO_HWCFGR2_AFRL_RES_27      (0x8000000U << GPIO_HWCFGR2_AFRL_RES_Pos)  /*!< 0x08000000 */
+../cpu/stm32/include/vendor/stm32mp157cxx_cm4.h:18318:#define GPIO_HWCFGR1_AFRH_RES_27      (0x8000000U << GPIO_HWCFGR1_AFRH_RES_Pos)  /*!< 0x08000000 */
+../cpu/stm32/include/vendor/stm32mp157cxx_cm4.h:18473:#define HSEM_C1IER_ISE27_Msk      (0x1UL << HSEM_C1IER_ISE27_Pos)              /*!< 0x08000000 */
+../cpu/stm32/include/vendor/stm32mp157cxx_cm4.h:18571:#define HSEM_C1ICR_ISC27_Msk      (0x1UL << HSEM_C1ICR_ISC27_Pos)              /*!< 0x08000000 */
+../cpu/stm32/include/vendor/stm32mp157cxx_cm4.h:18669:#define HSEM_C1ISR_ISF27_Msk      (0x1UL << HSEM_C1ISR_ISF27_Pos)              /*!< 0x08000000 */
+../cpu/stm32/include/vendor/stm32mp157cxx_cm4.h:18767:#define HSEM_C1MISR_MISF27_Msk    (0x1UL << HSEM_C1MISR_MISF27_Pos)            /*!< 0x08000000 */
+../cpu/stm32/include/vendor/stm32mp157cxx_cm4.h:20049:#define MDMA_GISR0_GIF27_Msk      (0x1U << MDMA_GISR0_GIF27_Pos)               /*!< 0x08000000 */
+../cpu/stm32/include/vendor/stm32mp157cxx_cm4.h:20147:#define MDMA_GISR1_GIF59_Msk      (0x1U << MDMA_GISR1_GIF59_Pos)               /*!< 0x08000000 */
+../cpu/stm32/include/vendor/stm32mp157cxx_cm4.h:20789:#define PWR_WKUPCR_WKUPPUPD6_1         (0x2U << PWR_WKUPCR_WKUPPUPD6_Pos)      /*!< 0x08000000 */
+../cpu/stm32/include/vendor/stm32mp157cxx_cm4.h:21119:#define HDP_MUX_MUX6_3              (0x8U << HDP_MUX_MUX6_Pos)                 /*!< 0x08000000 */
+../cpu/stm32/include/vendor/stm32mp157cxx_cm4.h:24435:#define RTC_ALRMAR_DU_3                   (0x8U << RTC_ALRMAR_DU_Pos)          /*!< 0x08000000 */
+../cpu/stm32/include/vendor/stm32mp157cxx_cm4.h:24494:#define RTC_ALRMASSR_MASKSS_3             (0x8U << RTC_ALRMASSR_MASKSS_Pos)    /*!< 0x08000000 */
+../cpu/stm32/include/vendor/stm32mp157cxx_cm4.h:24517:#define RTC_ALRMBR_DU_3                   (0x8U << RTC_ALRMBR_DU_Pos)          /*!< 0x08000000 */
+../cpu/stm32/include/vendor/stm32mp157cxx_cm4.h:24576:#define RTC_ALRMBSSR_MASKSS_3             (0x8U << RTC_ALRMBSSR_MASKSS_Pos)    /*!< 0x08000000 */
+../cpu/stm32/include/vendor/stm32mp157cxx_cm4.h:24679:#define RTC_HWCFGR_TRUST_ZONE_3           (0x8U << RTC_HWCFGR_TRUST_ZONE_Pos)  /*!< 0x08000000 */
+../cpu/stm32/include/vendor/stm32mp157cxx_cm4.h:25299:#define TAMP_HWCFGR1_INT_TAMPER_11          (0x0800U << TAMP_HWCFGR1_INT_TAMPER_Pos) /*!< 0x08000000 */
+../cpu/stm32/include/vendor/stm32mp157cxx_cm4.h:25498:#define SPDIFRX_DR0_C_Msk           (0x1U << SPDIFRX_DR0_C_Pos)                /*!< 0x08000000 */
+../cpu/stm32/include/vendor/stm32mp157cxx_cm4.h:25647:#define SAI_xCR1_MCKEN_Msk         (0x1UL << SAI_xCR1_MCKEN_Pos)               /*!< 0x08000000 */
+../cpu/stm32/include/vendor/stm32mp157cxx_cm4.h:26337:#define SDMMC_STA_IDMATE_Msk            (0x1U << SDMMC_STA_IDMATE_Pos)         /*!< 0x08000000 */
+../cpu/stm32/include/vendor/stm32mp157cxx_cm4.h:26399:#define SDMMC_ICR_IDMATEC_Msk           (0x1U << SDMMC_ICR_IDMATEC_Pos)        /*!< 0x08000000 */
+../cpu/stm32/include/vendor/stm32mp157cxx_cm4.h:26566:#define DLYB_CFGR_LNG_11        (0x800U << DLYB_CFGR_LNG_Pos)                  /*!< 0x08000000 */
+../cpu/stm32/include/vendor/stm32mp157cxx_cm4.h:27047:#define QUADSPI_CR_PRESCALER_3           (0x08U << QUADSPI_CR_PRESCALER_Pos)   /*!< 0x08000000 */
+../cpu/stm32/include/vendor/stm32mp157cxx_cm4.h:27173:#define QUADSPI_CCR_FMODE_1              (0x2U << QUADSPI_CCR_FMODE_Pos)       /*!< 0x08000000 */
+../cpu/stm32/include/vendor/stm32mp157cxx_cm4.h:27478:#define SYSCFG_CMPCR_ANSRC_3                 (0x8U << SYSCFG_CMPCR_ANSRC_Pos)  /*!< 0x08000000 */
+../cpu/stm32/include/vendor/stm32mp157cxx_cm4.h:28175:#define TIM_BDTR_BK2DSRM_Msk      (0x1U << TIM_BDTR_BK2DSRM_Pos)               /*!< 0x08000000 */
+../cpu/stm32/include/vendor/stm32mp157cxx_cm4.h:28321:#define TIM1_TISEL_TI4SEL_3        (0x8U << TIM1_TISEL_TI4SEL_Pos)             /*!< 0x08000000 */
+../cpu/stm32/include/vendor/stm32mp157cxx_cm4.h:28383:#define TIM8_TISEL_TI4SEL_3        (0x8U << TIM8_TISEL_TI4SEL_Pos)             /*!< 0x08000000 */
+../cpu/stm32/include/vendor/stm32mp157cxx_cm4.h:28425:#define TIM2_TISEL_TI4SEL_3        (0x8U << TIM2_TISEL_TI4SEL_Pos)             /*!< 0x08000000 */
+../cpu/stm32/include/vendor/stm32mp157cxx_cm4.h:28467:#define TIM3_TISEL_TI4SEL_3        (0x8U << TIM3_TISEL_TI4SEL_Pos)             /*!< 0x08000000 */
+../cpu/stm32/include/vendor/stm32mp157cxx_cm4.h:28509:#define TIM4_TISEL_TI4SEL_3        (0x8U << TIM4_TISEL_TI4SEL_Pos)             /*!< 0x08000000 */
+../cpu/stm32/include/vendor/stm32mp157cxx_cm4.h:28551:#define TIM5_TISEL_TI4SEL_3        (0x8U << TIM5_TISEL_TI4SEL_Pos)             /*!< 0x08000000 */
+../cpu/stm32/include/vendor/stm32mp157cxx_cm4.h:28682:#define TIM_TISEL_TI4SEL_3        (0x8UL << TIM_TISEL_TI4SEL_Pos)              /*!< 0x08000000 */
+../cpu/stm32/include/vendor/stm32mp157cxx_cm4.h:29111:#define USART_CR1_EOBIE_Msk          (0x1U << USART_CR1_EOBIE_Pos)             /*!< 0x08000000 */
+../cpu/stm32/include/vendor/stm32mp157cxx_cm4.h:29266:#define USART_CR3_RXFTCFG_2          (0x4U << USART_CR3_RXFTCFG_Pos)           /*!< 0x08000000 */
+../cpu/stm32/include/vendor/stm32mp157cxx_cm4.h:29407:#define USART_ISR_TXFT_Msk           (0x1U << USART_ISR_TXFT_Pos)              /*!< 0x08000000 */
+../cpu/stm32/include/vendor/stm32mp157cxx_cm4.h:30126:#define USB_OTG_HPTXSTS_PTXQTOP_3                (0x08U << USB_OTG_HPTXSTS_PTXQTOP_Pos) /*!< 0x08000000 */
+../cpu/stm32/include/vendor/stm32mp157cxx_cm4.h:30231:#define USB_OTG_GINTSTS_LPMINT_Msk               (0x1U << USB_OTG_GINTSTS_LPMINT_Pos) /*!< 0x08000000 */
+../cpu/stm32/include/vendor/stm32mp157cxx_cm4.h:30317:#define USB_OTG_GINTMSK_LPMINTM_Msk              (0x1U << USB_OTG_GINTMSK_LPMINTM_Pos) /*!< 0x08000000 */
+../cpu/stm32/include/vendor/stm32mp157cxx_cm4.h:30505:#define USB_OTG_GNPTXSTS_NPTXQTOP_3              (0x08U << USB_OTG_GNPTXSTS_NPTXQTOP_Pos) /*!< 0x08000000 */
+../cpu/stm32/include/vendor/stm32mp157cxx_cm4.h:30547:#define USB_OTG_DTHRCTL_ARPEN_Msk                (0x1U << USB_OTG_DTHRCTL_ARPEN_Pos) /*!< 0x08000000 */
+../cpu/stm32/include/vendor/stm32mp157cxx_cm4.h:30827:#define USB_OTG_DIEPCTL_SNAK_Msk                 (0x1U << USB_OTG_DIEPCTL_SNAK_Pos) /*!< 0x08000000 */
+../cpu/stm32/include/vendor/stm32mp157cxx_cm4.h:30881:#define USB_OTG_HCCHAR_DAD_5                     (0x20U << USB_OTG_HCCHAR_DAD_Pos) /*!< 0x08000000 */
+../cpu/stm32/include/vendor/stm32mp157cxx_cm4.h:31116:#define USB_OTG_DOEPCTL_SNAK_Msk                 (0x1U << USB_OTG_DOEPCTL_SNAK_Pos) /*!< 0x08000000 */
+../cpu/stm32/include/vendor/stm32f030x4.h:451:#define AHB2PERIPH_BASE       (PERIPH_BASE + 0x08000000)
+../cpu/stm32/include/vendor/stm32f030x4.h:684:#define ADC_CFGR1_AWD1CH_1        (0x02U << ADC_CFGR1_AWD1CH_Pos)              /*!< 0x08000000 */
+../cpu/stm32/include/vendor/stm32f030x4.h:756:#define ADC_TR1_HT1_11            (0x800U << ADC_TR1_HT1_Pos)                  /*!< 0x08000000 */
+../cpu/stm32/include/vendor/stm32f030x4.h:913:#define DBGMCU_IDCODE_REV_ID_11                      (0x0800U << DBGMCU_IDCODE_REV_ID_Pos) /*!< 0x08000000 */
+../cpu/stm32/include/vendor/stm32f030x4.h:1899:#define GPIO_MODER_MODER13_1            (0x2U << GPIO_MODER_MODER13_Pos)       /*!< 0x08000000 */
+../cpu/stm32/include/vendor/stm32f030x4.h:1999:#define GPIO_OSPEEDR_OSPEEDR13_1        (0x2U << GPIO_OSPEEDR_OSPEEDR13_Pos)   /*!< 0x08000000 */
+../cpu/stm32/include/vendor/stm32f030x4.h:2131:#define GPIO_PUPDR_PUPDR13_1            (0x2U << GPIO_PUPDR_PUPDR13_Pos)       /*!< 0x08000000 */
+../cpu/stm32/include/vendor/stm32f030x4.h:3197:#define RCC_CSR_PORRSTF_Msk                      (0x1U << RCC_CSR_PORRSTF_Pos) /*!< 0x08000000 */
+../cpu/stm32/include/vendor/stm32f030x4.h:3509:#define RTC_ALRMAR_DU_3              (0x8U << RTC_ALRMAR_DU_Pos)               /*!< 0x08000000 */
+../cpu/stm32/include/vendor/stm32f030x4.h:3747:#define RTC_ALRMASSR_MASKSS_3        (0x8U << RTC_ALRMASSR_MASKSS_Pos)         /*!< 0x08000000 */
+../cpu/stm32/include/vendor/stm32f030x4.h:4797:#define USART_CR1_EOBIE_Msk           (0x1U << USART_CR1_EOBIE_Pos)            /*!< 0x08000000 */
+../cpu/mips_pic32mz/include/vendor/p32mz2048efg100.h:22502:#define _CFGEBIC_EBIRDYEN3_MASK                  0x08000000
+../cpu/mips_pic32mz/include/vendor/p32mz2048efg100.h:23142:#define _RCON_BCFGERR_MASK                       0x08000000
+../cpu/mips_pic32mz/include/vendor/p32mz2048efg100.h:24038:#define _IFS0_OC5IF_MASK                         0x08000000
+../cpu/mips_pic32mz/include/vendor/p32mz2048efg100.h:24170:#define _IFS1_ADCD0IF_MASK                       0x08000000
+../cpu/mips_pic32mz/include/vendor/p32mz2048efg100.h:24302:#define _IFS2_ADCD32IF_MASK                      0x08000000
+../cpu/mips_pic32mz/include/vendor/p32mz2048efg100.h:24394:#define _IFS3_CNFIF_MASK                         0x08000000
+../cpu/mips_pic32mz/include/vendor/p32mz2048efg100.h:24506:#define _IFS4_SPI3RXIF_MASK                      0x08000000
+../cpu/mips_pic32mz/include/vendor/p32mz2048efg100.h:24638:#define _IFS5_SPI6TX_MASK                        0x08000000
+../cpu/mips_pic32mz/include/vendor/p32mz2048efg100.h:24834:#define _IEC0_OC5IE_MASK                         0x08000000
+../cpu/mips_pic32mz/include/vendor/p32mz2048efg100.h:24966:#define _IEC1_ADCD0IE_MASK                       0x08000000
+../cpu/mips_pic32mz/include/vendor/p32mz2048efg100.h:25098:#define _IEC2_ADCD32IE_MASK                      0x08000000
+../cpu/mips_pic32mz/include/vendor/p32mz2048efg100.h:25190:#define _IEC3_CNFIE_MASK                         0x08000000
+../cpu/mips_pic32mz/include/vendor/p32mz2048efg100.h:25302:#define _IEC4_SPI3RXIE_MASK                      0x08000000
+../cpu/mips_pic32mz/include/vendor/p32mz2048efg100.h:25434:#define _IEC5_SPI6TXIE_MASK                      0x08000000
+../cpu/mips_pic32mz/include/vendor/p32mz2048efg100.h:28086:#define _DCRCCON_WBO_MASK                        0x08000000
+../cpu/mips_pic32mz/include/vendor/p32mz2048efg100.h:30498:#define _SPI1CON_FRMSYPW_MASK                    0x08000000
+../cpu/mips_pic32mz/include/vendor/p32mz2048efg100.h:30686:#define _SPI2CON_FRMSYPW_MASK                    0x08000000
+../cpu/mips_pic32mz/include/vendor/p32mz2048efg100.h:30874:#define _SPI3CON_FRMSYPW_MASK                    0x08000000
+../cpu/mips_pic32mz/include/vendor/p32mz2048efg100.h:31062:#define _SPI4CON_FRMSYPW_MASK                    0x08000000
+../cpu/mips_pic32mz/include/vendor/p32mz2048efg100.h:31250:#define _SPI5CON_FRMSYPW_MASK                    0x08000000
+../cpu/mips_pic32mz/include/vendor/p32mz2048efg100.h:31438:#define _SPI6CON_FRMSYPW_MASK                    0x08000000
+../cpu/mips_pic32mz/include/vendor/p32mz2048efg100.h:35602:#define _ADCIMCON1_DIFF13_MASK                   0x08000000
+../cpu/mips_pic32mz/include/vendor/p32mz2048efg100.h:35730:#define _ADCIMCON2_DIFF29_MASK                   0x08000000
+../cpu/mips_pic32mz/include/vendor/p32mz2048efg100.h:35962:#define _ADCGIRQEN1_AGIEN27_MASK                 0x08000000
+../cpu/mips_pic32mz/include/vendor/p32mz2048efg100.h:36142:#define _ADCCSS1_CSS27_MASK                      0x08000000
+../cpu/mips_pic32mz/include/vendor/p32mz2048efg100.h:36322:#define _ADCDSTAT1_ARDY27_MASK                   0x08000000
+../cpu/mips_pic32mz/include/vendor/p32mz2048efg100.h:36502:#define _ADCCMPEN1_CMPE27_MASK                   0x08000000
+../cpu/mips_pic32mz/include/vendor/p32mz2048efg100.h:36638:#define _ADCCMPEN2_CMPE27_MASK                   0x08000000
+../cpu/mips_pic32mz/include/vendor/p32mz2048efg100.h:36774:#define _ADCCMPEN3_CMPE27_MASK                   0x08000000
+../cpu/mips_pic32mz/include/vendor/p32mz2048efg100.h:36910:#define _ADCCMPEN4_CMPE27_MASK                   0x08000000
+../cpu/mips_pic32mz/include/vendor/p32mz2048efg100.h:37046:#define _ADCCMPEN5_CMPE27_MASK                   0x08000000
+../cpu/mips_pic32mz/include/vendor/p32mz2048efg100.h:37182:#define _ADCCMPEN6_CMPE27_MASK                   0x08000000
+../cpu/mips_pic32mz/include/vendor/p32mz2048efg100.h:37706:#define _ADCFSTAT_ADC3EN_MASK                    0x08000000
+../cpu/mips_pic32mz/include/vendor/p32mz2048efg100.h:37962:#define _ADCEIEN1_EIEN27_MASK                    0x08000000
+../cpu/mips_pic32mz/include/vendor/p32mz2048efg100.h:38142:#define _ADCEISTAT1_EIRDY27_MASK                 0x08000000
+../cpu/mips_pic32mz/include/vendor/p32mz2048efg100.h:38422:#define _ADCSYSCFG0_AN27_MASK                    0x08000000
+../cpu/mips_pic32mz/include/vendor/p32mz2048efg100.h:38550:#define _ADCSYSCFG1_AN59_MASK                    0x08000000
+../cpu/mips_pic32mz/include/vendor/p32mz2048efg100.h:43598:#define _PRESTAT_PFMDED_MASK                     0x08000000
+../cpu/mips_pic32mz/include/vendor/p32mz2048efg100.h:43838:#define _SQI1XCON1_DDRDUMMY_MASK                 0x08000000
+../cpu/mips_pic32mz/include/vendor/p32mz2048efg100.h:44510:#define _USBCSR2_SOFIE_MASK                      0x08000000
+../cpu/mips_pic32mz/include/vendor/p32mz2048efg100.h:44550:#define _USBCSR3_PACKET_MASK                     0x08000000
+../cpu/mips_pic32mz/include/vendor/p32mz2048efg100.h:44622:#define _USBIENCSR0_FRCDATTG_MASK                0x08000000
+../cpu/mips_pic32mz/include/vendor/p32mz2048efg100.h:44710:#define _USBIENCSR1_DMAREQMD_MASK                0x08000000
+../cpu/mips_pic32mz/include/vendor/p32mz2048efg100.h:45290:#define _USBE0CSR3_HBTXEN_MASK                   0x08000000
+../cpu/mips_pic32mz/include/vendor/p32mz2048efg100.h:45362:#define _USBE1CSR0_FRCDATTG_MASK                 0x08000000
+../cpu/mips_pic32mz/include/vendor/p32mz2048efg100.h:45450:#define _USBE1CSR1_DMAREQMD_MASK                 0x08000000
+../cpu/mips_pic32mz/include/vendor/p32mz2048efg100.h:45586:#define _USBE2CSR0_FRCDATTG_MASK                 0x08000000
+../cpu/mips_pic32mz/include/vendor/p32mz2048efg100.h:45674:#define _USBE2CSR1_DMAREQMD_MASK                 0x08000000
+../cpu/mips_pic32mz/include/vendor/p32mz2048efg100.h:45810:#define _USBE3CSR0_FRCDATTG_MASK                 0x08000000
+../cpu/mips_pic32mz/include/vendor/p32mz2048efg100.h:45898:#define _USBE3CSR1_DMAREQMD_MASK                 0x08000000
+../cpu/mips_pic32mz/include/vendor/p32mz2048efg100.h:46034:#define _USBE4CSR0_FRCDATTG_MASK                 0x08000000
+../cpu/mips_pic32mz/include/vendor/p32mz2048efg100.h:46122:#define _USBE4CSR1_DMAREQMD_MASK                 0x08000000
+../cpu/mips_pic32mz/include/vendor/p32mz2048efg100.h:46258:#define _USBE5CSR0_FRCDATTG_MASK                 0x08000000
+../cpu/mips_pic32mz/include/vendor/p32mz2048efg100.h:46346:#define _USBE5CSR1_DMAREQMD_MASK                 0x08000000
+../cpu/mips_pic32mz/include/vendor/p32mz2048efg100.h:46482:#define _USBE6CSR0_FRCDATTG_MASK                 0x08000000
+../cpu/mips_pic32mz/include/vendor/p32mz2048efg100.h:46570:#define _USBE6CSR1_DMAREQMD_MASK                 0x08000000
+../cpu/mips_pic32mz/include/vendor/p32mz2048efg100.h:46706:#define _USBE7CSR0_FRCDATTG_MASK                 0x08000000
+../cpu/mips_pic32mz/include/vendor/p32mz2048efg100.h:46794:#define _USBE7CSR1_DMAREQMD_MASK                 0x08000000
+../cpu/mips_pic32mz/include/vendor/p32mz2048efg100.h:47338:#define _USBLPMR1_LPMACKIE_MASK                  0x08000000
+../cpu/mips_pic32mz/include/vendor/p32mz2048efg100.h:49538:#define _DEVCFG3_PGL1WAY_MASK                    0x08000000
+../cpu/mips_pic32mz/include/vendor/p32mz2048efg100.h:49758:#define _ADEVCFG3_PGL1WAY_MASK                   0x08000000
+../cpu/mips_pic32mz/include/vendor/p32mz2048efg100.h:49962:#define _AUBADEVCFG3_PGL1WAY_MASK                0x08000000
+../cpu/mips_pic32mz/include/vendor/p32mz2048efg100.h:50166:#define _UBADEVCFG3_PGL1WAY_MASK                 0x08000000
+../cpu/mips_pic32mz/include/vendor/p32mz2048efg100.h:50370:#define _ABF1DEVCFG3_PGL1WAY_MASK                0x08000000
+../cpu/mips_pic32mz/include/vendor/p32mz2048efg100.h:50574:#define _BF1DEVCFG3_PGL1WAY_MASK                 0x08000000
+../cpu/mips_pic32mz/include/vendor/p32mz2048efg100.h:50778:#define _ABF2DEVCFG3_PGL1WAY_MASK                0x08000000
+../cpu/mips_pic32mz/include/vendor/p32mz2048efg100.h:50982:#define _BF2DEVCFG3_PGL1WAY_MASK                 0x08000000
+../cpu/stellaris_common/include/vendor/hw_sysctl.h:916:#define SYSCTL_DC3_CCP3         0x08000000  // CCP3 Pin Present
+../cpu/stellaris_common/include/vendor/hw_sysctl.h:974:#define SYSCTL_DC5_PWMFAULT3    0x08000000  // PWM Fault 3 Pin Present
+../cpu/stellaris_common/include/vendor/hw_sysctl.h:1009:#define SYSCTL_DC7_DMACH27      0x08000000  // CAN1_TX / ADC1_SS3
+../cpu/stellaris_common/include/vendor/hw_sysctl.h:1061:#define SYSCTL_DC8_ADC1AIN11    0x08000000  // ADC Module 1 AIN11 Pin Present
+../cpu/stellaris_common/include/vendor/hw_sysctl.h:1255:#define SYSCTL_RCC_ACG          0x08000000  // Auto Clock Gating
+../cpu/stellaris_common/include/vendor/hw_sysctl.h:1392:#define SYSCTL_RCC2_SYSDIV2_17  0x08000000  // System clock /17
+../cpu/stellaris_common/include/vendor/hw_sysctl.h:1701:#define SYSCTL_DSLPCLKCFG_D_17  0x08000000  // System clock /17
+../cpu/stellaris_common/include/vendor/hw_adc.h:344:#define ADC_PSSI_SYNCWAIT       0x08000000  // Synchronize Wait
+../cpu/stellaris_common/include/vendor/hw_adc.h:437:#define ADC_SSCTL0_TS6          0x08000000  // 7th Sample Temp Sensor Select
+../cpu/stellaris_common/include/vendor/hw_adc.h:1277:#define ADC_SSCTL_TS6           0x08000000  // 7th temperature sensor select
+../cpu/stellaris_common/include/vendor/stellaris_periph/adc.h:166:#define ADC_TRIGGER_WAIT        0x08000000  // Wait for the synchronous trigger
+../cpu/stellaris_common/include/vendor/stellaris_periph/sysctl.h:231:#define SYSCTL_PIN_CCP3         0x08000000  // CCP3 pin
+../cpu/stellaris_common/include/vendor/stellaris_periph/sysctl.h:522:#define SYSCTL_DSLP_DIV_17      0x08000000  // Deep-sleep clock is osc /17
+../cpu/stellaris_common/include/vendor/cortex-m4-def.h:3570:#define ADC_PSSI_SYNCWAIT       0x08000000  // Synchronize Wait
+../cpu/stellaris_common/include/vendor/cortex-m4-def.h:3643:#define ADC_SSCTL0_TS6          0x08000000  // 7th Sample Temp Sensor Select
+../cpu/stellaris_common/include/vendor/cortex-m4-def.h:6379:#define SYSCTL_DC3_CCP3         0x08000000  // CCP3 Pin Present
+../cpu/stellaris_common/include/vendor/cortex-m4-def.h:6436:#define SYSCTL_DC5_PWMFAULT3    0x08000000  // PWM Fault 3 Pin Present
+../cpu/stellaris_common/include/vendor/cortex-m4-def.h:6470:#define SYSCTL_DC7_DMACH27      0x08000000  // CAN1_TX / ADC1_SS3
+../cpu/stellaris_common/include/vendor/cortex-m4-def.h:6508:#define SYSCTL_DC8_ADC1AIN11    0x08000000  // ADC Module 1 AIN11 Pin Present
+../cpu/stellaris_common/include/vendor/cortex-m4-def.h:6656:#define SYSCTL_RCC_ACG          0x08000000  // Auto Clock Gating
+../cpu/stellaris_common/include/vendor/cortex-m4-def.h:6735:#define SYSCTL_RCC2_SYSDIV2_17  0x08000000  // System clock /17
+../cpu/stellaris_common/include/vendor/cortex-m4-def.h:8576:#define UDMA_CHCTL_SRCINC_32    0x08000000  // Word
+../cpu/stellaris_common/include/vendor/cortex-m4-def.h:8707:#define NVIC_EN0_INT27          0x08000000  // Interrupt 27 enable
+../cpu/stellaris_common/include/vendor/cortex-m4-def.h:8774:#define NVIC_DIS0_INT27         0x08000000  // Interrupt 27 disable
+../cpu/stellaris_common/include/vendor/cortex-m4-def.h:8841:#define NVIC_PEND0_INT27        0x08000000  // Interrupt 27 pend
+../cpu/stellaris_common/include/vendor/cortex-m4-def.h:8908:#define NVIC_UNPEND0_INT27      0x08000000  // Interrupt 27 unpend
+../cpu/stellaris_common/include/vendor/cortex-m4-def.h:8999:#define NVIC_ACTIVE0_INT27      0x08000000  // Interrupt 27 active
+../cpu/stellaris_common/include/vendor/cortex-m4-def.h:9551:#define NVIC_INT_CTRL_UNPEND_SV 0x08000000  // PendSV Clear Pending
+../cpu/stellaris_common/include/vendor/hw_nvic.h:251:#define NVIC_EN0_INT27          0x08000000  // Interrupt 27 enable
+../cpu/stellaris_common/include/vendor/hw_nvic.h:341:#define NVIC_DIS0_INT27         0x08000000  // Interrupt 27 disable
+../cpu/stellaris_common/include/vendor/hw_nvic.h:432:#define NVIC_PEND0_INT27        0x08000000  // Interrupt 27 pend
+../cpu/stellaris_common/include/vendor/hw_nvic.h:523:#define NVIC_UNPEND0_INT27      0x08000000  // Interrupt 27 unpend
+../cpu/stellaris_common/include/vendor/hw_nvic.h:614:#define NVIC_ACTIVE0_INT27      0x08000000  // Interrupt 27 active
+../cpu/stellaris_common/include/vendor/hw_nvic.h:1191:#define NVIC_INT_CTRL_UNPEND_SV 0x08000000  // PendSV Clear Pending
+../cpu/mips_pic32mx/include/vendor/p32mx470f512h.h:9498:#define _SPI1CON_FRMSYPW_MASK                    0x08000000
+../cpu/mips_pic32mx/include/vendor/p32mx470f512h.h:9686:#define _SPI2CON_FRMSYPW_MASK                    0x08000000
+../cpu/mips_pic32mx/include/vendor/p32mx470f512h.h:11694:#define _AD1CHS_CH0SB3_MASK                      0x08000000
+../cpu/mips_pic32mx/include/vendor/p32mx470f512h.h:11818:#define _AD1CSSL_CSSL27_MASK                     0x08000000
+../cpu/mips_pic32mx/include/vendor/p32mx470f512h.h:12182:#define _OSCCON_PLLODIV0_MASK                    0x08000000
+../cpu/mips_pic32mx/include/vendor/p32mx470f512h.h:12970:#define _IFS0_OC5IF_MASK                         0x08000000
+../cpu/mips_pic32mx/include/vendor/p32mx470f512h.h:13102:#define _IFS1_I2C2BIF_MASK                       0x08000000
+../cpu/mips_pic32mx/include/vendor/p32mx470f512h.h:13270:#define _IEC0_OC5IE_MASK                         0x08000000
+../cpu/mips_pic32mx/include/vendor/p32mx470f512h.h:13402:#define _IEC1_I2C2BIE_MASK                       0x08000000
+../cpu/mips_pic32mx/include/vendor/p32mx470f512h.h:13958:#define _DCRCCON_WBO_MASK                        0x08000000
+../cpu/gd32v/Makefile.include:4:ROM_START_ADDR ?= 0x08000000
+../cpu/gd32v/include/cpu_conf.h:46:#define CPU_FLASH_BASE                  0x08000000
+../cpu/rpx0xx/vendor/boot_stage2/include/hardware/regs/m0plus.h:669:#define M0PLUS_ICSR_PENDSVCLR_BITS   _u(0x08000000)
+../cpu/cc2538/include/vendor/hw_gpio.h:446:#define GPIO_P_EDGE_CTRL_PDIRC3 0x08000000  // Port D bit 3 interrupt request 
+../cpu/cc2538/include/vendor/hw_gpio.h:450:                                0x08000000
+../cpu/cc2538/include/vendor/hw_gpio.h:649:#define GPIO_PI_IEN_PDIEN3      0x08000000  // Port D bit 3 interrupt enable: 
+../cpu/cc2538/include/vendor/hw_gpio.h:651:#define GPIO_PI_IEN_PDIEN3_M    0x08000000
+../cpu/cc2538/include/vendor/hw_gpio.h:800:                                0x08000000  // Port D bit 3 masked interrupt 
+../cpu/cc2538/include/vendor/hw_gpio.h:805:                                0x08000000
+../cpu/cc2538/include/vendor/hw_gpio.h:1073:                                0x08000000  // Port D bit 3 unmasked interrupt 
+../cpu/cc2538/include/vendor/hw_gpio.h:1078:                                0x08000000
+../cpu/cc2538/include/vendor/hw_nvic.h:242:#define NVIC_EN0_INT27          0x08000000  // Interrupt 27 enable
+../cpu/cc2538/include/vendor/hw_nvic.h:281:#define NVIC_EN1_INT59          0x08000000  // Interrupt 59 enable
+../cpu/cc2538/include/vendor/hw_nvic.h:320:#define NVIC_EN2_INT91          0x08000000  // Interrupt 91 enable
+../cpu/cc2538/include/vendor/hw_nvic.h:359:#define NVIC_EN3_INT123         0x08000000  // Interrupt 123 enable
+../cpu/cc2538/include/vendor/hw_nvic.h:409:#define NVIC_DIS0_INT27         0x08000000  // Interrupt 27 disable
+../cpu/cc2538/include/vendor/hw_nvic.h:448:#define NVIC_DIS1_INT59         0x08000000  // Interrupt 59 disable
+../cpu/cc2538/include/vendor/hw_nvic.h:487:#define NVIC_DIS2_INT91          0x08000000  // Interrupt 91 disable
+../cpu/cc2538/include/vendor/hw_nvic.h:526:#define NVIC_DIS3_INT123         0x08000000  // Interrupt 123 disable
+../cpu/cc2538/include/vendor/hw_nvic.h:576:#define NVIC_PEND0_INT27        0x08000000  // Interrupt 27 pend
+../cpu/cc2538/include/vendor/hw_nvic.h:643:#define NVIC_UNPEND0_INT27      0x08000000  // Interrupt 27 unpend
+../cpu/cc2538/include/vendor/hw_nvic.h:710:#define NVIC_ACTIVE0_INT27      0x08000000  // Interrupt 27 active
+../cpu/cc2538/include/vendor/hw_nvic.h:1283:#define NVIC_INT_CTRL_UNPEND_SV 0x08000000  // PendSV Clear Pending
+../cpu/esp8266/vendor/esp-idf/wpa_supplicant/src/crypto/aes-internal.c:742:	0x01000000, 0x02000000, 0x04000000, 0x08000000,
+../dist/tools/openocd/openocd.sh:223:    # find the real flash address like 0x08000000
+../dist/tools/stm32loader/stm32loader.py:520:            'address': 0x08000000,
+../boards/stm32f4discovery/doc.txt:139:#0 : stm32f4x.flash (stm32f2x) at 0x08000000, size 0x00100000, buswidth 0,
+../boards/seeedstudio-gd32/dist/openocd.cfg:12:flash bank $_CHIPNAME.flash gd32vf103 0x08000000 0 0 0 $_TARGETNAME
+Übereinstimmungen in Binärdatei ../RA_for_STM/.scatter.scat.swp
+../RA_for_STM/grep:16:../cpu/stm32/stm32_mem_lengths.mk:397:ROM_START_ADDR ?= 0x08000000
+../RA_for_STM/grep:17:../cpu/gd32v/Makefile.include:4:ROM_START_ADDR ?= 0x08000000
+../RA_for_STM/grep:56:../cpu/stm32/stm32_mem_lengths.mk:397:ROM_START_ADDR ?= 0x08000000
+../RA_for_STM/grep:57:../cpu/gd32v/Makefile.include:4:ROM_START_ADDR ?= 0x08000000
+Übereinstimmungen in Binärdatei ../examples/blinky/bin/nucleo-l552ze-q/blinky.elf
+Übereinstimmungen in Binärdatei ../examples/hello-world/bin/nucleo-l552ze-q/hello-world.elf

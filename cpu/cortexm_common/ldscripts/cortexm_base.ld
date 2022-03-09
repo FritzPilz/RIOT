@@ -60,6 +60,7 @@ SECTIONS
 MEMORY
 {
     bkup_ram (w!rx) : ORIGIN = _backup_ram_start_addr, LENGTH = _backup_ram_len
+    ROM_NSC (rx)    : ORIGIN = 0x0C03E000, LENGTH = 8K	/* Copied from ld-script in cubeide  */
 }
 
 /* Section Definitions */
@@ -114,22 +115,30 @@ SECTIONS
         KEEP (*(SORT(.dtors.*)))
         KEEP (*crtend.o(.dtors))
 
-	. = ALIGN(32);
+	. = ALIGN(8);
 	PROVIDE(__START__ = .);
 	KEEP(*(.secure))
-	. = ALIGN(32);
+	. = ALIGN(8);
 	PROVIDE(__SECURE__ = .);
 	KEEP(*(.non-secure))
-	. = ALIGN(32);
 	PROVIDE(__NS__ = .);
-	KEEP(*(.nsc))
-	. = ALIGN(32);
-	PROVIDE(__NSC__ = .);
 
 
 
         . = ALIGN(4);
         _efixed = .;            /* End of text section */
+    } > rom
+
+    /* The compiler needs this section to place any sg-stubs for transitioning from NS to S*/
+    .gnu.sgstubs :
+    {
+	. = ALIGN(8);
+    	PROVIDE(__STARTNSC__ = .);
+	KEEP(*(.nsc));
+	*(.gnu.sgstubs*)
+	. = ALIGN(8);
+	PROVIDE(__NSC__ = .);
+	. = ALIGN(8);
     } > rom
 
     /*

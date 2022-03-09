@@ -1,9 +1,7 @@
 #ifndef NONSECURE
 #define NONSECURE
 
-#define CPUID_NS 0xE002ED0
-
-int get_board_state(void);
+#define CPUID_NS 0xE002ED00
 
 void ns_test(void);
 

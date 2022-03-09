@@ -1,0 +1,17 @@
+OpenOCD Skript:
+
+            openocd -c 'set stlink_version 2-1;source /home/fritz/Schreibtisch/Bachelor-Arbeit/STM/RIOT/dist/tools/openocd/adapters/stlink.cfg' -c 'transport select hla_swd' -f /home/fritz/Schreibtisch/Bachelor-Arbeit/STM/RIOT/boards/common/stm32/dist/stm32l5.cfg
+            -c 'tcl_port 0' \
+            -c 'telnet_port 0' \
+            -c 'gdb_port 0' \
+            -c 'init' \
+            -c 'targets' \
+            -c 'reset halt' \
+            -c 'flash write_image erase /home/fritz/Schreibtisch/Bachelor-Arbeit/STM/RIOT/RA_for_STM/bin/nucleo-l552ze-q/RA_for_STM-slot0-extended.bin 0x08000000 bin' \
+            -c 'verify_image "/home/fritz/Schreibtisch/Bachelor-Arbeit/STM/RIOT/RA_for_STM/bin/nucleo-l552ze-q/RA_for_STM-slot0-extended.bin" 0x08000000' \
+            -c 'reset run' \
+            -c 'shutdown'
+            
+gdb:
+            symbol-file /home/fritz/Schreibtisch/Bachelor-Arbeit/STM/RIOT/RA_for_STM/bin/nucleo-l552ze-q/RA_for_STM.elf
+            target remote localhost:3333
