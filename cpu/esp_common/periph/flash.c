@@ -18,8 +18,6 @@
  * @}
  */
 
-#if MODULE_MTD
-
 #include <assert.h>
 #include <errno.h>
 #include <string.h>
@@ -90,6 +88,7 @@ static uint32_t _flash_size; /* resulting size of the flash drive in SPI flash *
 
 static esp_rom_spiflash_chip_t* _flashchip = NULL;
 
+#ifdef MCU_ESP8266
 /* flash_id determines the flash size in kByte */
 static const uint32_t flash_sizes[] = {
     256,        /* last byte of id is 0x12 */
@@ -100,6 +99,7 @@ static const uint32_t flash_sizes[] = {
     8 * 1024,   /* last byte of id is 0x17 */
    16 * 1024    /* last byte of id is 0x18 */
 };
+#endif
 
 void spi_flash_drive_init (void)
 {
@@ -462,7 +462,7 @@ const esp_partition_t* esp_partition_find_first(esp_partition_type_t type,
                 part->address = info->pos.offset;
                 part->size = info->pos.size;
                 part->encrypted = info->flags & PART_FLAG_ENCRYPTED;
-                strncpy(part->label, (const char*)info->label, sizeof(info->label));
+                strncpy(part->label, (const char*)info->label, sizeof(part->label));
                 part->label[sizeof(part->label) - 1] = 0x0;
 
                 return part;
@@ -568,5 +568,3 @@ static int _flash_power (mtd_dev_t *dev, enum mtd_power_state power)
 
     return -ENOTSUP;
 }
-
-#endif /* MODULE_MTD */

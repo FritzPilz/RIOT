@@ -35,8 +35,8 @@ SECTIONS
   __stack_size     = DEFINED(__stack_size) ? __stack_size : 256;
 
   /* Populate information about rom size */
-  _srom = ORIGIN(rom);
-  _erom = ORIGIN(rom) + LENGTH(rom);
+  _srom = ORIGIN(flash);
+  _erom = ORIGIN(flash) + LENGTH(flash);
 
   .init           :
   {
@@ -205,6 +205,17 @@ SECTIONS
     *(COMMON)
     . = ALIGN(4);
   } >ram AT>ram :ram
+  PROVIDE( __bss_end = . );
+
+  .noinit (NOLOAD) :
+  {
+      __noinit_begin__ = .;
+
+      *(.noinit .noinit.*)
+
+        . = ALIGN(4) ;
+      __noinit_end__ = .;
+  } >ram AT>ram :ram
 
   . = ALIGN(8);
   PROVIDE( _end = . );
@@ -218,7 +229,11 @@ SECTIONS
     PROVIDE( _sp = . );
   } >ram AT>ram :ram
 
+  .flash_writable (NOLOAD) : {
+    KEEP(*(SORT(.flash_writable.*)))
+  } > rom
+
   .end_fw (NOLOAD) : ALIGN(4) {
     _end_fw = . ;
-  } > rom
+  } > flash
 }

@@ -24,6 +24,7 @@
 #include <string.h>
 #include <sys/reent.h>
 
+#include "macros/units.h"
 #include "board.h"
 #include "esp_attr.h"
 #include "exceptions.h"
@@ -62,6 +63,10 @@
 #include "periph_cpu.h"
 #include "tools.h"
 
+#ifdef MODULE_PUF_SRAM
+#include "puf_sram.h"
+#endif
+
 #ifdef MODULE_STDIO_UART
 #include "stdio_uart.h"
 #endif
@@ -69,7 +74,6 @@
 #define ENABLE_DEBUG 0
 #include "debug.h"
 
-#define MHZ 1000000UL
 #define STRINGIFY(s) STRINGIFY2(s)
 #define STRINGIFY2(s) #s
 
@@ -129,6 +133,10 @@ NORETURN void IRAM call_start_cpu0 (void)
         esp_panic_wdt_stop();
     }
 
+#ifdef MODULE_PUF_SRAM
+    puf_sram_init((uint8_t *)&_sheap, SEED_RAM_LEN);
+#endif
+
     /* Clear BSS. Please do not attempt to do any complex stuff */
     /* (like early logging) before this. */
     /* cppcheck-suppress comparePointers */
@@ -156,6 +164,9 @@ NORETURN void IRAM call_start_cpu0 (void)
         ets_printf("%02x", cpu_id[i]);
     }
     ets_printf("\n");
+
+    extern char* esp_get_idf_version(void);
+    LOG_STARTUP("ESP-IDF SDK Version %s\n\n", esp_get_idf_version());
 #endif
 
     if (reset_reason == DEEPSLEEP_RESET) {
@@ -167,7 +178,7 @@ NORETURN void IRAM call_start_cpu0 (void)
 
     LOG_STARTUP("Current clocks in Hz: CPU=%d APB=%d XTAL=%d SLOW=%d\n",
                 rtc_clk_cpu_freq_value(rtc_clk_cpu_freq_get()),
-                rtc_clk_apb_freq_get(), rtc_clk_xtal_freq_get()*MHZ,
+                rtc_clk_apb_freq_get(), MHZ(rtc_clk_xtal_freq_get()),
                 rtc_clk_slow_freq_get_hz());
 
     if (IS_ACTIVE(ENABLE_DEBUG)) {
@@ -256,7 +267,7 @@ static void IRAM system_clk_init (void)
                                                set to 2 MHz and handled later */
     }
 
-    uint32_t freq_before = rtc_clk_cpu_freq_value(rtc_clk_cpu_freq_get()) / MHZ;
+    uint32_t freq_before = rtc_clk_cpu_freq_value(rtc_clk_cpu_freq_get()) / MHZ(1);
 
     if (freq_before != CONFIG_ESP32_DEFAULT_CPU_FREQ_MHZ) {
         /* set configured CPU frequency */
@@ -324,7 +335,7 @@ static NORETURN void IRAM system_init (void)
     /* print some infos */
     LOG_STARTUP("Used clocks in Hz: CPU=%d APB=%d XTAL=%d FAST=%d SLOW=%d\n",
                 rtc_clk_cpu_freq_value(rtc_clk_cpu_freq_get()),
-                rtc_clk_apb_freq_get(), rtc_clk_xtal_freq_get()*MHZ,
+                rtc_clk_apb_freq_get(), MHZ(rtc_clk_xtal_freq_get()),
                 RTC_FAST_FREQ_8M_MHZ, rtc_clk_slow_freq_get_hz());
     LOG_STARTUP("XTAL calibration value: %d\n", esp_clk_slowclk_cal_get());
     LOG_STARTUP("Heap free: %u bytes\n", get_free_heap_size());
@@ -332,6 +343,10 @@ static NORETURN void IRAM system_init (void)
 
     /* initialize stdio */
     stdio_init();
+
+    /* disable buffering in stdio */
+    setvbuf(_stdout_r(_REENT), NULL, _IONBF, 0);
+    setvbuf(_stderr_r(_REENT), NULL, _IONBF, 0);
 
     /* trigger static peripheral initialization */
     periph_init();
@@ -357,6 +372,7 @@ static NORETURN void IRAM system_init (void)
     #endif
 
     /* initialize the board */
+    extern void board_init(void);
     board_init();
 
     /* route a software interrupt source to CPU as trigger for thread yields */

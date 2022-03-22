@@ -38,6 +38,7 @@
 #include "periph_cpu.h"
 #include "periph/init.h"
 #include "periph/gpio.h"
+#include "periph/vbat.h"
 #include "board.h"
 #include "pm_layered.h"
 
@@ -336,7 +337,9 @@ void cpu_init(void)
     /* initialize the Cortex-M core */
     cortexm_init();
     /* enable PWR module */
-#if !defined(CPU_FAM_STM32WB) && !defined(CPU_FAM_STM32MP1) &&  \
+#if defined(CPU_FAM_STM32U5)
+    periph_clk_en(AHB3, RCC_AHB3ENR_PWREN);
+#elif !defined(CPU_FAM_STM32WB) && !defined(CPU_FAM_STM32MP1) &&  \
     !defined(CPU_FAM_STM32WL)
     periph_clk_en(APB1, BIT_APB_PWREN);
 #endif
@@ -369,4 +372,59 @@ void cpu_init(void)
     if (IS_ACTIVE(CONFIG_STM32_WLX5XX_SUBGHZ_DEBUG)) {
         _wlx5xx_init_subghz_debug_pins();
     }
+}
+
+void backup_ram_init(void)
+{
+/* see reference manual "Battery backup domain" */
+#if defined(RCC_APB1ENR_PWREN)
+    periph_clk_en(APB1, RCC_APB1ENR_PWREN);
+#elif defined(RCC_APBENR1_PWREN)
+    periph_clk_en(APB1, RCC_APBENR1_PWREN);
+#elif defined(RCC_APB1ENR1_PWREN)
+    periph_clk_en(APB1, RCC_APB1ENR1_PWREN);
+#elif defined(RCC_AHB3ENR_PWREN)
+    periph_clk_en(AHB3, RCC_AHB3ENR_PWREN);
+#endif
+    stmclk_dbp_unlock();
+#if defined(RCC_AHB1ENR_BKPSRAMEN)
+    periph_clk_en(AHB1, RCC_AHB1ENR_BKPSRAMEN);
+#endif
+}
+
+#ifndef BACKUP_RAM_MAGIC
+#define BACKUP_RAM_MAGIC    {'R', 'I', 'O', 'T'}
+#endif
+
+static inline bool _backup_battery_connected(void) {
+#if IS_USED(MODULE_PERIPH_VBAT)
+    vbat_init(); /* early use of VBAT requires init() */
+    return !vbat_is_empty();
+#endif
+    return false;
+}
+
+bool cpu_woke_from_backup(void) {
+#if IS_ACTIVE(CPU_HAS_BACKUP_RAM)
+    static const char _signature[] BACKUP_RAM_DATA = BACKUP_RAM_MAGIC;
+    if (_backup_battery_connected()) {
+        /* in case the board has a backup battery the regulator must be on
+        to mitigate (unexpected) outage of VDD, so RTC register and
+        backup domain register contents are not lost */
+        pm_backup_regulator_on();
+    }
+    else {
+#ifndef RIOTBOOT
+        /* switch off regulator to save power */
+        pm_backup_regulator_off();
+#endif
+    }
+    for (unsigned i = 0; i < sizeof(_signature); i++) {
+        if (_signature[i] != ((char[])BACKUP_RAM_MAGIC)[i]) {
+            return false;
+        }
+    }
+    return true;
+#endif /* CPU_HAS_BACKUP_RAM */
+    return false;
 }

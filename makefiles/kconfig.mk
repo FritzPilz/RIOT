@@ -27,13 +27,22 @@ export KCONFIG_AUTOHEADER_HEADER
 export KCONFIG_GENERATED_DEPENDENCIES = $(GENERATED_DIR)/Kconfig.dep
 
 # This file will contain external module configurations
-export KCONFIG_EXTERNAL_CONFIGS = $(GENERATED_DIR)/Kconfig.external_modules
+export KCONFIG_EXTERNAL_MODULE_CONFIGS = $(GENERATED_DIR)/Kconfig.external_modules
+
+# This file will contain external package configurations
+export KCONFIG_EXTERNAL_PKG_CONFIGS = $(GENERATED_DIR)/Kconfig.external_pkgs
 
 # Add configurations that only work when running the Kconfig test so far,
 # because they activate modules.
 ifeq (1,$(TEST_KCONFIG))
   # This file will contain application default configurations
   KCONFIG_APP_CONFIG = $(APPDIR)/app.config.test
+  # This configuration enables modules that are only available when using Kconfig
+  # module modelling
+  # Bring in all board specific configurations if present
+  ifneq (,$(wildcard $(BOARDDIR)/$(BOARD).config))
+    KCONFIG_BOARD_CONFIG += $(BOARDDIR)/$(BOARD).config
+  endif
 else
   # This file will contain application default configurations
   KCONFIG_APP_CONFIG = $(APPDIR)/app.config
@@ -61,13 +70,17 @@ KCONFIG_OUT_DEP = $(KCONFIG_OUT_CONFIG).d
 # Add configurations to merge, in ascendent priority (i.e. a file overrides the
 # previous ones).
 #
-# KCONFIG_ADD_CONFIG holds a list of .config files that are merged for the
-# initial configuration. This allows to split configurations in common files
-# and share them among boards or cpus.
+# KCONFIG_CPU_CONFIG, KCONFIG_BOARD_CONFIG and KCONFIG_ADD_CONFIG hold a lists
+# of .config files that are merged for the initial configuration. This allows
+# to split configurations in common files and share them among boards or cpus.
+# Files are merged from more generic to more specific.
 # This file will contain application default configurations used for Kconfig Test
+MERGE_SOURCES += $(KCONFIG_CPU_CONFIG)
+MERGE_SOURCES += $(KCONFIG_BOARD_CONFIG)
 MERGE_SOURCES += $(KCONFIG_ADD_CONFIG)
 MERGE_SOURCES += $(wildcard $(KCONFIG_APP_CONFIG))
 MERGE_SOURCES += $(wildcard $(KCONFIG_USER_CONFIG))
+
 MERGE_SOURCES += $(KCONFIG_GENERATED_ENV_CONFIG)
 
 # Create directory to place generated files
@@ -175,12 +188,12 @@ $(KCONFIG_GENERATED_ENV_CONFIG): FORCE | $(GENERATED_DIR)
 	  | $(LAZYSPONGE) $(LAZYSPONGE_FLAGS) $@
 
 # All directories in EXTERNAL_MODULES_PATHS which have a Kconfig file
-EXTERNAL_MODULE_KCONFIGS ?= $(sort $(foreach dir,$(EXTERNAL_MODULE_PATHS),\
-                              $(wildcard $(dir)/Kconfig)))
+EXTERNAL_MODULE_KCONFIGS ?= $(sort $(foreach dir,$(EXTERNAL_MODULE_DIRS),\
+                              $(wildcard $(dir)/*/Kconfig)))
 # Build a Kconfig file that source all external modules configuration
 # files. Every EXTERNAL_MODULE_DIRS with a Kconfig file is written to
-# KCONFIG_EXTERNAL_CONFIGS as 'osource dir/Kconfig'
-$(KCONFIG_EXTERNAL_CONFIGS): FORCE | $(GENERATED_DIR)
+# KCONFIG_EXTERNAL_MODULE_CONFIGS as 'osource dir/Kconfig'
+$(KCONFIG_EXTERNAL_MODULE_CONFIGS): FORCE | $(GENERATED_DIR)
 	$(Q)\
 	if [ -n "$(EXTERNAL_MODULE_KCONFIGS)" ] ; then  \
 		printf "%s\n" $(EXTERNAL_MODULE_KCONFIGS) \
@@ -188,6 +201,24 @@ $(KCONFIG_EXTERNAL_CONFIGS): FORCE | $(GENERATED_DIR)
 		| $(LAZYSPONGE) $(LAZYSPONGE_FLAGS) $@ ; \
 	else \
 		printf "# no external modules" \
+		| $(LAZYSPONGE) $(LAZYSPONGE_FLAGS) $@ ; \
+	fi
+
+# All directories in EXTERNAL_PKG_DIRS which have a subdirectory containing a
+# Kconfig file.
+EXTERNAL_PKG_KCONFIGS ?= $(sort $(foreach dir,$(EXTERNAL_PKG_DIRS),\
+                              $(wildcard $(dir)/*/Kconfig)))
+# Build a Kconfig file that sources all external packages configuration
+# files. Every directory with a Kconfig file is written to KCONFIG_PKG_CONFIGS
+# as 'osource dir/Kconfig'
+$(KCONFIG_EXTERNAL_PKG_CONFIGS): FORCE | $(GENERATED_DIR)
+	$(Q)\
+	if [ -n "$(EXTERNAL_PKG_KCONFIGS)" ] ; then  \
+		printf "%s\n" $(EXTERNAL_PKG_KCONFIGS) \
+		| awk '{ printf "osource \"%s\"\n", $$0 }' \
+		| $(LAZYSPONGE) $(LAZYSPONGE_FLAGS) $@ ; \
+	else \
+		printf "# no external packages" \
 		| $(LAZYSPONGE) $(LAZYSPONGE_FLAGS) $@ ; \
 	fi
 
@@ -207,7 +238,7 @@ GENERATED_DIR_DEP := $(if $(CLEAN),,|) $(GENERATED_DIR)
 # Generates a .config file by merging multiple sources specified in
 # MERGE_SOURCES. This will also generate KCONFIG_OUT_DEP with the list of used
 # Kconfig files.
-$(KCONFIG_OUT_CONFIG): $(KCONFIG_EXTERNAL_CONFIGS)
+$(KCONFIG_OUT_CONFIG): $(KCONFIG_EXTERNAL_MODULE_CONFIGS) $(KCONFIG_EXTERNAL_PKG_CONFIGS)
 $(KCONFIG_OUT_CONFIG): $(GENERATED_DEPENDENCIES_DEP) $(GENCONFIG) $(MERGE_SOURCES) $(GENERATED_DIR_DEP)
 	$(Q) $(GENCONFIG) \
 	  --config-out=$(KCONFIG_OUT_CONFIG) \

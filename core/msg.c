@@ -433,20 +433,43 @@ static int _msg_receive(msg_t *m, int block)
     DEBUG("This should have never been reached!\n");
 }
 
-int msg_avail(void)
+static unsigned _msg_avail(thread_t *thread)
 {
     DEBUG("msg_available: %" PRIkernel_pid ": msg_available.\n",
-          thread_getpid());
+          thread->pid);
 
-    thread_t *me = thread_get_active();
+    unsigned queue_count = 0;
 
-    int queue_index = -1;
-
-    if (thread_has_msg_queue(me)) {
-        queue_index = cib_avail(&(me->msg_queue));
+    if (thread_has_msg_queue(thread)) {
+        queue_count = cib_avail(&(thread->msg_queue));
     }
 
-    return queue_index;
+    return queue_count;
+}
+
+unsigned msg_avail_thread(kernel_pid_t pid)
+{
+    return _msg_avail(thread_get(pid));
+}
+
+unsigned msg_avail(void)
+{
+    return _msg_avail(thread_get_active());
+}
+
+unsigned msg_queue_capacity(kernel_pid_t pid)
+{
+    DEBUG("msg_queue_capacity: %" PRIkernel_pid ": msg_queue_capacity.\n",
+          pid);
+
+    thread_t *thread = thread_get(pid);
+    int queue_cap = 0;
+
+    if (thread_has_msg_queue(thread)) {
+        queue_cap = cib_size(&(thread->msg_queue));
+    }
+
+    return queue_cap;
 }
 
 void msg_init_queue(msg_t *array, int num)
@@ -462,11 +485,11 @@ void msg_queue_print(void)
     unsigned state = irq_disable();
     thread_t *thread = thread_get_active();
 
-    int msg_counter = msg_avail();
+    unsigned msg_counter = msg_avail();
 
-    if (msg_counter <= -1) {
+    if (msg_counter < 1) {
         /* no msg queue */
-        printf("No message queue\n");
+        printf("No messages or no message queue\n");
         return;
     }
     cib_t *msg_queue = &thread->msg_queue;
@@ -474,9 +497,9 @@ void msg_queue_print(void)
     int first_msg = cib_peek(msg_queue);
 
     printf("Message queue of thread %" PRIkernel_pid "\n", thread->pid);
-    printf("    size: %u (avail: %d)\n", msg_queue->mask + 1, msg_counter);
+    printf("    size: %u (avail: %u)\n", msg_queue->mask + 1, msg_counter);
 
-    for (int i = 0; i < msg_counter; i++) {
+    for (unsigned i = 0; i < msg_counter; i++) {
         msg_t *m = &msg_array[(first_msg + i) & msg_queue->mask];
         printf("    * %u: sender: %" PRIkernel_pid ", type: 0x%04" PRIu16
                ", content: %" PRIu32 " (%p)\n", i, m->sender_pid, m->type,

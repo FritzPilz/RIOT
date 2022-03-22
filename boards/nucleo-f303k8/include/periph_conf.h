@@ -33,7 +33,7 @@ extern "C" {
  * Note that we do not configure all ADC channels,
  * and not in the STM32F303 order.  Instead, we
  * just define 6 ADC channels, for the Nucleo
- * Arduino header pins A0-A3 and A6
+ * Arduino header pins A0-A3 and A6 and the internal VBAT channel.
  *
  * @{
  */
@@ -43,8 +43,10 @@ static const adc_conf_t adc_config[] = {
     { .pin = GPIO_PIN(PORT_A, 3), .dev = 0, .chan = 4 }, /* ADC1_IN4, fast */
     { .pin = GPIO_PIN(PORT_A, 4), .dev = 1, .chan = 1 }, /* ADC2_IN1, fast */
     { .pin = GPIO_PIN(PORT_A, 7), .dev = 1, .chan = 4 }, /* ADC2_IN4, fast */
+    { .pin = GPIO_UNDEF, .dev = 0, .chan = 17 }, /* VBAT */
 };
 
+#define VBAT_ADC            ADC_LINE(5) /**< VBAT ADC line */
 #define ADC_NUMOF           ARRAY_SIZE(adc_config)
 /** @} */
 
@@ -148,7 +150,7 @@ static const spi_conf_t spi_config[] = {
         .mosi_pin = GPIO_PIN(PORT_B, 5),
         .miso_pin = GPIO_PIN(PORT_B, 4),
         .sclk_pin = GPIO_PIN(PORT_B, 3),
-        .cs_pin   = GPIO_UNDEF,
+        .cs_pin   = SPI_CS_UNDEF,
         .mosi_af  = GPIO_AF5,
         .miso_af  = GPIO_AF5,
         .sclk_af  = GPIO_AF5,

@@ -82,7 +82,7 @@ config MODULE_ZTIMER_SEC
 choice
     bool "Backend"
     depends on MODULE_ZTIMER_SEC
-    default ZTIMER_SEC_BACKEND_RTT
+    default ZTIMER_SEC_BACKEND_RTT if !MODULE_ZTIMER_NO_PERIPH_RTT
 
 config ZTIMER_SEC_BACKEND_TIMER
     bool "Timer"
@@ -91,7 +91,7 @@ config ZTIMER_SEC_BACKEND_TIMER
 config ZTIMER_SEC_BACKEND_RTT
     bool "RTT"
     depends on HAS_PERIPH_RTT
-    select MODULE_ZTIMER_PERIPH_RTT if !MODULE_ZTIMER_NO_PERIPH_RTT
+    select MODULE_ZTIMER_PERIPH_RTT
 
 config ZTIMER_SEC_BACKEND_RTC
     bool "RTC"
@@ -141,29 +141,33 @@ menu "xtimer and evtimer compatibility"
 
 choice
     bool "xtimer compatibility"
-    depends on MODULE_XTIMER && MODULE_ZTIMER && MODULE_ZTIMER_PERIPH_TIMER
-
-config MODULE_XTIMER_ON_ZTIMER
-    bool "ztimer_usec as timer backend for xtimer"
-    select MODULE_ZTIMER_USEC
+    depends on MODULE_XTIMER && MODULE_ZTIMER
 
 config MODULE_ZTIMER_XTIMER_COMPAT
     bool "map xtimer calls to ztimer"
     select MODULE_DIV
     select MODULE_ZTIMER_USEC
+    select MODULE_ZTIMER_PERIPH_TIMER
     help
-        This is a wrapper of xtimer API on ztimer_usec and is currently
-        incomplete. Unless doing testing, use xtimer on ztimer.
+        This is a wrapper of xtimer API on ztimer_usec.
 
+config MODULE_XTIMER_ON_ZTIMER
+    bool "ztimer_usec as timer backend for xtimer"
+    select MODULE_ZTIMER_USEC
+    select MODULE_ZTIMER_PERIPH_TIMER
 endchoice
 
-comment "The ztimer xtimer compatibility module is incomplete, consider using MODULE_XTIMER_ON_ZTIMER instead."
-    depends on MODULE_ZTIMER_XTIMER_COMPAT
+config MODULE_ZTIMER64_XTIMER_COMPAT
+    bool "map xtimer calls to ztimer64"
+    select MODULE_DIV
+    select MODULE_ZTIMER64
+    select MODULE_ZTIMER64_USEC
+    help
+        This is a wrapper of xtimer API on ztimer64_usec.
 
 config MODULE_EVTIMER_ON_ZTIMER
     bool "Use ztimer_msec as timer backend for evtimer"
     depends on MODULE_ZTIMER_MSEC
-    select MODULE_ZTIMER_NOW64
 
 endmenu # xtimer compatibility
 
@@ -182,6 +186,10 @@ config MODULE_AUTO_INIT_ZTIMER
     depends on MODULE_AUTO_INIT
     select MODULE_ZTIMER_INIT
     default y
+
+config MODULE_ZTIMER_AUTO_ADJUST
+    bool "Auto adjust ztimer set and sleep values"
+    select MODULE_ZTIMER_OVERHEAD
 
 config MODULE_ZTIMER_NOW64
     bool "Use a 64-bits result for ztimer_now()"

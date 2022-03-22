@@ -18,14 +18,13 @@
  * @}
  */
 
+#include <assert.h>
 #include <fcntl.h>
 #include <errno.h>
 #include <inttypes.h>
 #include <string.h>
 
 #include "fs/littlefs2_fs.h"
-
-#include "kernel_defines.h"
 
 #define ENABLE_DEBUG 0
 #include <debug.h>
@@ -176,8 +175,10 @@ static int _mount(vfs_mount_t *mountp)
 {
     /* if one of the lines below fail to compile you probably need to adjust
        vfs buffer sizes ;) */
-    BUILD_BUG_ON(VFS_DIR_BUFFER_SIZE < sizeof(lfs_dir_t));
-    BUILD_BUG_ON(VFS_FILE_BUFFER_SIZE < sizeof(lfs_file_t));
+    static_assert(VFS_DIR_BUFFER_SIZE >= sizeof(lfs_dir_t),
+                  "lfs_dir_t must fit in VFS_DIR_BUFFER_SIZE");
+    static_assert(VFS_FILE_BUFFER_SIZE >= sizeof(lfs_file_t),
+                  "lfs_file_t must fit in VFS_FILE_BUFFER_SIZE");
 
     littlefs2_desc_t *fs = mountp->private_data;
 
@@ -382,6 +383,22 @@ static off_t _lseek(vfs_file_t *filp, off_t off, int whence)
     return littlefs_err_to_errno(ret);
 }
 
+static int _fsync(vfs_file_t *filp)
+{
+    littlefs2_desc_t *fs = filp->mp->private_data;
+    lfs_file_t *fp = _get_lfs_file(filp);
+
+    mutex_lock(&fs->lock);
+
+    DEBUG("littlefs: fsync: filp=%p, fp=%p\n",
+          (void *)filp, (void *)fp);
+
+    int ret = lfs_file_sync(&fs->fs, fp);
+    mutex_unlock(&fs->lock);
+
+    return littlefs_err_to_errno(ret);
+}
+
 static int _stat(vfs_mount_t *mountp, const char *restrict path, struct stat *restrict buf)
 {
     littlefs2_desc_t *fs = mountp->private_data;
@@ -482,8 +499,7 @@ static int _readdir(vfs_DIR *dirp, vfs_dirent_t *entry)
     int ret = lfs_dir_read(&fs->fs, dir, &info);
     if (ret >= 0) {
         entry->d_ino = info.type;
-        entry->d_name[0] = '/';
-        strncpy(entry->d_name + 1, info.name, VFS_NAME_MAX - 1);
+        strncpy(entry->d_name, info.name, VFS_NAME_MAX - 1);
     }
 
     mutex_unlock(&fs->lock);
@@ -524,6 +540,7 @@ static const vfs_file_ops_t littlefs_file_ops = {
     .read = _read,
     .write = _write,
     .lseek = _lseek,
+    .fsync = _fsync,
 };
 
 static const vfs_dir_ops_t littlefs_dir_ops = {

@@ -16,6 +16,7 @@ config BOARD_STM32F746G_DISCO
     select HAS_PERIPH_DMA
     select HAS_PERIPH_ETH
     select HAS_PERIPH_I2C
+    select HAS_PERIPH_LTDC
     select HAS_PERIPH_RTC
     select HAS_PERIPH_RTT
     select HAS_PERIPH_SPI
@@ -26,5 +27,8 @@ config BOARD_STM32F746G_DISCO
     # Clock configuration
     select BOARD_HAS_HSE
     select BOARD_HAS_LSE
+
+    select HAVE_SAUL_GPIO
+    select HAVE_FT5X06
 
 source "$(RIOTBOARD)/common/stm32/Kconfig"

@@ -110,7 +110,7 @@ static const spi_conf_t spi_config[] = {
         .mosi_pin = GPIO_PIN(PORT_B, 5),
         .miso_pin = GPIO_PIN(PORT_B, 4),
         .sclk_pin = GPIO_PIN(PORT_B, 3),
-        .cs_pin   = GPIO_UNDEF,
+        .cs_pin   = SPI_CS_UNDEF,
         .mosi_af  = GPIO_AF0,
         .miso_af  = GPIO_AF0,
         .sclk_af  = GPIO_AF0,
@@ -132,9 +132,11 @@ static const adc_conf_t adc_config[] = {
     { GPIO_PIN(PORT_A, 1), 1 },
     { GPIO_PIN(PORT_A, 3), 3 },
     { GPIO_PIN(PORT_A, 4), 4 },
-    { GPIO_PIN(PORT_A, 7), 7 }
+    { GPIO_PIN(PORT_A, 7), 7 },
+    { GPIO_UNDEF, 18 }, /* VBAT */
 };
 
+#define VBAT_ADC            ADC_LINE(5) /**< VBAT ADC line */
 #define ADC_NUMOF           ARRAY_SIZE(adc_config)
 /** @} */
 

@@ -13,5 +13,11 @@ config MODULE_SDCARD_SPI
     select MODULE_PERIPH_GPIO
     select MODULE_PERIPH_SPI
     select MODULE_PERIPH_SPI_RECONFIGURE if HAS_PERIPH_SPI_RECONFIGURE
-    select MODULE_XTIMER
     select MODULE_CHECKSUM
+    select MODULE_ZTIMER
+    select ZTIMER_USEC
+
+config HAVE_SDCARD_SPI
+    bool
+    help
+      Indicates that a SPI SD-Card is present.

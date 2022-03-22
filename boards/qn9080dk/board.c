@@ -43,7 +43,6 @@ static const mtd_spi_nor_params_t _mtd_nor_params = {
     .cs   = SPI_HWCS(0),  /* GPIO(PORT_A, 3) is used for HWCS(0) on FC2 */
     .wp   = GPIO_UNDEF,
     .hold = GPIO_UNDEF,
-    .addr_width = 3,  /* 24-bit addresses */
 };
 
 static mtd_spi_nor_t mtd_nor_dev = {
@@ -62,9 +61,6 @@ mtd_dev_t *mtd0 = (mtd_dev_t *)&mtd_nor_dev;
 void board_init(void)
 {
     /* Initialize LEDs and Buttons. */
-    gpio_init(LED_RED_PIN, GPIO_OUT);
-    gpio_init(LED_GREEN_PIN, GPIO_OUT);
-    gpio_init(LED_BLUE_PIN, GPIO_OUT);
     gpio_init(BTN1_PIN, BTN1_MODE);
     gpio_init(BTN2_PIN, BTN2_MODE);
 

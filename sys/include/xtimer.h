@@ -39,12 +39,13 @@
 #include "sched.h"
 #include "rmutex.h"
 
-#ifdef MODULE_ZTIMER_XTIMER_COMPAT
+#if IS_USED(MODULE_ZTIMER64_XTIMER_COMPAT)
+#include "ztimer64/xtimer_compat.h"
+#elif IS_USED(MODULE_ZTIMER_XTIMER_COMPAT)
 #include "ztimer/xtimer_compat.h"
 #else
-
 #include "board.h"
-#ifndef MODULE_XTIMER_ON_ZTIMER
+#if !IS_USED(MODULE_XTIMER_ON_ZTIMER)
 #include "periph_conf.h"
 #endif
 
@@ -309,6 +310,13 @@ static inline void xtimer_set64(xtimer_t *timer, uint64_t offset_us);
  * @param[in] timer ptr to timer structure that will be removed
  */
 void xtimer_remove(xtimer_t *timer);
+
+/**
+ * @brief state if an xtimer is currently set (waiting to be expired)
+ *
+ * @param[in] timer ptr to timer structure to work on
+ */
+static inline bool xtimer_is_set(const xtimer_t *timer);
 
 /**
  * @brief Convert microseconds to xtimer ticks

@@ -191,6 +191,12 @@ def write_compile_command(state, compiler, src, flags, cdetails, path):
     arguments = [compiler, '-DRIOT_FILE_RELATIVE="' + os.path.join(cdetails.dir, src) + '"',
                  '-DRIOT_FILE_NOPATH="' + src + '"']
     arguments += flags
+    if '-c' in arguments:
+        # bindgen is unhappy with multiple -c (that would be created by the -c
+        # added later) and even with the -c showing up anywhere between other
+        # arguments.
+        assert arguments.count('-c') == 1, "Spurious duplicate -c arguments"
+        arguments.remove('-c')
     arguments += ['-MQ', obj, '-MD', '-MP', '-c', '-o', obj, src]
     entry = {
         'arguments': arguments,
@@ -221,6 +227,9 @@ def generate_module_compile_commands(path, state, args):
             cdetails.cxxflags.remove(flag)
         except ValueError:
             pass
+
+    if args.clangd:
+        cdetails.cflags.append('-Wno-unknown-warning-option')
 
     c_extra_includes = []
     cxx_extra_includes = []
@@ -282,11 +291,16 @@ if __name__ == '__main__':
                         help='Drop the given flag, if present (repeatable)')
     parser.add_argument('--clangd', default=False, action='store_const', const=True,
                         help='Shorthand for --add-built-in-includes --add-libstdxx-includes ' +
-                             '--filter-out=-Wformat-truncation --filter-out=-Wformat-overflow ' +
-                             '--filter-out=-mno-thumb-interwork')
+                             'and some CFLAG adjustments throughy --filter-out, and ignores ' +
+                             'unknown warning flags')
     _args = parser.parse_args()
     if _args.clangd:
         _args.add_built_in_includes = True
         _args.add_libstdcxx_includes = True
-        _args.filter_out = ['-Wformat-truncation', '-Wformat-overflow', '-mno-thumb-interwork']
+        _args.filter_out = ['-mno-thumb-interwork',
+                            # Only even included for versions of GCC that support it
+                            '-malign-data=natural',
+                            # Only supported starting with clang 11
+                            '-msmall-data-limit=8',
+                            ]
     generate_compile_commands(_args)

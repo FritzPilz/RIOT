@@ -187,7 +187,7 @@ static const spi_conf_t spi_config[] = {
         .mosi_pin = GPIO_PIN(PORT_A, 7),
         .miso_pin = GPIO_PIN(PORT_A, 6),
         .sclk_pin = GPIO_PIN(PORT_A, 5),
-        .cs_pin   = GPIO_UNDEF,
+        .cs_pin   = SPI_CS_UNDEF,
         .mosi_af  = GPIO_AF5,
         .miso_af  = GPIO_AF5,
         .sclk_af  = GPIO_AF5,
@@ -210,6 +210,7 @@ static const spi_conf_t spi_config[] = {
  * @name    ADC configuration
  *
  * configure only  ADC channels for the Arduino header pins A0-A5
+ * and the internal VBAT channel
  *
  * @{
  */
@@ -220,8 +221,10 @@ static const adc_conf_t adc_config[] = {
     {GPIO_PIN(PORT_B, 0), 1, 15}, /*< ADC12_IN15 */
     {GPIO_PIN(PORT_C, 1), 2, 2},  /*< ADC123_IN_2 */
     {GPIO_PIN(PORT_C, 0), 2, 1},  /*< ADC123_IN_1 */
+    {GPIO_UNDEF, 0, 18}, /* VBAT */
 };
 
+#define VBAT_ADC            ADC_LINE(6) /**< VBAT ADC line */
 #define ADC_NUMOF           ARRAY_SIZE(adc_config)
 /** @} */
 

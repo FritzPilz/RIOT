@@ -29,6 +29,9 @@
     defined(CPU_FAM_STM32WL)
 #define REG_PWR_CR          CR1
 #define BIT_CR_DBP          PWR_CR1_DBP
+#elif defined(CPU_FAM_STM32U5)
+#define REG_PWR_CR          DBPR
+#define BIT_CR_DBP          PWR_DBPR_DBP
 #else
 #define REG_PWR_CR          CR
 #define BIT_CR_DBP          PWR_CR_DBP
@@ -50,7 +53,12 @@
 #define RCC_CSR_LSIRDY          RCC_CSR_LSI1RDY
 #endif
 
-#if defined(CPU_FAM_STM32L5)
+#if defined (CPU_FAM_STM32U5)
+#define RCC_CSR_LSION           RCC_BDCR_LSION
+#define RCC_CSR_LSIRDY          RCC_BDCR_LSIRDY
+#endif
+
+#if defined(CPU_FAM_STM32L5) || defined(CPU_FAM_STM32U5)
 #define RCC_CFGR_SWS_HSI        RCC_CFGR_SWS_0
 #endif
 
@@ -74,7 +82,8 @@ void stmclk_enable_lfclk(void)
 
     /* Set LSE system clock enable bit. This is required if LSE is to be used by
        USARTx, LPUARTx, LPTIMx, TIMx, RNG, system LSCO, MCO, MSI PLL mode */
-#if defined(CPU_FAM_STM32WL) || defined (CPU_FAM_STM32L5)
+#if defined(CPU_FAM_STM32WL) || defined (CPU_FAM_STM32L5) || \
+    defined(CPU_FAM_STM32U5)
         RCC->BDCR |= RCC_BDCR_LSESYSEN;
         while (!(RCC->BDCR & RCC_BDCR_LSESYSRDY)) {}
 #endif
@@ -106,5 +115,14 @@ void stmclk_dbp_unlock(void)
 
 void stmclk_dbp_lock(void)
 {
-    PWR->REG_PWR_CR &= ~(BIT_CR_DBP);
+    if (!IS_ACTIVE(CPU_HAS_BACKUP_RAM)) {
+/*  The DBP must be unlocked all the time, if we modify
+    backup RAM content by comfortable BACKUP_RAM variables */
+        PWR->REG_PWR_CR &= ~(BIT_CR_DBP);
+    }
+}
+
+bool stmclk_dbp_is_locked(void)
+{
+    return !(PWR->REG_PWR_CR & BIT_CR_DBP);
 }

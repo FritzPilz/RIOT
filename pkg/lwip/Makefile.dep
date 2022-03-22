@@ -42,6 +42,7 @@ endif
 
 ifneq (,$(filter lwip_sock_%,$(USEMODULE)))
   USEMODULE += lwip_sock
+  CFLAGS += -DLWIP_SO_RCVTIMEO
 endif
 
 ifneq (,$(filter lwip_sock_ip,$(USEMODULE)))
@@ -87,7 +88,7 @@ endif
 
 ifneq (,$(filter lwip_contrib,$(USEMODULE)))
   USEMODULE += sema
-  USEMODULE += xtimer
+  USEMODULE += ztimer_msec
 endif
 
 ifneq (,$(filter lwip_netif,$(USEMODULE)))
