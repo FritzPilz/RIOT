@@ -20,6 +20,6 @@ QUIET ?= 1
 FEATURES_OPTIONAL += periph_timer
 
 # Add support for crossing security states
-CFLAGS += -mcmse
+CFLAGS += -mcmse -Og
 
 include $(RIOTBASE)/Makefile.include

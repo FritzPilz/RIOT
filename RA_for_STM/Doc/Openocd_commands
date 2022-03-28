@@ -7,8 +7,8 @@ OpenOCD Skript:
             -c 'init' \
             -c 'targets' \
             -c 'reset halt' \
-            -c 'flash write_image erase /home/fritz/Schreibtisch/Bachelor-Arbeit/STM/RIOT/RA_for_STM/bin/nucleo-l552ze-q/RA_for_STM-slot0-extended.bin 0x08000000 bin' \
-            -c 'verify_image "/home/fritz/Schreibtisch/Bachelor-Arbeit/STM/RIOT/RA_for_STM/bin/nucleo-l552ze-q/RA_for_STM-slot0-extended.bin" 0x08000000' \
+            -c 'flash write_image erase /home/fritz/Schreibtisch/Bachelor-Arbeit/STM/RIOT/examples/bachelor/bin/nucleo-l552ze-q/bachelor-slot0-extended.bin 0x08000000 bin' \
+            -c 'verify_image "/home/fritz/Schreibtisch/Bachelor-Arbeit/STM/RIOT/examples/bachelor/bin/nucleo-l552ze-q/bachelor-slot0-extended.bin" 0x08000000' \
             -c 'reset run' \
             -c 'shutdown'
             

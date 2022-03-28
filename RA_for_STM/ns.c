@@ -12,7 +12,7 @@ __attribute__((section(".non-secure"))) __attribute__((noinline)) int get_board_
 	return *(unsigned int *) CPUID_NS;
 }
 
-__attribute__((section(".non-secure"))) __attribute__((noinline)) __attribute__((optimize("O0"))) void ns_test(void)
+__attribute__((section(".non-secure"))) __attribute__((noinline)) void ns_test(void)
 //Should be executed in Non-Secure state
 {
 	unsigned int volatile status = get_board_state_NS();

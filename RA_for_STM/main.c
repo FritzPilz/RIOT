@@ -3,6 +3,9 @@
  * Freie Universitaet Berlin
  * */
 
+#pragma GCC push_options
+#pragma GCC optimize ("O0")
+
 #include "board.h"
 #include "timex.h"
 #include "ztimer.h"
@@ -12,6 +15,8 @@
 #include "include/ns.h"
 #include "include/nsc.h"
 #include "include/SAU.h"
+
+#define CPUID_NS 0xE002ED00
 
 /* 
  * Inline Assembly: 
@@ -66,10 +71,10 @@ __attribute__((noinline)) __attribute((section(".secure"))) void do_priviliged_s
 
 __attribute__((noinline)) __attribute__((section(".secure"))) unsigned int get_board_state_S(void)
 {
-	return *(unsigned int *) 0xE002ED00;
+	return *(unsigned int *) CPUID_NS;
 }
 
-__attribute__((section(".secure"))) __attribute__((optimize("O0"))) __attribute__((cmse_nonsecure_entry)) void secure_test(void)
+__attribute__((noinline)) __attribute__((section(".secure")))  __attribute__((cmse_nonsecure_entry)) void secure_test(void)
 {
 	char buffer[33];
 	unsigned int volatile status = get_board_state_S();
@@ -92,12 +97,7 @@ __attribute__((section(".secure"))) __attribute__((optimize("O0"))) __attribute_
 	return;
 }
 
-__attribute__((cmse_nonsecure_entry)) void callNS(nsfp* callback)
-{
-	callback();
-}
-
-__attribute__((section(".secure"))) __attribute__((noinline)) __attribute__((optimize("O0")))int main(void)
+__attribute__((section(".secure"))) __attribute__((noinline)) __attribute__((cmse_nonsecure_entry)) int main(void)
 {
 	char buffer[33];
 
@@ -121,17 +121,17 @@ __attribute__((section(".secure"))) __attribute__((noinline)) __attribute__((opt
 		LED2_TOGGLE;
 	}
 
-	nsfp *fp = (nsfp *) ((unsigned int) ns_test & 0xFFFFFFFE);		//clear LSB to show transition to NS
+	nsfp *fp = (nsfp *) ns_test;
 	puts("Address of ns_test:");
+	puts(__itoa((unsigned int)ns_test,buffer,16));
 	puts(__itoa((unsigned int)fp,buffer,16));
 	puts(__itoa(status, buffer, 16));
-	callNS(fp);
+	fp();
 	end_SAU();
 	while(1){
 		LED2_TOGGLE;
 		ztimer_sleep(ZTIMER_USEC, 500*1000);
 	}
-	__asm volatile( "SG	\n\t"
-			"BLXNS ns_test \n\t"
-			"BXNS secure_test \n\t");
 }
+
+#pragma GCC pop_options
