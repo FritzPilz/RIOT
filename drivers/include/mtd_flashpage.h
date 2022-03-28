@@ -11,6 +11,10 @@
  * @ingroup     drivers_storage
  * @brief       Driver for internal flash devices implementing flashpage interface
  *
+ * The MTD device created by @ref MTD_FLASHPAGE_INIT_VAL spans the complete
+ * accessible flash page memory. To expose merely an area of that as a single
+ * MTD partition, the @ref drivers_mtd_mapper can be used.
+ *
  * @{
  *
  * @file
@@ -34,16 +38,25 @@ extern "C"
  * @brief   Macro helper to initialize a mtd_t with flash-age driver
  */
 #define MTD_FLASHPAGE_INIT_VAL(_pages_per_sector) { \
-    .driver = &mtd_flashpage_driver, \
-    .sector_count = FLASHPAGE_NUMOF, \
-    .pages_per_sector = _pages_per_sector,\
-    .page_size = FLASHPAGE_SIZE / _pages_per_sector,\
+    .base = {                                       \
+        .driver = &mtd_flashpage_driver,            \
+        .sector_count = FLASHPAGE_NUMOF,            \
+        .pages_per_sector = _pages_per_sector,      \
+        .page_size = FLASHPAGE_SIZE / _pages_per_sector, \
+    },                                              \
 }
 
 /**
  * @brief   Flashpage MTD device operations table
  */
 extern const mtd_desc_t mtd_flashpage_driver;
+
+/**
+ * @brief    MTD flashpage descriptor
+ */
+typedef struct {
+    mtd_dev_t base;     /**< MTD generic device */
+} mtd_flashpage_t;
 
 #ifdef __cplusplus
 }

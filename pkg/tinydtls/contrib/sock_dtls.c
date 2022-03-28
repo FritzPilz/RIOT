@@ -14,6 +14,7 @@
  *
  * @author  Aiman Ismail <muhammadaimanbin.ismail@haw-hamburg.de>
  * @author  Leandro Lanzieri <leandro.lanzieri@haw-hamburg.de>
+ * @author  Hendrik van Essen <hendrik.ve@fu-berlin.de>
  */
 
 #include <assert.h>
@@ -22,6 +23,7 @@
 #include "log.h"
 #include "net/sock/dtls.h"
 #include "net/credman.h"
+#include "ztimer.h"
 
 #if SOCK_HAS_ASYNC
 #include "net/sock/async.h"
@@ -88,10 +90,8 @@ typedef struct ecdsa_key_assignment {
 static ecdsa_key_assignment_t _ecdsa_keys[CONFIG_DTLS_CREDENTIALS_MAX];
 #endif
 
-static int _read(struct dtls_context_t *ctx, session_t *session, uint8_t *buf,
-                 size_t len)
+static int _read(struct dtls_context_t *ctx, session_t *session, uint8_t *buf, size_t len)
 {
-    (void)session;
     sock_dtls_t *sock = dtls_get_app_data(ctx);
 
     DEBUG("sock_dtls: decrypted message arrived\n");
@@ -108,16 +108,15 @@ static int _read(struct dtls_context_t *ctx, session_t *session, uint8_t *buf,
     return len;
 }
 
-static int _write(struct dtls_context_t *ctx, session_t *session, uint8_t *buf,
-                  size_t len)
+static int _write(struct dtls_context_t *ctx, session_t *session, uint8_t *buf, size_t len)
 {
     sock_dtls_t *sock = (sock_dtls_t *)dtls_get_app_data(ctx);
     sock_udp_ep_t remote;
 
     _session_to_ep(session, &remote);
-    remote.family = AF_INET6;
 
     ssize_t res = sock_udp_send(sock->udp_sock, buf, len, &remote);
+
     if (res < 0) {
         DEBUG("sock_dtls: failed to send DTLS record: %d\n", (int)res);
     }
@@ -127,22 +126,20 @@ static int _write(struct dtls_context_t *ctx, session_t *session, uint8_t *buf,
 static int _event(struct dtls_context_t *ctx, session_t *session,
                   dtls_alert_level_t level, unsigned short code)
 {
-    (void)level;
-    (void)session;
-
     sock_dtls_t *sock = dtls_get_app_data(ctx);
     msg_t msg = { .type = code, .content.ptr = session };
+
     if (IS_ACTIVE(ENABLE_DEBUG)) {
         switch (code) {
-            case DTLS_EVENT_CONNECT:
-                DEBUG("sock_dtls: event connect\n");
-                break;
-            case DTLS_EVENT_CONNECTED:
-                DEBUG("sock_dtls: event connected\n");
-                break;
-            case DTLS_EVENT_RENEGOTIATE:
-                DEBUG("sock_dtls: event renegotiate\n");
-                break;
+        case DTLS_EVENT_CONNECT:
+            DEBUG("sock_dtls: event connect\n");
+            break;
+        case DTLS_EVENT_CONNECTED:
+            DEBUG("sock_dtls: event connected\n");
+            break;
+        case DTLS_EVENT_RENEGOTIATE:
+            DEBUG("sock_dtls: event renegotiate\n");
+            break;
         }
     }
     if (!level && (code != DTLS_EVENT_CONNECT)) {
@@ -163,18 +160,18 @@ static int _event(struct dtls_context_t *ctx, session_t *session,
 #ifdef SOCK_HAS_ASYNC
     if (sock->async_cb != NULL) {
         switch (code) {
-            case DTLS_ALERT_CLOSE_NOTIFY:
-                /* peer closed their session */
-                memcpy(&sock->async_cb_session, session, sizeof(session_t));
-                sock->async_cb(sock, SOCK_ASYNC_CONN_FIN, sock->async_cb_arg);
-                break;
-            case DTLS_EVENT_CONNECTED:
-                /* we received a session handshake initialization */
-                sock->async_cb(sock, SOCK_ASYNC_CONN_RECV,
-                               sock->async_cb_arg);
-                break;
-            default:
-                break;
+        case DTLS_ALERT_CLOSE_NOTIFY:
+            /* peer closed their session */
+            memcpy(&sock->async_cb_session, session, sizeof(session_t));
+            sock->async_cb(sock, SOCK_ASYNC_CONN_FIN, sock->async_cb_arg);
+            break;
+        case DTLS_EVENT_CONNECTED:
+            /* we received a session handshake initialization */
+            sock->async_cb(sock, SOCK_ASYNC_CONN_RECV,
+                           sock->async_cb_arg);
+            break;
+        default:
+            break;
         }
     }
 #endif
@@ -215,7 +212,7 @@ static int _get_psk_info(struct dtls_context_t *ctx, const session_t *session,
         if (sock->client_psk_cb) {
             DEBUG("sock_dtls: requesting the application\n");
             credential.tag = sock->client_psk_cb(sock, &ep, sock->tags, sock->tags_len,
-                                                 (const char*)desc, desc_len);
+                                                 (const char *)desc, desc_len);
             if (credential.tag != CREDMAN_TAG_EMPTY) {
                 int ret = credman_get(&credential, credential.tag, CREDMAN_TYPE_PSK);
                 if (ret == CREDMAN_OK) {
@@ -307,7 +304,6 @@ static int _get_psk_info(struct dtls_context_t *ctx, const session_t *session,
 static int _get_ecdsa_key(struct dtls_context_t *ctx, const session_t *session,
                           const dtls_ecdsa_key_t **result)
 {
-    (void)session;
     int ret = CREDMAN_ERROR;
     sock_dtls_t *sock = (sock_dtls_t *)dtls_get_app_data(ctx);
     sock_udp_ep_t ep;
@@ -315,6 +311,7 @@ static int _get_ecdsa_key(struct dtls_context_t *ctx, const session_t *session,
     _session_to_ep(session, &ep);
 
     credman_credential_t credential;
+
     credential.tag = CREDMAN_TAG_EMPTY;
     DEBUG("sock_dtls: get ECDSA key\n");
 
@@ -348,6 +345,7 @@ static int _get_ecdsa_key(struct dtls_context_t *ctx, const session_t *session,
     /* try to find a free ECDSA key assignment structure for the handshake. When unused, the session
      * is not set. */
     ecdsa_key_assignment_t *key = NULL;
+
     for (unsigned i = 0; i < CONFIG_DTLS_CREDENTIALS_MAX; i++) {
         if (!_ecdsa_keys[i].session) {
             key = &_ecdsa_keys[i];
@@ -373,11 +371,11 @@ static int _verify_ecdsa_key(struct dtls_context_t *ctx,
                              const unsigned char *other_pub_x,
                              const unsigned char *other_pub_y, size_t key_size)
 {
-    (void) ctx;
-    (void) session;
-    (void) other_pub_y;
-    (void) other_pub_x;
-    (void) key_size;
+    (void)ctx;
+    (void)session;
+    (void)other_pub_y;
+    (void)other_pub_x;
+    (void)key_size;
 
     return 0;
 }
@@ -400,7 +398,7 @@ int sock_dtls_create(sock_dtls_t *sock, sock_udp_t *udp_sock,
         return -1;
     }
     else if ((version == SOCK_DTLS_1_2) &&
-        (DTLS_VERSION != 0xfefd)) {
+             (DTLS_VERSION != 0xfefd)) {
         DEBUG("sock_dtls: tinydtls not compiled with support for DTLS 1.2\n");
         return -1;
     }
@@ -469,6 +467,7 @@ int sock_dtls_remove_credential(sock_dtls_t *sock, credman_tag_t tag)
 {
     assert(sock);
     int pos = -1;
+
     for (unsigned i = 0; i < sock->tags_len; i++) {
         if (sock->tags[i] == tag) {
             pos = i;
@@ -525,20 +524,26 @@ int sock_dtls_session_init(sock_dtls_t *sock, const sock_udp_ep_t *ep,
     assert(remote);
 
     sock_udp_ep_t local;
+
     if (!sock->udp_sock || (sock_udp_get_local(sock->udp_sock, &local) < 0)) {
         return -EADDRNOTAVAIL;
     }
+
     if (ep->port == 0) {
         return -EINVAL;
     }
+
     switch (ep->family) {
-        case AF_INET:
- #if IS_ACTIVE(SOCK_HAS_IPV6)
-        case AF_INET6:
- #endif
-            break;
-        default:
-            return -EINVAL;
+#ifdef SOCK_HAS_IPV4
+    case AF_INET:
+        break;
+#endif
+#ifdef SOCK_HAS_IPV6
+    case AF_INET6:
+        break;
+#endif
+    default:
+        return -EINVAL;
     }
 
     /* prepare the remote party to connect to */
@@ -562,6 +567,7 @@ int sock_dtls_session_init(sock_dtls_t *sock, const sock_udp_ep_t *ep,
 void sock_dtls_session_destroy(sock_dtls_t *sock, sock_dtls_session_t *remote)
 {
     dtls_peer_t *peer = dtls_get_peer(sock->dtls_ctx, &remote->dtls_session);
+
     if (peer) {
         /* dtls_reset_peer() also sends close_notify if not already sent */
         dtls_reset_peer(sock->dtls_ctx, peer);
@@ -616,15 +622,14 @@ ssize_t sock_dtls_send_aux(sock_dtls_t *sock, sock_dtls_session_t *remote,
             msg_t msg;
             bool is_timed_out = false;
             do {
-                uint32_t start = xtimer_now_usec();
-                res = xtimer_msg_receive_timeout(&msg, timeout);
+                uint32_t start = ztimer_now(ZTIMER_USEC);
+                res = ztimer_msg_receive_timeout(ZTIMER_USEC, &msg, timeout);
 
                 if (timeout != SOCK_NO_TIMEOUT) {
                     timeout = _update_timeout(start, timeout);
                     is_timed_out = (res < 0) || (timeout == 0);
                 }
-            }
-            while (!is_timed_out && (msg.type != DTLS_EVENT_CONNECTED));
+            }while (!is_timed_out && (msg.type != DTLS_EVENT_CONNECTED));
             if (is_timed_out &&  (msg.type != DTLS_EVENT_CONNECTED)) {
                 DEBUG("sock_dtls: handshake process timed out\n");
 
@@ -761,7 +766,7 @@ ssize_t sock_dtls_recv_aux(sock_dtls_t *sock, sock_dtls_session_t *remote,
     /* loop breaks when timeout or application data read */
     while (1) {
         ssize_t res;
-        uint32_t start_recv = xtimer_now_usec();
+        uint32_t start_recv = ztimer_now(ZTIMER_USEC);
         msg_t msg;
 
         if (sock->buffer.data != NULL) {
@@ -810,30 +815,62 @@ void sock_dtls_init(void)
 
 static void _ep_to_session(const sock_udp_ep_t *ep, session_t *session)
 {
-    session->port = ep->port;
-    session->size = sizeof(ipv6_addr_t) +       /* addr */
-                    sizeof(unsigned short);     /* port */
-    if (ipv6_addr_is_link_local((ipv6_addr_t *)ep->addr.ipv6)) {
-        /* set ifindex for link-local addresses */
-        session->ifindex = ep->netif;
-    }
-    else {
+    dtls_session_init(session);
+    session->addr.family = ep->family;
+    session->addr.port = ep->port;
+
+    switch (ep->family) {
+#ifdef SOCK_HAS_IPV4
+    case AF_INET:
         session->ifindex = SOCK_ADDR_ANY_NETIF;
+        memcpy(&session->addr.ipv4, &ep->addr.ipv4, sizeof(session->addr.ipv4));
+        break;
+#endif
+#ifdef SOCK_HAS_IPV6
+    case AF_INET6:
+        if (ipv6_addr_is_link_local((ipv6_addr_t *)ep->addr.ipv6)) {
+            /* set ifindex for link-local addresses */
+            session->ifindex = ep->netif;
+        }
+        else {
+            session->ifindex = SOCK_ADDR_ANY_NETIF;
+        }
+        memcpy(&session->addr.ipv6, &ep->addr.ipv6, sizeof(session->addr.ipv6));
+        break;
+#endif
+    default:
+        assert(0);
+        return;
     }
-    memcpy(&session->addr, &ep->addr.ipv6, sizeof(ipv6_addr_t));
 }
 
 static void _session_to_ep(const session_t *session, sock_udp_ep_t *ep)
 {
-    ep->port = session->port;
+    ep->port = session->addr.port;
     ep->netif = session->ifindex;
-    ep->family = AF_INET6;
-    memcpy(&ep->addr.ipv6, &session->addr, sizeof(ipv6_addr_t));
+    ep->family = session->addr.family;
+
+    switch (session->addr.family) {
+#ifdef SOCK_HAS_IPV4
+    case AF_INET:
+        memcpy(&ep->addr.ipv4, &session->addr.ipv4, sizeof(ep->addr.ipv4));
+        break;
+#endif
+#ifdef SOCK_HAS_IPV6
+    case AF_INET6:
+        memcpy(&ep->addr.ipv6, &session->addr.ipv6, sizeof(ep->addr.ipv6));
+        break;
+#endif
+    default:
+        /* addr_family is actually ok to be 0 when coming from _copy_buffer */
+        return;
+    }
 }
 
 static inline uint32_t _update_timeout(uint32_t start, uint32_t timeout)
 {
-    uint32_t diff = (xtimer_now_usec() - start);
+    uint32_t diff = (ztimer_now(ZTIMER_USEC) - start);
+
     return (diff > timeout) ? 0: timeout - diff;
 }
 

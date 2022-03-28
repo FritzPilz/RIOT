@@ -36,7 +36,6 @@
 
 #include "periph_cpu.h"
 #include "clk_conf.h"
-#include "cfg_i2c1_pb8_pb9.h"
 #include "cfg_rtt_default.h"
 #include "cfg_timer_tim2.h"
 #include "cfg_usb_otg_fs.h"
@@ -128,7 +127,7 @@ static const spi_conf_t spi_config[] = {
         .mosi_pin = GPIO_PIN(PORT_B, 15),
         .miso_pin = GPIO_PIN(PORT_B, 14),
         .sclk_pin = GPIO_PIN(PORT_I, 1),
-        .cs_pin   = GPIO_UNDEF,
+        .cs_pin   = SPI_CS_UNDEF,
         .mosi_af  = GPIO_AF5,
         .miso_af  = GPIO_AF5,
         .sclk_af  = GPIO_AF5,
@@ -145,6 +144,43 @@ static const spi_conf_t spi_config[] = {
 };
 
 #define SPI_NUMOF           ARRAY_SIZE(spi_config)
+/** @} */
+
+/**
+ * @name I2C configuration
+ * @{
+ */
+static const i2c_conf_t i2c_config[] = {
+    {
+        .dev            = I2C1,
+        .speed          = I2C_SPEED_NORMAL,
+        .scl_pin        = GPIO_PIN(PORT_B, 8),
+        .sda_pin        = GPIO_PIN(PORT_B, 9),
+        .scl_af         = GPIO_AF4,
+        .sda_af         = GPIO_AF4,
+        .bus            = APB1,
+        .rcc_mask       = RCC_APB1ENR_I2C1EN,
+        .rcc_sw_mask    = RCC_DCKCFGR2_I2C1SEL_1,
+        .irqn           = I2C1_ER_IRQn,
+    },
+    {
+        .dev            = I2C3,
+        .speed          = I2C_SPEED_NORMAL,
+        .scl_pin        = GPIO_PIN(PORT_H, 7),
+        .sda_pin        = GPIO_PIN(PORT_H, 8),
+        .scl_af         = GPIO_AF4,
+        .sda_af         = GPIO_AF4,
+        .bus            = APB1,
+        .rcc_mask       = RCC_APB1ENR_I2C3EN,
+        .rcc_sw_mask    = RCC_DCKCFGR2_I2C3SEL_1,
+        .irqn           = I2C3_ER_IRQn,
+    },
+};
+
+#define I2C_0_ISR           isr_i2c1_er
+#define I2C_1_ISR           isr_i2c3_er
+
+#define I2C_NUMOF           ARRAY_SIZE(i2c_config)
 /** @} */
 
 /**
@@ -171,6 +207,62 @@ static const eth_conf_t eth_config = {
 };
 
 #define ETH_DMA_ISR        isr_dma2_stream0
+/** @} */
+
+/**
+ * @name LTDC configuration
+ * @{
+ */
+/** LTDC static configuration struct */
+static const ltdc_conf_t ltdc_config = {
+    .bus        = APB2,
+    .rcc_mask   = RCC_APB2ENR_LTDCEN,
+    .clk_pin    = { .pin = GPIO_PIN(PORT_I, 14), .af = GPIO_AF14, },
+    .de_pin     = { .pin = GPIO_PIN(PORT_K, 7), .af = GPIO_AF14, },
+    .hsync_pin  = { .pin = GPIO_PIN(PORT_I, 10), .af = GPIO_AF14, },
+    .vsync_pin  = { .pin = GPIO_PIN(PORT_I, 9), .af = GPIO_AF14, },
+    .r_pin      = {
+        { .pin = GPIO_PIN(PORT_I, 15), .af = GPIO_AF14, },
+        { .pin = GPIO_PIN(PORT_J, 0), .af = GPIO_AF14, },
+        { .pin = GPIO_PIN(PORT_J, 1), .af = GPIO_AF14, },
+        { .pin = GPIO_PIN(PORT_J, 2), .af = GPIO_AF14, },
+        { .pin = GPIO_PIN(PORT_J, 3), .af = GPIO_AF14, },
+        { .pin = GPIO_PIN(PORT_J, 4), .af = GPIO_AF14, },
+        { .pin = GPIO_PIN(PORT_J, 5), .af = GPIO_AF14, },
+        { .pin = GPIO_PIN(PORT_J, 6), .af = GPIO_AF14, },
+    },
+    .g_pin      = {
+        { .pin = GPIO_PIN(PORT_J, 7), .af = GPIO_AF14, },
+        { .pin = GPIO_PIN(PORT_J, 8), .af = GPIO_AF14, },
+        { .pin = GPIO_PIN(PORT_J, 9), .af = GPIO_AF14, },
+        { .pin = GPIO_PIN(PORT_J, 10), .af = GPIO_AF14, },
+        { .pin = GPIO_PIN(PORT_J, 11), .af = GPIO_AF14, },
+        { .pin = GPIO_PIN(PORT_K, 0), .af = GPIO_AF14, },
+        { .pin = GPIO_PIN(PORT_K, 1), .af = GPIO_AF14, },
+        { .pin = GPIO_PIN(PORT_K, 2), .af = GPIO_AF14, },
+    },
+    .b_pin      = {
+        { .pin = GPIO_PIN(PORT_E, 4), .af = GPIO_AF14, },
+        { .pin = GPIO_PIN(PORT_J, 13), .af = GPIO_AF14, },
+        { .pin = GPIO_PIN(PORT_J, 14), .af = GPIO_AF14, },
+        { .pin = GPIO_PIN(PORT_J, 15), .af = GPIO_AF14, },
+        { .pin = GPIO_PIN(PORT_G, 12), .af = GPIO_AF9, },
+        { .pin = GPIO_PIN(PORT_K, 4), .af = GPIO_AF14, },
+        { .pin = GPIO_PIN(PORT_K, 5), .af = GPIO_AF14, },
+        { .pin = GPIO_PIN(PORT_K, 6), .af = GPIO_AF14, },
+    },
+    /* values below come from STM32CubeF7 code and differ from the typical
+     * values mentioned in the RK043FN48H datasheet. Both sets of values work
+     * with the display.
+     * See the discussion in https://community.st.com/s/question/0D50X0000BOvdWP/how-to-set-displays-parameters-
+     */
+    .hsync      = 41,
+    .vsync      = 10,
+    .hbp        = 13,
+    .hfp        = 32,
+    .vbp        = 2,
+    .vfp        = 2,
+};
 /** @} */
 
 #ifdef __cplusplus

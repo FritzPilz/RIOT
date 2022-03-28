@@ -24,8 +24,10 @@
 #include "net/gcoap.h"
 #include "net/cord/epsim.h"
 #include "net/cord/common.h"
+#include "net/gnrc/netif.h"
 #include "net/sock/util.h"
 #include "net/ipv6/addr.h"
+#include "xtimer.h"
 
 #define BUFSIZE             (64U)
 #define STARTUP_DELAY       (3U)    /* wait 3s before sending first request*/

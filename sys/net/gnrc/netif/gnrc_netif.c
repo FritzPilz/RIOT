@@ -41,8 +41,8 @@
 #include "fmt.h"
 #include "log.h"
 #include "sched.h"
-#if IS_USED(MODULE_XTIMER) || IS_USED(MODULE_ZTIMER_XTIMER_COMPAT)
-#include "xtimer.h"
+#if IS_USED(MODULE_ZTIMER)
+#include "ztimer.h"
 #endif
 
 #include "net/gnrc/netif.h"
@@ -139,8 +139,8 @@ unsigned gnrc_netif_numof(void)
 
 gnrc_netif_t *gnrc_netif_iter(const gnrc_netif_t *prev)
 {
-    netif_t *result = netif_iter(&prev->netif);
-    return container_of(result, gnrc_netif_t, netif);
+    netif_t *result = netif_iter((prev) ? &prev->netif : NULL);
+    return (result) ? container_of(result, gnrc_netif_t, netif) : NULL;
 }
 
 gnrc_netif_t *gnrc_netif_get_by_type(netdev_type_t type, uint8_t index)
@@ -1370,7 +1370,7 @@ bool gnrc_netif_ipv6_wait_for_global_address(gnrc_netif_t *netif,
     /* wait for global address */
     msg_t m;
     while (!has_global) {
-        if (xtimer_msg_receive_timeout(&m, timeout_ms * US_PER_MS) < 0) {
+        if (ztimer_msg_receive_timeout(ZTIMER_MSEC, &m, timeout_ms) < 0) {
             DEBUG_PUTS("gnrc_netif: timeout waiting for prefix");
             break;
         }
@@ -1577,8 +1577,18 @@ static void _test_options(gnrc_netif_t *netif)
 }
 #endif /* DEVELHELP */
 
-void gnrc_netif_default_init(gnrc_netif_t *netif)
+int gnrc_netif_default_init(gnrc_netif_t *netif)
 {
+    netdev_t *dev = netif->dev;
+    /* register the event callback with the device driver */
+    dev->event_callback = _event_cb;
+    dev->context = netif;
+    int res = dev->driver->init(dev);
+    if (res < 0) {
+        return res;
+    }
+    netif_register(&netif->netif);
+    _check_netdev_capabilities(dev);
     _init_from_device(netif);
 #ifdef DEVELHELP
     _test_options(netif);
@@ -1590,6 +1600,7 @@ void gnrc_netif_default_init(gnrc_netif_t *netif)
 #ifdef MODULE_GNRC_IPV6_NIB
     gnrc_ipv6_nib_init_iface(netif);
 #endif
+    return 0;
 }
 
 static void _send(gnrc_netif_t *netif, gnrc_pktsnip_t *pkt, bool push_back);
@@ -1828,7 +1839,6 @@ static void *_gnrc_netif_thread(void *args)
     DEBUG("gnrc_netif: starting thread %i\n", thread_getpid());
     netif = ctx->netif;
     gnrc_netif_acquire(netif);
-    dev = netif->dev;
     netif->pid = thread_getpid();
 
 #if IS_USED(MODULE_GNRC_NETIF_EVENTS)
@@ -1839,20 +1849,15 @@ static void *_gnrc_netif_thread(void *args)
 
     /* setup the link-layer's message queue */
     msg_init_queue(msg_queue, GNRC_NETIF_MSG_QUEUE_SIZE);
-    /* register the event callback with the device driver */
-    dev->event_callback = _event_cb;
-    dev->context = netif;
     /* initialize low-level driver */
-    ctx->result = dev->driver->init(dev);
+    ctx->result = netif->ops->init(netif);
     /* signal that driver init is done */
     mutex_unlock(&ctx->init_done);
     if (ctx->result < 0) {
-        LOG_ERROR("gnrc_netif: netdev init failed: %d\n", ctx->result);
+        LOG_ERROR("gnrc_netif: init failed: %d\n", ctx->result);
         return NULL;
     }
-    netif_register(&netif->netif);
-    _check_netdev_capabilities(dev);
-    netif->ops->init(netif);
+    dev = netif->dev;
 #if DEVELHELP
     assert(options_tested);
 #endif
@@ -1862,7 +1867,7 @@ static void *_gnrc_netif_thread(void *args)
     /* now let rest of GNRC use the interface */
     gnrc_netif_release(netif);
 #if (CONFIG_GNRC_NETIF_MIN_WAIT_AFTER_SEND_US > 0U)
-    xtimer_ticks32_t last_wakeup = xtimer_now();
+    uint32_t last_wakeup = ztimer_now(ZTIMER_USEC);
 #endif
 
     while (1) {
@@ -1888,13 +1893,14 @@ static void *_gnrc_netif_thread(void *args)
                 DEBUG("gnrc_netif: GNRC_NETDEV_MSG_TYPE_SND received\n");
                 _send(netif, msg.content.ptr, false);
 #if (CONFIG_GNRC_NETIF_MIN_WAIT_AFTER_SEND_US > 0U)
-                xtimer_periodic_wakeup(
+                ztimer_periodic_wakeup(
+                        ZTIMER_USEC,
                         &last_wakeup,
                         CONFIG_GNRC_NETIF_MIN_WAIT_AFTER_SEND_US
                     );
                 /* override last_wakeup in case last_wakeup +
                  * CONFIG_GNRC_NETIF_MIN_WAIT_AFTER_SEND_US was in the past */
-                last_wakeup = xtimer_now();
+                last_wakeup = ztimer_now(ZTIMER_USEC);
 #endif
                 break;
             case GNRC_NETAPI_MSG_TYPE_SET:

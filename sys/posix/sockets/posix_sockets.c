@@ -328,7 +328,6 @@ static int socket_close(vfs_file_t *filp)
 static inline int socket_fstat(vfs_file_t *filp, struct stat *buf)
 {
     (void)filp;
-    memset(buf, 0, sizeof(struct stat));
     buf->st_mode |= (S_IFSOCK | S_IRWXU | S_IRWXG | S_IRWXO);
     buf->st_blksize = SOCKET_BLKSIZE;
     return 0;
@@ -1036,8 +1035,7 @@ static ssize_t socket_sendto(socket_t *s, const void *buffer, size_t length,
             return -1;
         }
 #endif
-        /* bind implicitly */
-        if ((res = _bind_connect(s, NULL, 0)) < 0) {
+        if ((res = _bind_connect(s, address, address_len)) < 0) {
             return res;
         }
     }

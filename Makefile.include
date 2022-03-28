@@ -49,6 +49,7 @@ EXTERNAL_BOARD_DIRS             ?=
 RIOTMAKE                        ?= $(RIOTBASE)/makefiles
 RIOTKCONFIG                     ?= $(RIOTBASE)/kconfigs
 RIOTPKG                         ?= $(RIOTBASE)/pkg
+EXTERNAL_PKG_DIRS               ?=
 RIOTTOOLS                       ?= $(RIOTBASE)/dist/tools
 RIOTPROJECT                     ?= $(shell git rev-parse --show-toplevel 2>/dev/null || pwd)
 BUILD_DIR                       ?= $(RIOTBASE)/build
@@ -98,6 +99,9 @@ ifeq ($(INSIDE_DOCKER),0)
   ifeq ($(origin EXTERNAL_MODULE_DIRS),command line)
     $(error EXTERNAL_MODULE_DIRS must be passed as environment variable, and not as command line argument)
   endif
+  ifeq ($(origin EXTERNAL_PKG_DIRS),command line)
+    $(error EXTERNAL_PKG_DIRS must be passed as environment variable, and not as command line argument)
+  endif
 endif
 
 # Deprecation of configuring 'RIOTBOARD'
@@ -141,6 +145,9 @@ EXTERNAL_BOARD_DIRS             := $(foreach dir,\
                                              $(abspath $(dir)))
 EXTERNAL_MODULE_DIRS            := $(foreach dir,\
                                              $(EXTERNAL_MODULE_DIRS),\
+                                             $(abspath $(dir)))
+EXTERNAL_PKG_DIRS               := $(foreach dir,\
+                                             $(EXTERNAL_PKG_DIRS),\
                                              $(abspath $(dir)))
 
 # Ensure that all directories are set and don't contain spaces.
@@ -215,6 +222,8 @@ endif
 ifeq (,$(TOOLCHAIN))
   override TOOLCHAIN := gnu
 endif
+
+include $(RIOTMAKE)/cargo-settings.inc.mk
 
 GLOBAL_GOALS += buildtest \
                 buildtest-indocker \
@@ -384,13 +393,33 @@ ifneq (,$(IOTLAB_NODE))
   PROGRAMMER ?= iotlab
   # iotlab uses ELFFILE by default for flashing boards.
   FLASHFILE ?= $(ELFFILE)
+  # RIOT_CI_BUILD disables the build of BINFILE which is required for flashing
+  # on IoT-LAB
+  ifeq (1,$(RIOT_CI_BUILD))
+    BUILD_FILES += $(BINFILE)
+  endif
+  # Disable IOTLAB_NODE if inside Docker to avoid including the
+  # iotlab.single.inc.mk file which is useless there: it's only useful for
+  # flashing and this is done outside of Docker.
+  ifeq (1,$(INSIDE_DOCKER))
+    IOTLAB_NODE :=
+  endif
 endif
 
 # Add standard include directories
-INCLUDES += -I$(RIOTBASE)/core/include -I$(RIOTBASE)/drivers/include -I$(RIOTBASE)/sys/include
+INCLUDES += -I$(RIOTBASE)/core/lib/include
+INCLUDES += -I$(RIOTBASE)/core/include
+INCLUDES += -I$(RIOTBASE)/drivers/include
+INCLUDES += -I$(RIOTBASE)/sys/include
 
 # process provided features
 include $(RIOTBASE)/Makefile.features
+
+ifneq ($(RIOT_CI_BUILD),1)
+  # Warn about used deprecated boards
+  include $(RIOTMAKE)/deprecated_boards.inc.mk
+  include $(RIOTMAKE)/deprecated_cpus.inc.mk
+endif
 
 # mandatory includes!
 include $(RIOTMAKE)/pseudomodules.inc.mk
@@ -408,6 +437,13 @@ ifeq (1,$(TEST_KCONFIG))
   USEMODULE := $(KCONFIG_MODULES)
   KCONFIG_PACKAGES := $(call lowercase,$(patsubst CONFIG_PACKAGE_%,%,$(filter CONFIG_PACKAGE_%,$(.VARIABLES))))
   USEPKG := $(KCONFIG_PACKAGES)
+
+  # Locate used packages in $(RIOTPKG) or $(EXTERNAL_PKG_DIRS).
+  PKGDIRS := $(RIOTPKG) $(EXTERNAL_PKG_DIRS)
+  PKG_PATHS := $(sort $(foreach dir,$(PKGDIRS),\
+    $(foreach pkg,$(USEPKG),$(dir $(wildcard $(dir)/$(pkg)/Makefile)))))
+
+  EXTERNAL_MODULE_PATHS := $(dir $(EXTERNAL_MODULE_KCONFIGS))
 else
   # always select provided architecture features
   FEATURES_REQUIRED += $(filter arch_%,$(FEATURES_PROVIDED))
@@ -469,6 +505,9 @@ include $(RIOTMAKE)/toolchain/$(TOOLCHAIN).inc.mk
 # Append ldscript path after importing CPU and board makefiles to allow
 # overriding the core ldscripts
 LINKFLAGS += -L$(RIOTBASE)/core/ldscripts
+
+# include undefined behaviour sanitizer (UBSAN) support
+include $(RIOTMAKE)/ubsan.inc.mk
 
 # Tell ccache to pass the original file to the compiler, instead of passing the
 # preprocessed code. Without this setting, the compilation will fail with
@@ -548,14 +587,17 @@ USEMODULE_INCLUDES =
 
 include $(RIOTBASE)/sys/Makefile.include
 
+# add default board_init()
+DIRS += $(RIOTBASE)/boards/common/init
+
 # include Makefile.includes of each driver modules if they exist
 -include $(USEMODULE:%=$(RIOTBASE)/drivers/%/Makefile.include)
 
-# include Makefile.includes for packages in $(USEPKG)
--include $(USEPKG:%=$(RIOTPKG)/%/Makefile.include)
+# include Makefile.includes for packages in $(PKG_PATHS)
+-include $(PKG_PATHS:%=%Makefile.include)
 
 # include external modules configuration
--include $(EXTERNAL_MODULE_PATHS:%=%/Makefile.include)
+-include $(EXTERNAL_MODULE_PATHS:%=%Makefile.include)
 
 # Deduplicate includes without sorting them
 # see https://stackoverflow.com/questions/16144115/makefile-remove-duplicate-words-without-sorting
@@ -752,31 +794,30 @@ endif
 # The `clean` needs to be serialized before everything else.
 all $(BASELIBS) $(ARCHIVES) $(BUILDDEPS) ..in-docker-container: | $(CLEAN)
 
-.PHONY: pkg-prepare pkg-build pkg-build-%
+.PHONY: pkg-prepare pkg-build
 pkg-prepare:
-	-@for i in $(USEPKG) ; do "$(MAKE)" -C $(RIOTPKG)/$$i prepare ; done
+	-@$(foreach dir,$(PKG_PATHS),"$(MAKE)" -C $(dir) prepare $(NEWLINE))
 
-pkg-build: $(USEPKG:%=pkg-build-%)
-pkg-build-%: $(BUILDDEPS)
-	$(QQ)"$(MAKE)" -C $(RIOTPKG)/$*
+pkg-build: $(BUILDDEPS)
+	$(foreach dir,$(PKG_PATHS),$(QQ)"$(MAKE)" -C $(dir) $(NEWLINE))
 
 clean:
 ifndef MAKE_RESTARTS
-	-@for i in $(USEPKG) ; do "$(MAKE)" -C $(RIOTPKG)/$$i clean ; done
+	-@$(foreach dir,$(PKG_PATHS),"$(MAKE)" -C $(dir) clean $(NEWLINE))
 	-@rm -rf $(BINDIR)
 	-@rm -rf $(SCANBUILD_OUTPUTDIR)
 endif
 
 # Remove intermediates, but keep the .elf, .hex and .map etc.
 clean-intermediates:
-	-@for i in $(USEPKG) ; do "$(MAKE)" -C $(RIOTPKG)/$$i distclean ; done
+	-@$(foreach dir,$(PKG_PATHS),"$(MAKE)" -C $(dir) distclean $(NEWLINE))
 	-@rm -rf $(BINDIR)/*.a $(BINDIR)/*/
 
 clean-pkg:
-	-@for i in $(USEPKG) ; do "$(MAKE)" -C $(RIOTPKG)/$$i distclean ; done
+	-@$(foreach dir,$(PKG_PATHS),"$(MAKE)" -C $(dir) distclean $(NEWLINE))
 
 distclean:
-	-@for i in $(USEPKG) ; do "$(MAKE)" -C $(RIOTPKG)/$$i distclean ; done
+	-@$(foreach dir,$(PKG_PATHS),"$(MAKE)" -C $(dir) distclean $(NEWLINE))
 	-@rm -rf $(BINDIRBASE)
 
 # Include PROGRAMMER_FLASH/PROGRAMMER_RESET variables
@@ -826,7 +867,7 @@ cleanterm: $(TERMDEPS)
 	$(TERMPROG) $(TERMFLAGS) $(TERMTEE)
 
 list-ttys:
-	$(Q)$(RIOTTOOLS)/usb-serial/list-ttys.sh
+	$(Q)$(RIOTTOOLS)/usb-serial/ttys.py
 
 doc:
 	$(MAKE) -BC $(RIOTBASE) doc
@@ -1026,6 +1067,8 @@ ifneq ($(_BASELIBS_VALUE_BEFORE_USAGE),$(BASELIBS))
 endif
 
 endif
+
+include $(RIOTMAKE)/cargo-targets.inc.mk
 
 # include RIOT_MAKEFILES_GLOBAL_POST configuration files
 # allows setting user specific system wide configuration parsed after the body

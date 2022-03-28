@@ -10,6 +10,9 @@ ifneq (,$(filter arduino,$(USEMODULE)))
   USEMODULE += fmt
   USEMODULE += ztimer_usec
   USEMODULE += ztimer_msec
+  ifneq (,$(filter stdio_cdc_acm,$(USEMODULE)))
+    USEMODULE += arduino_serial_stdio
+  endif
 endif
 
 ifneq (,$(filter arduino_pwm,$(FEATURES_USED)))
@@ -19,6 +22,15 @@ endif
 # cannot be moved to GNRC's Makefile.dep, as module name neither starts or ends with gnrc
 ifneq (,$(filter auto_init_gnrc_netif,$(USEMODULE)))
   USEMODULE += gnrc_netif_init_devs
+endif
+
+ifneq (,$(filter auto_init_sock_dns,$(USEMODULE)))
+  ifneq (,$(filter ipv4,$(USEMODULE)))
+    USEMODULE += ipv4_addr
+  endif
+  ifneq (,$(filter ipv6,$(USEMODULE)))
+    USEMODULE += ipv6_addr
+  endif
 endif
 
 ifneq (,$(filter congure_%,$(USEMODULE)))
@@ -85,10 +97,6 @@ ifneq (,$(filter base64url,$(USEMODULE)))
   USEMODULE += base64
 endif
 
-ifneq (,$(filter auto_init_saul,$(USEMODULE)))
-  USEMODULE += saul_init_devs
-endif
-
 ifneq (,$(filter csma_sender,$(USEMODULE)))
   USEMODULE += random
   USEMODULE += xtimer
@@ -112,13 +120,10 @@ ifneq (,$(filter dhcpv6_client,$(USEMODULE)))
 endif
 
 ifneq (,$(filter dhcpv6_relay,$(USEMODULE)))
+  DEFAULT_MODULE += auto_init_dhcpv6_relay
   USEMODULE += event
   USEMODULE += sock_async_event
   USEMODULE += sock_udp
-endif
-
-ifneq (,$(filter auto_init_dhcpv6_relay,$(USEMODULE)))
-  USEMODULE += dhcpv6_relay
 endif
 
 ifneq (,$(filter dns_%,$(USEMODULE)))
@@ -139,6 +144,14 @@ endif
 ifneq (,$(filter sntp,$(USEMODULE)))
   USEMODULE += sock_udp
   USEMODULE += xtimer
+  ifneq (,$(filter ztimer_xtimer_compat,$(USEMODULE)))
+    # requires 64bit ftimestamps
+    USEMODULE += ztimer64_xtimer_compat
+  endif
+endif
+
+ifneq (,$(filter sock_%,$(USEMODULE)))
+  USEMODULE += iolist
 endif
 
 ifneq (,$(filter netdev_ieee802154,$(USEMODULE)))
@@ -154,6 +167,7 @@ endif
 
 ifneq (,$(filter uhcpc,$(USEMODULE)))
   USEMODULE += posix_inet
+  USEMODULE += xtimer
 endif
 
 ifneq (,$(filter netdev_tap,$(USEMODULE)))
@@ -166,6 +180,9 @@ ifneq (,$(filter trickle,$(USEMODULE)))
   USEMODULE += random
   ifeq (,$(filter ztimer_msec,$(USEMODULE)))
     USEMODULE += xtimer
+    ifneq (,$(filter ztimer_xtimer_compat,$(USEMODULE)))
+      USEMODULE += ztimer_msec
+    endif
   endif
 endif
 
@@ -223,6 +240,16 @@ ifneq (,$(filter newlib,$(USEMODULE)))
   ifeq (,$(filter newlib_syscalls_%,$(USEMODULE)))
     USEMODULE += newlib_syscalls_default
   endif
+  ifneq (,$(filter newlib_syscalls_default,$(USEMODULE)))
+    USEMODULE += div
+    ifneq (,$(filter libc_gettimeofday,$(USEMODULE)))
+      USEMODULE += xtimer
+      ifneq (,$(filter ztimer_xtimer_compat,$(USEMODULE)))
+        # requires 64bit timestamps
+        USEMODULE += ztimer64_xtimer_compat
+      endif
+    endif
+  endif
 endif
 
 ifneq (,$(filter posix_select,$(USEMODULE)))
@@ -231,7 +258,7 @@ ifneq (,$(filter posix_select,$(USEMODULE)))
   endif
   USEMODULE += core_thread_flags
   USEMODULE += posix_headers
-  USEMODULE += xtimer
+  USEMODULE += ztimer64_usec
 endif
 
 ifneq (,$(filter picolibc,$(USEMODULE)))
@@ -280,6 +307,10 @@ ifneq (,$(filter shell_commands,$(USEMODULE)))
     USEMODULE += netutils
   endif
 
+  ifneq (,$(gnrc_udp_cmd,$(USEMODULE)))
+    USEMODULE += netutils
+  endif
+
   ifneq (,$(filter nimble_netif,$(USEMODULE)))
     USEMODULE += nimble_scanner
     USEMODULE += nimble_scanlist
@@ -297,8 +328,8 @@ ifneq (,$(filter shell_commands,$(USEMODULE)))
 endif
 
 ifneq (,$(filter posix_semaphore,$(USEMODULE)))
-  USEMODULE += sema
-  USEMODULE += xtimer
+  USEMODULE += sema_deprecated
+  USEMODULE += ztimer64_usec
   USEMODULE += posix_headers
 endif
 
@@ -316,6 +347,21 @@ ifneq (,$(filter sema_inv,$(USEMODULE)))
   USEMODULE += atomic_utils
 endif
 
+ifneq (,$(filter sema,$(USEMODULE)))
+  USEMODULE += ztimer
+endif
+
+ifneq (,$(filter sema_deprecated,$(USEMODULE)))
+  USEMODULE += sema
+  USEMODULE += ztimer64
+  USEMODULE += ztimer64_usec
+endif
+
+ifneq (,$(filter telnet,$(USEMODULE)))
+  USEMODULE += pipe
+  USEMODULE += sock_tcp
+endif
+
 ifneq (,$(filter luid,$(USEMODULE)))
   FEATURES_OPTIONAL += periph_cpuid
 endif
@@ -323,6 +369,9 @@ endif
 ifneq (,$(filter fib,$(USEMODULE)))
   USEMODULE += universal_address
   USEMODULE += xtimer
+  ifneq (,$(filter ztimer_xtimer_compat,$(USEMODULE)))
+    USEMODULE += ztimer64_xtimer_compat
+  endif
   USEMODULE += posix_headers
 endif
 
@@ -332,10 +381,15 @@ ifneq (,$(filter log_%,$(USEMODULE)))
 endif
 
 ifneq (,$(filter cpp11-compat,$(USEMODULE)))
+  USEMODULE += cpp_new_delete
   USEMODULE += xtimer
   USEMODULE += timex
   FEATURES_REQUIRED += cpp
   FEATURES_REQUIRED += libstdcpp
+  ifneq (,$(filter ztimer_xtimer_compat,$(USEMODULE)))
+    # requires 64bit for syscalls
+    USEMODULE += ztimer64_xtimer_compat
+  endif
 endif
 
 ifneq (,$(filter netstats_%, $(USEMODULE)))
@@ -348,13 +402,26 @@ ifneq (,$(filter netstats_neighbor_%, $(USEMODULE)))
 endif
 
 ifneq (,$(filter pthread,$(USEMODULE)))
-  USEMODULE += xtimer
+  USEMODULE += ztimer64_usec
   USEMODULE += timex
+  ifneq (,$(filter ztimer_xtimer_compat,$(USEMODULE)))
+    # requires 64bit ftimestamps
+    USEMODULE += ztimer64_xtimer_compat
+  endif
 endif
 
 ifneq (,$(filter schedstatistics,$(USEMODULE)))
   USEMODULE += ztimer_usec
   USEMODULE += sched_cb
+endif
+
+ifneq (,$(filter sched_round_robin,$(USEMODULE)))
+# this depends on either ztimer_usec or ztimer_msec if neither is used
+# prior to this msec is preferred
+  ifeq (,$(filter ztimer_usec,$(USEMODULE))$(filter ztimer_msec,$(USEMODULE)))
+    USEMODULE += ztimer_msec
+  endif
+  USEMODULE += sched_runq_callback
 endif
 
 ifneq (,$(filter saul_reg,$(USEMODULE)))
@@ -366,6 +433,10 @@ ifneq (,$(filter saul_default,$(USEMODULE)))
   DEFAULT_MODULE += saul_init_devs
   USEMODULE += saul
   USEMODULE += saul_reg
+endif
+
+ifneq (,$(filter senml%,$(USEMODULE)))
+  include $(RIOTBASE)/sys/senml/Makefile.dep
 endif
 
 ifneq (,$(filter phydat,$(USEMODULE)))
@@ -390,14 +461,16 @@ ifneq (,$(filter can,$(USEMODULE)))
 endif
 
 ifneq (,$(filter can_isotp,$(USEMODULE)))
-  USEMODULE += xtimer
+  USEMODULE += ztimer
+  USEMODULE += ztimer_usec
   USEMODULE += gnrc_pktbuf
 endif
 
 ifneq (,$(filter conn_can,$(USEMODULE)))
   USEMODULE += can
   USEMODULE += can_mbox
-  USEMODULE += xtimer
+  USEMODULE += ztimer
+  USEMODULE += ztimer_usec
 endif
 
 ifneq (,$(filter entropy_source_%,$(USEMODULE)))
@@ -474,6 +547,11 @@ ifneq (,$(filter devfs,$(USEMODULE)))
   USEMODULE += vfs
 endif
 
+ifneq (,$(filter vfs_default,$(USEMODULE)))
+  USEMODULE += vfs
+  DEFAULT_MODULE += vfs_auto_mount
+endif
+
 ifneq (,$(filter vfs,$(USEMODULE)))
   USEMODULE += posix_headers
   ifeq (native, $(BOARD))
@@ -517,18 +595,8 @@ ifneq (,$(filter event_timeout_ztimer,$(USEMODULE)))
 endif
 
 ifneq (,$(filter event_timeout,$(USEMODULE)))
-  ifneq (,$(filter event_timeout_ztimer,$(USEMODULE)))
-    USEMODULE += ztimer_usec
-  else
-    ifeq (,$(filter ztimer_usec,$(USEMODULE)))
-      USEMODULE += xtimer
-    endif
-  endif
-endif
-
-ifneq (,$(filter event_periodic,$(USEMODULE)))
   USEMODULE += event_timeout_ztimer
-  USEMODULE += ztimer_periodic
+  USEMODULE += ztimer_usec
 endif
 
 ifneq (,$(filter event,$(USEMODULE)))
@@ -539,13 +607,29 @@ ifneq (,$(filter l2filter_%,$(USEMODULE)))
   USEMODULE += l2filter
 endif
 
+ifneq (,$(filter gcoap_forward_proxy,$(USEMODULE)))
+  USEMODULE += gcoap
+  USEMODULE += uri_parser
+endif
+
 ifneq (,$(filter gcoap_dtls,$(USEMODULE)))
   USEMODULE += gcoap
   USEMODULE += dsm
   USEMODULE += sock_async_event
   USEMODULE += sock_dtls
+  USEMODULE += ztimer_msec
+  USEMODULE += ztimer_usec
   USEMODULE += event_thread
-  USEMODULE += event_timeout
+  USEMODULE += event_timeout_ztimer
+endif
+
+ifneq (,$(filter dsm,$(USEMODULE)))
+  USEMODULE += sock_dtls
+  USEMODULE += xtimer
+  ifneq (,$(filter ztimer_xtimer_compat,$(USEMODULE)))
+    # requires 64bit timestamps when using xtimer
+    USEMODULE += ztimer64_xtimer_compat
+  endif
 endif
 
 ifneq (,$(filter gcoap,$(USEMODULE)))
@@ -553,8 +637,10 @@ ifneq (,$(filter gcoap,$(USEMODULE)))
   USEMODULE += sock_async_event
   USEMODULE += sock_udp
   USEMODULE += sock_util
+  USEMODULE += ztimer_msec
+  USEMODULE += ztimer_usec
   USEMODULE += event_callback
-  USEMODULE += event_timeout
+  USEMODULE += event_timeout_ztimer
   ifneq (,$(filter openwsn%,$(USEMODULE)))
     USEMODULE += openwsn_sock_udp
   endif
@@ -566,6 +652,7 @@ endif
 
 ifneq (,$(filter nanocoap_sock,$(USEMODULE)))
   USEMODULE += sock_udp
+  USEMODULE += sock_util
 endif
 
 ifneq (,$(filter nanocoap_%,$(USEMODULE)))
@@ -603,6 +690,10 @@ ifneq (,$(filter cord_lc cord_ep,$(USEMODULE)))
   USEMODULE += cord_common
   ifneq (,$(filter shell_commands,$(USEMODULE)))
     USEMODULE += sock_util
+  endif
+  ifneq (,$(filter ztimer_xtimer_compat,$(USEMODULE)))
+    # requires 64bit timestamps when using xtimer
+    USEMODULE += ztimer64_xtimer_compat
   endif
 endif
 
@@ -727,6 +818,7 @@ endif
 
 ifneq (,$(filter suit_transport_coap, $(USEMODULE)))
   USEMODULE += nanocoap_sock
+  USEMODULE += xtimer
   USEMODULE += sock_util
 endif
 
@@ -746,8 +838,13 @@ ifneq (,$(filter suit_%,$(USEMODULE)))
 endif
 
 # include ztimer dependencies
-ifneq (,$(filter ztimer% %ztimer,$(USEMODULE)))
+ifneq (,$(filter ztimer ztimer_% %ztimer,$(USEMODULE)))
   include $(RIOTBASE)/sys/ztimer/Makefile.dep
+endif
+
+# include ztimer64 dependencies
+ifneq (,$(filter ztimer64%,$(USEMODULE)))
+  include $(RIOTBASE)/sys/ztimer64/Makefile.dep
 endif
 
 ifneq (,$(filter evtimer,$(USEMODULE)))
@@ -755,24 +852,15 @@ ifneq (,$(filter evtimer,$(USEMODULE)))
     USEMODULE += ztimer_msec
   else
     USEMODULE += xtimer
+    ifneq (,$(filter ztimer_xtimer_compat,$(USEMODULE)))
+      USEMODULE += evtimer_on_ztimer
+    endif
   endif
 endif
 
 # handle xtimer's deps. Needs to be done *after* ztimer
 ifneq (,$(filter xtimer,$(USEMODULE)))
-  ifeq (,$(filter ztimer_xtimer_compat,$(USEMODULE)))
-    # xtimer is used, ztimer xtimer wrapper is not
-    DEFAULT_MODULE += auto_init_xtimer
-    USEMODULE += div
-    ifeq (,$(filter xtimer_on_ztimer,$(USEMODULE)))
-      # ztimer is not used, so use *periph_timer as low-level timer*.
-      FEATURES_REQUIRED += periph_timer
-    else
-      # will use *ztimer_usec as low-level timer*
-    endif
-  else
-  # ztimer_xtimer_compat is used, all of *xtimer's API will be mapped on ztimer.*
-  endif
+  include $(RIOTBASE)/sys/xtimer/Makefile.dep
 endif
 
 ifneq (,$(filter devfs_hwrng,$(USEMODULE)))
@@ -796,6 +884,7 @@ ifneq (,$(filter fido2_ctap_%,$(USEMODULE)))
   USEMODULE += fido2_ctap_transport
   USEMODULE += fido2_ctap
   ifneq (,$(filter fido2_ctap_transport_hid,$(USEMODULE)))
+      USEMODULE += ztimer64_msec
       USEMODULE += usbus_hid
       DISABLE_MODULE += auto_init_usbus
   endif
@@ -809,14 +898,11 @@ ifneq (,$(filter fido2_ctap,$(USEMODULE)))
   USEPKG += tinycbor
   USEPKG += micro-ecc
 
-  INCLUDE += $(RIOTPKG)/tinycbor
-
   USEMODULE += mtd_flashpage
   USEMODULE += mtd_write_page
   USEMODULE += ztimer_msec
   USEMODULE += event
-  USEMODULE += event_timeout
-  USEMODULE += prng_sha256prng
+  USEMODULE += event_timeout_ztimer
   USEMODULE += cipher_modes
   USEMODULE += crypto_aes_256
   USEMODULE += hashes

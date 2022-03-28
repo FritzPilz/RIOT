@@ -275,7 +275,7 @@ the link local address of the device, with the interface specified. e.g:
 `aiocoap-fileserver` is used for hosting the firmwares available for updates.
 Devices retrieve the new firmware using the CoAP protocol.
 
-Start `aiocoap-fileserver`:
+Start `aiocoap-fileserver` from the RIOT base directory:
 
     $ mkdir -p coaproot
     $ aiocoap-fileserver coaproot
@@ -663,5 +663,5 @@ To run the test,
 - run the test:
 
 ```
-    $ make -C examples/suit_update test
+    $ make -C examples/suit_update test-with-config
 ```

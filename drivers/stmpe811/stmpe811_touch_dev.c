@@ -23,6 +23,7 @@
 #include <assert.h>
 
 #include "kernel_defines.h"
+#include "periph/gpio.h"
 
 #include "stmpe811.h"
 #include "stmpe811_touch_dev.h"
@@ -66,7 +67,7 @@ uint8_t _stmpe811_touches(const touch_dev_t *touch_dev, touch_t *touches, size_t
         touches[0].x = pos.y;
         touches[0].y = dev->params.xmax - pos.x;
 
-        DEBUG("X: %i, Y: %i\n", touches[0].x, touches[0].y)
+        DEBUG("X: %i, Y: %i\n", touches[0].x, touches[0].y);
     }
 
     return ret;
@@ -77,8 +78,9 @@ void _stmpe811_set_event_callback(const touch_dev_t *touch_dev, touch_event_cb_t
     stmpe811_t *dev = (stmpe811_t *)touch_dev;
     assert(dev);
 
-    dev->cb = (stmpe811_event_cb_t)cb;
-    dev->cb_arg = arg;
+    if (gpio_is_valid(dev->params.int_pin)) {
+        gpio_init_int(dev->params.int_pin, GPIO_IN, GPIO_FALLING, cb, arg);
+    }
 }
 
 const touch_dev_driver_t stmpe811_touch_dev_driver = {

@@ -45,6 +45,24 @@
  * octet) and retransmissions are scheduled. The frames are appended with a
  * CRC16 to protect the system from transmission errors.
  *
+ * A note on high data rates
+ * =========================
+ *
+ * When using high UART data rates (1 MBit/s and above) per-byte overhead
+ * becomes significant.
+ * A major factor here is setting (software) timers which are used to catch
+ * error conditions.
+ * To speed up the TX path it is therefore recommended to implement hardware
+ * collision detection (if available) to avoid the need for setting a timeout
+ * for each byte transmitted.
+ *
+ * To speed up the more critical RX path, enable the `dose_watchdog` module.
+ * This requires a dedicated hardware timer `DOSE_TIMER_DEV` to be configured
+ * in e.g. `board.h`.
+ * The timer is shared between all DOSE interfaces and will periodically check
+ * if any interface does not make progress with receiving a frame (payload
+ * marker did not advance between two timer periods) and abort the RX process.
+ *
  * @{
  *
  * @file
@@ -56,6 +74,7 @@
 #ifndef DOSE_H
 #define DOSE_H
 
+#include "chunked_ringbuffer.h"
 #include "periph/uart.h"
 #include "periph/gpio.h"
 #include "net/netdev.h"
@@ -63,7 +82,7 @@
 #include "net/eui48.h"
 #include "bitarithm.h"
 #include "mutex.h"
-#include "xtimer.h"
+#include "ztimer.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -101,7 +120,7 @@ typedef enum {
     DOSE_SIGNAL_INIT   = 0x10,    /**< Init the state machine */
     DOSE_SIGNAL_GPIO   = 0x20,    /**< Sense GPIO detected a falling edge */
     DOSE_SIGNAL_UART   = 0x30,    /**< Octet has been received */
-    DOSE_SIGNAL_XTIMER = 0x40,    /**< Timer timed out */
+    DOSE_SIGNAL_ZTIMER = 0x40,    /**< Timer timed out */
     DOSE_SIGNAL_SEND   = 0x50,    /**< Enter send state */
     DOSE_SIGNAL_END    = 0x60     /**< Leave send state */
 } dose_signal_t;
@@ -114,6 +133,7 @@ typedef enum {
 #define DOSE_FLAG_RECV_BUF_DIRTY (BIT0)     /**< Receive buffer contains a complete unhandled frame */
 #define DOSE_FLAG_END_RECEIVED   (BIT1)     /**< END octet has been received */
 #define DOSE_FLAG_ESC_RECEIVED   (BIT2)     /**< ESC octet has been received */
+#define DOSE_FLAG_SEND_PENDING   (BIT3)     /**< A send operation is pending */
 /** @} */
 
 /**
@@ -135,12 +155,22 @@ typedef enum {
  *  Fallback to idle if the remote side died within a transaction.
  */
 #ifndef CONFIG_DOSE_TIMEOUT_BYTES
-#define CONFIG_DOSE_TIMEOUT_BYTES       (50)
+#define CONFIG_DOSE_TIMEOUT_BYTES   (50)
 #endif
 /** @} */
 
 #define DOSE_FRAME_CRC_LEN          (2)     /**< CRC16 is used */
 #define DOSE_FRAME_LEN (ETHERNET_FRAME_LEN + DOSE_FRAME_CRC_LEN) /**< dose frame length */
+
+/**
+ * @brief   Hardware timer to use with the `dose_watchdog` module.
+ *
+ *          This will be used to detect RX timeout instead of ztimer to speed up
+ *          the RX path when high data rates / less CPU overhead is required.
+ */
+#if DOXYGEN
+#define DOSE_TIMER_DEV              TIMER_DEV(…)
+#endif
 
 /**
  * @brief   DOSE netdev device
@@ -153,12 +183,19 @@ typedef struct {
     dose_state_t state;                     /**< Current state of the driver's state machine */
     mutex_t state_mtx;                      /**< Is unlocked every time a state is (re)entered */
     uint8_t recv_buf[DOSE_FRAME_LEN];       /**< Receive buffer for incoming frames */
-    size_t recv_buf_ptr;                    /**< Index of the next empty octet of the recveive buffer */
+    chunk_ringbuf_t rb;                     /**< Ringbuffer to store received frames.       */
+                                            /* Written to from interrupts (with irq_disable */
+                                            /* to prevent any simultaneous writes),         */
+                                            /* consumed exclusively in the network stack's  */
+                                            /* loop at _isr.                                */
+#if defined(MODULE_DOSE_WATCHDOG) || DOXYGEN
+    void *recv_buf_ptr_last;                /**< Last value of recv_buf_ptr when the watchdog visited */
+#endif
 #if !defined(MODULE_PERIPH_UART_RXSTART_IRQ) || DOXYGEN
     gpio_t sense_pin;                       /**< GPIO to sense for start bits on the UART's rx line */
 #endif
     gpio_t standby_pin;                     /**< GPIO to put the CAN transceiver in standby mode */
-    xtimer_t timeout;                       /**< Timeout timer ensuring always to get back to IDLE state */
+    ztimer_t timeout;                       /**< Timeout timer ensuring always to get back to IDLE state */
     uint32_t timeout_base;                  /**< Base timeout in us */
     uart_t uart;                            /**< UART device to use */
     uint8_t uart_octet;                     /**< Last received octet */

@@ -33,6 +33,10 @@ jobs:
       fail-fast: false
       matrix:
         boards:
+          - riot: dwm1001
+            iotlab:
+              archi: dwm1001:dw1000
+              site: saclay
           - riot: iotlab-m3
             iotlab:
               archi: m3:at86rf231
@@ -53,10 +57,18 @@ jobs:
             iotlab:
               archi: nrf52832mdk:ble
               site: saclay
+          - riot: nucleo-wl55jc
+            iotlab:
+              archi: nucleo-wl55jc:stm32wl
+              site: grenoble
           - riot: samr21-xpro
             iotlab:
               archi: samr21:at86rf233
               site: saclay
+          - riot: samr34-xpro
+            iotlab:
+              archi: samr34:sx1276
+              site: grenoble
           - riot: b-l072z-lrwan1
             iotlab:
               archi: st-lrwan1:sx1276
@@ -70,10 +82,6 @@ jobs:
     env:
       IOTLAB_NODE: auto
       BUILD_IN_DOCKER: 1
-      # Force .bin files generation because these files are used to flash on IoT-LAB and
-      # because compile_and_test_for_board forces RIOT_CI_BUILD which skip .bin
-      # files generation
-      DOCKER_ENVIRONMENT_CMDLINE: -e BUILD_FILES=\$$\(BINFILE\)
       COMPILE_AND_TEST_FOR_BOARD: ./dist/tools/compile_and_test_for_board/compile_and_test_for_board.py
       COMPILE_AND_TEST_ARGS: --with-test-only --jobs=2 --report-xml
       # Exclude applications that are expected to fail or cannot run on iotlab

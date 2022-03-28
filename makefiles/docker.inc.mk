@@ -24,6 +24,7 @@ export DOCKER_MAKECMDGOALS ?= all
 # List of all exported environment variables that shall be passed on to the
 # Docker container, they will only be passed if they are set from the
 # environment, not if they are only default Makefile values.
+DOCKER_RIOT_CONFIG_VARIABLES := $(filter RIOT_CONFIG_%,$(.VARIABLES))
 export DOCKER_ENV_VARS += \
   APPDIR \
   AR \
@@ -44,9 +45,11 @@ export DOCKER_ENV_VARS += \
   CXX \
   CXXEXFLAGS \
   CXXUWFLAGS \
+  $(DOCKER_RIOT_CONFIG_VARIABLES) \
   ELFFILE \
   HEXFILE \
   FLASHFILE \
+  IOTLAB_NODE \
   LINK \
   LINKFLAGPREFIX \
   LINKFLAGS \
@@ -66,8 +69,25 @@ export DOCKER_ENV_VARS += \
   SCANBUILD_OUTPUTDIR \
   SIZE \
   TOOLCHAIN \
+  TEST_KCONFIG \
   UNDEF \
   #
+
+# List of all exported environment variables that shall be passed on to the
+# Docker container since they might have been set through the command line
+# and environment.
+# Their origin cannot be checked since they are often redefined or overriden
+# in Makefile/Makefile.include, etc. and their origin is changed to file
+export DOCKER_ENV_VARS_ALWAYS += \
+  DISABLE_MODULE \
+  DEFAULT_MODULE \
+  FEATURES_REQUIRED \
+  FEATURES_BLACKLIST \
+  FEATURES_OPTIONAL \
+  USEMODULE \
+  USEPKG \
+  KCONFIG_ADD_CONFIG \
+ #
 
 # Find which variables were set using the command line or the environment and
 # pass those to Docker.
@@ -80,6 +100,14 @@ DOCKER_ENVIRONMENT_CMDLINE_AUTO := $(foreach varname,$(DOCKER_ENV_VARS), \
   ))
 DOCKER_ENVIRONMENT_CMDLINE += $(strip $(DOCKER_ENVIRONMENT_CMDLINE_AUTO))
 
+# Pass variables potentially set through command line or environment
+# DOCKER_ENVIRONMENT_CMDLINE_ALWAYS is immediately assigned since this only wants
+# to capture variables set via the environment or command line. This will still
+# include variables set with '=' or '+=' in the application Makefile since these
+# are included before evaluating DOCKER_ENVIRONMENT_CMDLINE_ALWAYS
+DOCKER_ENVIRONMENT_CMDLINE_ALWAYS := $(foreach varname,$(DOCKER_ENV_VARS_ALWAYS), \
+  -e '$(varname)=$(subst ','\'',$(sort $($(varname))))')
+DOCKER_ENVIRONMENT_CMDLINE += $(strip $(DOCKER_ENVIRONMENT_CMDLINE_ALWAYS))
 
 # The variables set on the command line will also be passed on the command line
 # in Docker
@@ -240,6 +268,11 @@ DOCKER_APPDIR = $(DOCKER_RIOTPROJECT)/$(BUILDRELPATH)
 # Directory mapping in docker and directories environment variable configuration
 DOCKER_VOLUMES_AND_ENV += $(call docker_volume,$(ETC_LOCALTIME),/etc/localtime,ro)
 DOCKER_VOLUMES_AND_ENV += $(call docker_volume,$(RIOTBASE),$(DOCKER_RIOTBASE))
+# Selective components of Cargo to ensure crates are not re-downloaded (and
+# subsequently rebuilt) on every run. Not using all of ~/.cargo as ~/.cargo/bin
+# would be run by Cargo and that'd be very weird.
+DOCKER_VOLUMES_AND_ENV += $(call docker_volume,$(HOME)/.cargo/registry,$(DOCKER_BUILD_ROOT)/.cargo/registry)
+DOCKER_VOLUMES_AND_ENV += $(call docker_volume,$(HOME)/.cargo/git,$(DOCKER_BUILD_ROOT)/.cargo/git)
 DOCKER_VOLUMES_AND_ENV += -e 'RIOTBASE=$(DOCKER_RIOTBASE)'
 DOCKER_VOLUMES_AND_ENV += -e 'CCACHE_BASEDIR=$(DOCKER_RIOTBASE)'
 

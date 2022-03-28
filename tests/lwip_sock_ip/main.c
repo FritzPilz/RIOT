@@ -25,7 +25,7 @@
 
 #include "net/sock/ip.h"
 #include "test_utils/expect.h"
-#include "xtimer.h"
+#include "ztimer.h"
 
 #include "constants.h"
 #include "stack.h"
@@ -341,14 +341,14 @@ static void test_sock_ip_recv_buf4__success(void)
                                SOCK_FLAGS_REUSE_EP));
     expect(_inject_4packet(_TEST_ADDR4_REMOTE, _TEST_ADDR4_LOCAL, _TEST_PROTO, "ABCD",
                            sizeof("ABCD"), _TEST_NETIF));
-    assert(sizeof("ABCD") == sock_ip_recv_buf(&_sock, &data, &ctx,
+    expect(sizeof("ABCD") == sock_ip_recv_buf(&_sock, &data, &ctx,
                                               SOCK_NO_TIMEOUT, NULL));
-    assert(data != NULL);
-    assert(ctx != NULL);
-    assert(0 == sock_ip_recv_buf(&_sock, &data, &ctx, SOCK_NO_TIMEOUT, NULL));
-    assert(data == NULL);
-    assert(ctx == NULL);
-    assert(_check_net());
+    expect(data != NULL);
+    expect(ctx != NULL);
+    expect(0 == sock_ip_recv_buf(&_sock, &data, &ctx, SOCK_NO_TIMEOUT, NULL));
+    expect(data == NULL);
+    expect(ctx == NULL);
+    expect(_check_net());
 }
 
 static void test_sock_ip_send4__EAFNOSUPPORT(void)
@@ -421,7 +421,7 @@ static void test_sock_ip_send4__socketed_no_local_no_netif(void)
                                           _TEST_PROTO, NULL));
     expect(_check_4packet(0, _TEST_ADDR4_REMOTE, _TEST_PROTO, "ABCD",
                           sizeof("ABCD"), SOCK_ADDR_ANY_NETIF));
-    xtimer_usleep(1000);    /* let lwIP stack finish */
+    ztimer_sleep(ZTIMER_MSEC, 1);    /* let lwIP stack finish */
     expect(_check_net());
 }
 
@@ -438,7 +438,7 @@ static void test_sock_ip_send4__socketed_no_netif(void)
                                           _TEST_PROTO, NULL));
     expect(_check_4packet(_TEST_ADDR4_LOCAL, _TEST_ADDR4_REMOTE, _TEST_PROTO, "ABCD",
                           sizeof("ABCD"), SOCK_ADDR_ANY_NETIF));
-    xtimer_usleep(1000);    /* let lwIP stack finish */
+    ztimer_sleep(ZTIMER_MSEC, 1);    /* let lwIP stack finish */
     expect(_check_net());
 }
 
@@ -454,7 +454,7 @@ static void test_sock_ip_send4__socketed_no_local(void)
                                           _TEST_PROTO, NULL));
     expect(_check_4packet(0, _TEST_ADDR4_REMOTE, _TEST_PROTO, "ABCD",
                           sizeof("ABCD"), _TEST_NETIF));
-    xtimer_usleep(1000);    /* let lwIP stack finish */
+    ztimer_sleep(ZTIMER_MSEC, 1);    /* let lwIP stack finish */
     expect(_check_net());
 }
 
@@ -472,7 +472,7 @@ static void test_sock_ip_send4__socketed(void)
                                           _TEST_PROTO, NULL));
     expect(_check_4packet(_TEST_ADDR4_LOCAL, _TEST_ADDR4_REMOTE, _TEST_PROTO, "ABCD",
                           sizeof("ABCD"), _TEST_NETIF));
-    xtimer_usleep(1000);    /* let lwIP stack finish */
+    ztimer_sleep(ZTIMER_MSEC, 1);    /* let lwIP stack finish */
     expect(_check_net());
 }
 
@@ -492,7 +492,7 @@ static void test_sock_ip_send4__socketed_other_remote(void)
                                           _TEST_PROTO, &remote));
     expect(_check_4packet(_TEST_ADDR4_LOCAL, _TEST_ADDR4_REMOTE, _TEST_PROTO, "ABCD",
                           sizeof("ABCD"), _TEST_NETIF));
-    xtimer_usleep(1000);    /* let lwIP stack finish */
+    ztimer_sleep(ZTIMER_MSEC, 1);    /* let lwIP stack finish */
     expect(_check_net());
 }
 
@@ -507,7 +507,7 @@ static void test_sock_ip_send4__unsocketed_no_local_no_netif(void)
                                           _TEST_PROTO, &remote));
     expect(_check_4packet(0, _TEST_ADDR4_REMOTE, _TEST_PROTO, "ABCD",
                           sizeof("ABCD"), SOCK_ADDR_ANY_NETIF));
-    xtimer_usleep(1000);    /* let lwIP stack finish */
+    ztimer_sleep(ZTIMER_MSEC, 1);    /* let lwIP stack finish */
     expect(_check_net());
 }
 
@@ -524,7 +524,7 @@ static void test_sock_ip_send4__unsocketed_no_netif(void)
                                           _TEST_PROTO, &remote));
     expect(_check_4packet(_TEST_ADDR4_LOCAL, _TEST_ADDR4_REMOTE, _TEST_PROTO, "ABCD",
                           sizeof("ABCD"), SOCK_ADDR_ANY_NETIF));
-    xtimer_usleep(1000);    /* let lwIP stack finish */
+    ztimer_sleep(ZTIMER_MSEC, 1);    /* let lwIP stack finish */
     expect(_check_net());
 }
 
@@ -540,7 +540,7 @@ static void test_sock_ip_send4__unsocketed_no_local(void)
                                           _TEST_PROTO, &remote));
     expect(_check_4packet(0, _TEST_ADDR4_REMOTE, _TEST_PROTO, "ABCD",
                           sizeof("ABCD"), _TEST_NETIF));
-    xtimer_usleep(1000);    /* let lwIP stack finish */
+    ztimer_sleep(ZTIMER_MSEC, 1);    /* let lwIP stack finish */
     expect(_check_net());
 }
 
@@ -558,7 +558,7 @@ static void test_sock_ip_send4__unsocketed(void)
                                           _TEST_PROTO, &remote));
     expect(_check_4packet(_TEST_ADDR4_LOCAL, _TEST_ADDR4_REMOTE, _TEST_PROTO, "ABCD",
                           sizeof("ABCD"), _TEST_NETIF));
-    xtimer_usleep(1000);    /* let lwIP stack finish */
+    ztimer_sleep(ZTIMER_MSEC, 1);    /* let lwIP stack finish */
     expect(_check_net());
 }
 
@@ -571,7 +571,7 @@ static void test_sock_ip_send4__no_sock_no_netif(void)
                                           _TEST_PROTO, &remote));
     expect(_check_4packet(0, _TEST_ADDR4_REMOTE, _TEST_PROTO, "ABCD",
                           sizeof("ABCD"), SOCK_ADDR_ANY_NETIF));
-    xtimer_usleep(1000);    /* let lwIP stack finish */
+    ztimer_sleep(ZTIMER_MSEC, 1);    /* let lwIP stack finish */
     expect(_check_net());
 }
 
@@ -585,7 +585,7 @@ static void test_sock_ip_send4__no_sock(void)
                                           _TEST_PROTO, &remote));
     expect(_check_4packet(0, _TEST_ADDR4_REMOTE, _TEST_PROTO, "ABCD",
                           sizeof("ABCD"), _TEST_NETIF));
-    xtimer_usleep(1000);    /* let lwIP stack finish */
+    ztimer_sleep(ZTIMER_MSEC, 1);    /* let lwIP stack finish */
     expect(_check_net());
 }
 #endif  /* MODULE_LWIP_IPV4 */
@@ -908,18 +908,18 @@ static void test_sock_ip_recv_buf6__success(void)
                                          .family = AF_INET6 };
     void *data = NULL, *ctx = NULL;
 
-    assert(0 == sock_ip_create(&_sock, &local, &remote, _TEST_PROTO,
+    expect(0 == sock_ip_create(&_sock, &local, &remote, _TEST_PROTO,
                                SOCK_FLAGS_REUSE_EP));
-    assert(_inject_6packet(&src_addr, &dst_addr, _TEST_PROTO, "ABCD",
+    expect(_inject_6packet(&src_addr, &dst_addr, _TEST_PROTO, "ABCD",
                            sizeof("ABCD"), _TEST_NETIF));
-    assert(sizeof("ABCD") == sock_ip_recv_buf(&_sock, &data, &ctx, SOCK_NO_TIMEOUT,
+    expect(sizeof("ABCD") == sock_ip_recv_buf(&_sock, &data, &ctx, SOCK_NO_TIMEOUT,
                                               NULL));
-    assert(data != NULL);
-    assert(ctx != NULL);
-    assert(0 == sock_ip_recv_buf(&_sock, &data, &ctx, SOCK_NO_TIMEOUT, NULL));
-    assert(data == NULL);
-    assert(ctx == NULL);
-    assert(_check_net());
+    expect(data != NULL);
+    expect(ctx != NULL);
+    expect(0 == sock_ip_recv_buf(&_sock, &data, &ctx, SOCK_NO_TIMEOUT, NULL));
+    expect(data == NULL);
+    expect(ctx == NULL);
+    expect(_check_net());
 }
 
 static void test_sock_ip_send6__EAFNOSUPPORT(void)
@@ -993,7 +993,7 @@ static void test_sock_ip_send6__socketed_no_local_no_netif(void)
                                           _TEST_PROTO, NULL));
     expect(_check_6packet(&ipv6_addr_unspecified, &dst_addr, _TEST_PROTO, "ABCD",
                           sizeof("ABCD"), SOCK_ADDR_ANY_NETIF));
-    xtimer_usleep(1000);    /* let lwIP stack finish */
+    ztimer_sleep(ZTIMER_MSEC, 1);    /* let lwIP stack finish */
     expect(_check_net());
 }
 
@@ -1012,7 +1012,7 @@ static void test_sock_ip_send6__socketed_no_netif(void)
                                           _TEST_PROTO, NULL));
     expect(_check_6packet(&src_addr, &dst_addr, _TEST_PROTO, "ABCD",
                           sizeof("ABCD"), SOCK_ADDR_ANY_NETIF));
-    xtimer_usleep(1000);    /* let lwIP stack finish */
+    ztimer_sleep(ZTIMER_MSEC, 1);    /* let lwIP stack finish */
     expect(_check_net());
 }
 
@@ -1029,7 +1029,7 @@ static void test_sock_ip_send6__socketed_no_local(void)
                                           _TEST_PROTO, NULL));
     expect(_check_6packet(&ipv6_addr_unspecified, &dst_addr, _TEST_PROTO, "ABCD",
                           sizeof("ABCD"), _TEST_NETIF));
-    xtimer_usleep(1000);    /* let lwIP stack finish */
+    ztimer_sleep(ZTIMER_MSEC, 1);    /* let lwIP stack finish */
     expect(_check_net());
 }
 
@@ -1049,7 +1049,7 @@ static void test_sock_ip_send6__socketed(void)
                                           _TEST_PROTO, NULL));
     expect(_check_6packet(&src_addr, &dst_addr, _TEST_PROTO, "ABCD",
                           sizeof("ABCD"), _TEST_NETIF));
-    xtimer_usleep(1000);    /* let lwIP stack finish */
+    ztimer_sleep(ZTIMER_MSEC, 1);    /* let lwIP stack finish */
     expect(_check_net());
 }
 
@@ -1071,7 +1071,7 @@ static void test_sock_ip_send6__socketed_other_remote(void)
                                           _TEST_PROTO, &remote));
     expect(_check_6packet(&src_addr, &dst_addr, _TEST_PROTO, "ABCD",
                           sizeof("ABCD"), _TEST_NETIF));
-    xtimer_usleep(1000);    /* let lwIP stack finish */
+    ztimer_sleep(ZTIMER_MSEC, 1);    /* let lwIP stack finish */
     expect(_check_net());
 }
 
@@ -1087,7 +1087,7 @@ static void test_sock_ip_send6__unsocketed_no_local_no_netif(void)
                                           _TEST_PROTO, &remote));
     expect(_check_6packet(&ipv6_addr_unspecified, &dst_addr, _TEST_PROTO, "ABCD",
                           sizeof("ABCD"), SOCK_ADDR_ANY_NETIF));
-    xtimer_usleep(1000);    /* let lwIP stack finish */
+    ztimer_sleep(ZTIMER_MSEC, 1);    /* let lwIP stack finish */
     expect(_check_net());
 }
 
@@ -1106,7 +1106,7 @@ static void test_sock_ip_send6__unsocketed_no_netif(void)
                                           _TEST_PROTO, &remote));
     expect(_check_6packet(&src_addr, &dst_addr, _TEST_PROTO, "ABCD",
                           sizeof("ABCD"), SOCK_ADDR_ANY_NETIF));
-    xtimer_usleep(1000);    /* let lwIP stack finish */
+    ztimer_sleep(ZTIMER_MSEC, 1);    /* let lwIP stack finish */
     expect(_check_net());
 }
 
@@ -1123,7 +1123,7 @@ static void test_sock_ip_send6__unsocketed_no_local(void)
                                           _TEST_PROTO, &remote));
     expect(_check_6packet(&ipv6_addr_unspecified, &dst_addr, _TEST_PROTO, "ABCD",
                           sizeof("ABCD"), _TEST_NETIF));
-    xtimer_usleep(1000);    /* let lwIP stack finish */
+    ztimer_sleep(ZTIMER_MSEC, 1);    /* let lwIP stack finish */
     expect(_check_net());
 }
 
@@ -1143,7 +1143,7 @@ static void test_sock_ip_send6__unsocketed(void)
                                           _TEST_PROTO, &remote));
     expect(_check_6packet(&src_addr, &dst_addr, _TEST_PROTO, "ABCD",
                           sizeof("ABCD"), _TEST_NETIF));
-    xtimer_usleep(1000);    /* let lwIP stack finish */
+    ztimer_sleep(ZTIMER_MSEC, 1);    /* let lwIP stack finish */
     expect(_check_net());
 }
 
@@ -1157,7 +1157,7 @@ static void test_sock_ip_send6__no_sock_no_netif(void)
                                           _TEST_PROTO, &remote));
     expect(_check_6packet(&ipv6_addr_unspecified, &dst_addr, _TEST_PROTO, "ABCD",
                           sizeof("ABCD"), SOCK_ADDR_ANY_NETIF));
-    xtimer_usleep(1000);    /* let lwIP stack finish */
+    ztimer_sleep(ZTIMER_MSEC, 1);    /* let lwIP stack finish */
     expect(_check_net());
 }
 
@@ -1172,7 +1172,7 @@ static void test_sock_ip_send6__no_sock(void)
                                           _TEST_PROTO, &remote));
     expect(_check_6packet(&ipv6_addr_unspecified, &dst_addr, _TEST_PROTO, "ABCD",
                           sizeof("ABCD"), _TEST_NETIF));
-    xtimer_usleep(1000);    /* let lwIP stack finish */
+    ztimer_sleep(ZTIMER_MSEC, 1);    /* let lwIP stack finish */
     expect(_check_net());
 }
 #endif  /* MODULE_LWIP_IPV6 */

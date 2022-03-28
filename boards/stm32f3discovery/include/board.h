@@ -98,9 +98,14 @@ extern "C" {
 /** @} */
 
 /**
- * @brief Initialize board specific hardware, including clock, LEDs and std-IO
+ * @name L3GD20 (Rev. C01, D01), I3G4250D (Rev. E02)
+ * @{
  */
-void board_init(void);
+#define L3GXXXX_SPI_DEV     SPI_DEV(0)          /**< SPI bus used for L3Gxxxx */
+#define L3GXXXX_SPI_CS      GPIO_PIN(PORT_E, 3) /**< SPI CS pin used for L3Gxxxx */
+#define L3GXXXX_INT1_PIN    GPIO_PIN(PORT_E, 0) /**< INT1 pin used for L3Gxxxx */
+#define L3GXXXX_INT2_PIN    GPIO_PIN(PORT_E, 1) /**< INT2/DRDY pin used for L3Gxxxx */
+/** @} */
 
 #ifdef __cplusplus
 }

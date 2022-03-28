@@ -14,6 +14,9 @@ endif
 ifneq (,$(filter mci,$(USEMODULE)))
   SRC += sc_disk.c
 endif
+ifneq (,$(filter nice,$(USEMODULE)))
+  SRC += sc_nice.c
+endif
 ifneq (,$(filter periph_pm,$(USEMODULE)))
   SRC += sc_pm.c
 endif
@@ -37,6 +40,9 @@ ifneq (,$(filter at30tse75x,$(USEMODULE)))
 endif
 ifneq (,$(filter gnrc_netif,$(USEMODULE)))
   SRC += sc_gnrc_netif.c
+endif
+ifneq (,$(filter gnrc_udp_cmd,$(USEMODULE)))
+  SRC += sc_gnrc_udp.c
 endif
 ifneq (,$(filter netstats_neighbor,$(USEMODULE)))
   SRC += sc_netstats_nb.c

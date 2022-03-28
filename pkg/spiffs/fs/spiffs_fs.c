@@ -227,7 +227,6 @@ static int _statvfs(vfs_mount_t *mountp, const char *restrict path, struct statv
         return -EFAULT;
     }
     spiffs_desc_t *fs_desc = mountp->private_data;
-    memset(buf, 0, sizeof(*buf));
 
     uint32_t total;
     uint32_t used;
@@ -332,13 +331,20 @@ static off_t _lseek(vfs_file_t *filp, off_t off, int whence)
     return spiffs_err_to_errno(SPIFFS_lseek(&fs_desc->fs, filp->private_data.value, off, s_whence));
 }
 
+static int _fsync(vfs_file_t *filp)
+{
+    spiffs_desc_t *fs_desc = filp->mp->private_data;
+
+    int ret = SPIFFS_fflush(&fs_desc->fs, filp->private_data.value);
+
+    return spiffs_err_to_errno(ret);
+}
+
 static int _fstat(vfs_file_t *filp, struct stat *buf)
 {
     spiffs_desc_t *fs_desc = filp->mp->private_data;
     spiffs_stat stat;
     s32_t ret;
-
-    memset(buf, 0, sizeof(*buf));
 
     ret = SPIFFS_fstat(&fs_desc->fs, filp->private_data.value, &stat);
 
@@ -514,6 +520,7 @@ static const vfs_file_ops_t spiffs_file_ops = {
     .write = _write,
     .lseek = _lseek,
     .fstat = _fstat,
+    .fsync = _fsync,
 };
 
 static const vfs_dir_ops_t spiffs_dir_ops = {

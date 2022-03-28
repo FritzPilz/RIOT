@@ -31,6 +31,7 @@
 #include "bitarithm.h"
 #include "cpu.h"
 #include "mutex.h"
+#include "periph/gpio.h"
 #include "periph/spi.h"
 #include "pm_layered.h"
 
@@ -166,13 +167,13 @@ int spi_init_cs(spi_t bus, spi_cs_t cs)
     if (bus >= SPI_NUMOF) {
         return SPI_NODEV;
     }
-    if (cs == SPI_CS_UNDEF ||
+    if (!gpio_is_valid(cs) ||
         (((cs & SPI_HWCS_MASK) == SPI_HWCS_MASK) && (cs & ~(SPI_HWCS_MASK)))) {
         return SPI_NOCS;
     }
 
     if (cs == SPI_HWCS_MASK) {
-        if (spi_config[bus].cs_pin == GPIO_UNDEF) {
+        if (!gpio_is_valid(spi_config[bus].cs_pin)) {
             return SPI_NOCS;
         }
 #ifdef CPU_FAM_STM32F1
@@ -191,7 +192,7 @@ int spi_init_cs(spi_t bus, spi_cs_t cs)
 }
 
 #ifdef MODULE_PERIPH_SPI_GPIO_MODE
-int spi_init_with_gpio_mode(spi_t bus, spi_gpio_mode_t mode)
+int spi_init_with_gpio_mode(spi_t bus, const spi_gpio_mode_t* mode)
 {
     assert(bus < SPI_NUMOF);
 
@@ -202,17 +203,17 @@ int spi_init_with_gpio_mode(spi_t bus, spi_gpio_mode_t mode)
     return ret;
 #else
     if (gpio_is_valid(spi_config[bus].mosi_pin)) {
-        ret += gpio_init(spi_config[bus].mosi_pin, mode.mosi);
+        ret += gpio_init(spi_config[bus].mosi_pin, mode->mosi);
         gpio_init_af(spi_config[bus].mosi_pin, spi_config[bus].mosi_af);
     }
 
     if (gpio_is_valid(spi_config[bus].miso_pin)) {
-        ret += gpio_init(spi_config[bus].miso_pin, mode.miso);
+        ret += gpio_init(spi_config[bus].miso_pin, mode->miso);
         gpio_init_af(spi_config[bus].miso_pin, spi_config[bus].miso_af);
     }
 
     if (gpio_is_valid(spi_config[bus].sclk_pin)) {
-        ret += gpio_init(spi_config[bus].sclk_pin, mode.sclk);
+        ret += gpio_init(spi_config[bus].sclk_pin, mode->sclk);
         gpio_init_af(spi_config[bus].sclk_pin, spi_config[bus].sclk_af);
     }
     return ret;
@@ -393,7 +394,7 @@ void spi_transfer_bytes(spi_t bus, spi_cs_t cs, bool cont,
 
     /* active the given chip select line */
     dev(bus)->CR1 |= (SPI_CR1_SPE);     /* this pulls the HW CS line low */
-    if ((cs != SPI_HWCS_MASK) && (cs != SPI_CS_UNDEF)) {
+    if ((cs != SPI_HWCS_MASK) && gpio_is_valid(cs)) {
         gpio_clear((gpio_t)cs);
     }
 
@@ -409,7 +410,7 @@ void spi_transfer_bytes(spi_t bus, spi_cs_t cs, bool cont,
 #endif
 
     /* release the chip select if not specified differently */
-    if ((!cont) && (cs != SPI_CS_UNDEF)) {
+    if ((!cont) && gpio_is_valid(cs)) {
         dev(bus)->CR1 &= ~(SPI_CR1_SPE);    /* pull HW CS line high */
         if (cs != SPI_HWCS_MASK) {
             gpio_set((gpio_t)cs);

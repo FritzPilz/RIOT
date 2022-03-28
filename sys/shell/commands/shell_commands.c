@@ -187,6 +187,10 @@ extern int _i2c_scan(int argc, char **argv);
 extern int _loramac_handler(int argc, char **argv);
 #endif
 
+#ifdef MODULE_NICE
+extern int _sc_nice(int argc, char **argv);
+#endif
+
 #ifdef MODULE_NIMBLE_NETIF
 extern int _nimble_netif_handler(int argc, char **argv);
 #endif
@@ -205,6 +209,10 @@ extern int _cryptoauth(int argc, char **argv);
 
 #ifdef MODULE_USB_BOARD_RESET
 extern int _bootloader_handler(int argc, char **argv);
+#endif
+
+#ifdef MODULE_GNRC_UDP_CMD
+extern int _gnrc_udp_cmd(int argc, char **argv);
 #endif
 
 const shell_command_t _shell_command_list[] = {
@@ -263,6 +271,9 @@ const shell_command_t _shell_command_list[] = {
 #ifdef MODULE_GNRC_IPV6_NIB
     {"nib", "Configure neighbor information base", _gnrc_ipv6_nib},
 #endif
+#ifdef MODULE_NICE
+    {"nice", "Change priority of an active thread", _sc_nice},
+#endif
 #ifdef MODULE_NETSTATS_NEIGHBOR
     {"neigh", "Show neighbor statistics", _netstats_nb},
 #endif
@@ -302,6 +313,9 @@ const shell_command_t _shell_command_list[] = {
 #endif
 #ifdef MODULE_GNRC_SIXLOWPAN_FRAG_STATS
     {"6lo_frag", "6LoWPAN fragment statistics", _gnrc_6lo_frag_stats },
+#endif
+#ifdef MODULE_GNRC_UDP_CMD
+    { "udp", "send data over UDP and listen on UDP ports", _gnrc_udp_cmd },
 #endif
 #ifdef MODULE_SAUL_REG
     {"saul", "interact with sensors and actuators using SAUL", _saul },

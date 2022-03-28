@@ -20,7 +20,12 @@ ifneq (,$(filter gnrc_gomach,$(USEMODULE)))
   USEMODULE += gnrc_nettype_gomach
   USEMODULE += random
   USEMODULE += xtimer
+  ifneq (,$(filter ztimer_xtimer_compat,$(USEMODULE)))
+    # requires 64bit timestamps
+    USEMODULE += ztimer64_xtimer_compat
+  endif
   USEMODULE += gnrc_mac
+  USEMODULE += ztimer_no_periph_rtt
   FEATURES_REQUIRED += periph_rtt
 endif
 
@@ -60,6 +65,7 @@ endif
 ifneq (,$(filter gnrc_dhcpv6_client_simple_pd,$(USEMODULE)))
   USEMODULE += gnrc_dhcpv6_client
   USEMODULE += dhcpv6_client_ia_pd
+  CFLAGS += -DCONFIG_GNRC_IPV6_NIB_ADV_ROUTER=0
 endif
 
 ifneq (,$(filter gnrc_uhcpc,$(USEMODULE)))
@@ -67,6 +73,7 @@ ifneq (,$(filter gnrc_uhcpc,$(USEMODULE)))
   USEMODULE += uhcpc
   USEMODULE += gnrc_sock_udp
   USEMODULE += fmt
+  CFLAGS += -DCONFIG_GNRC_IPV6_NIB_ADV_ROUTER=0
 endif
 
 ifneq (,$(filter gnrc_%,$(filter-out gnrc_lorawan gnrc_netapi gnrc_netreg gnrc_netif% gnrc_pkt%,$(USEMODULE))))
@@ -74,6 +81,7 @@ ifneq (,$(filter gnrc_%,$(filter-out gnrc_lorawan gnrc_netapi gnrc_netreg gnrc_n
 endif
 
 ifneq (,$(filter gnrc_sock_%,$(USEMODULE)))
+  USEMODULE += iolist
   USEMODULE += gnrc_sock
   ifneq (,$(filter sock_aux_timestamp,$(USEMODULE)))
     USEMODULE += gnrc_netif_timestamp
@@ -124,7 +132,7 @@ ifneq (,$(filter gnrc_ipv6_auto_subnets,$(USEMODULE)))
   USEMODULE += gnrc_ipv6_nib_rtr_adv_pio_cb
   CFLAGS += -DCONFIG_GNRC_IPV6_NIB_ADV_ROUTER=0
   CFLAGS += -DCONFIG_GNRC_IPV6_NIB_ADD_RIO_IN_LAST_RA=1
-
+  USEMODULE += xtimer
   ifeq (,$(filter gnrc_ipv6_auto_subnets_simple,$(USEMODULE)))
     DEFAULT_MODULE += gnrc_ipv6_auto_subnets_auto_init
     USEMODULE += gnrc_udp
@@ -135,6 +143,7 @@ ifneq (,$(filter gnrc_netif,$(USEMODULE)))
   USEMODULE += netif
   USEMODULE += l2util
   USEMODULE += fmt
+  USEMODULE += ztimer_msec
   ifneq (,$(filter netdev_ieee802154_submac,$(USEMODULE)))
     USEMODULE += gnrc_netif_pktq
   endif
@@ -394,6 +403,11 @@ ifneq (,$(filter gnrc_udp,$(USEMODULE)))
   USEMODULE += udp
 endif
 
+ifneq (,$(filter gnrc_udp_cmd,$(USEMODULE)))
+  USEMODULE += gnrc_udp
+  USEMODULE += gnrc_pktdump
+endif
+
 ifneq (,$(filter gnrc_tcp,$(USEMODULE)))
   DEFAULT_MODULE += auto_init_gnrc_tcp
   USEMODULE += gnrc_nettype_tcp
@@ -442,6 +456,12 @@ endif
 
 ifneq (,$(filter gnrc_pktbuf_%, $(USEMODULE)))
   USEMODULE += gnrc_pktbuf # make MODULE_GNRC_PKTBUF macro available for all implementations
+endif
+
+ifneq (,$(filter gnrc_pktbuf_cmd,$(USEMODULE)))
+  ifneq (,$(filter gnrc_pktbuf_static,$(USEMODULE)))
+    USEMODULE += od
+  endif
 endif
 
 ifneq (,$(filter gnrc_netif_%,$(USEMODULE)))

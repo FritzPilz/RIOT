@@ -26,6 +26,14 @@ ifneq (,$(filter nimble_controller,$(USEMODULE)))
   ifneq (,$(filter nimble_drivers_nrf5x,$(USEMODULE)))
     INCLUDES += $(NIMIBASE)/nimble/drivers/$(CPU_FAM)/include
   endif
+
+  # Enable additional PHY modes if requested by the build
+  ifneq (,$(filter ble_phy_2mbit,$(FEATURES_USED)))
+    CFLAGS += -DMYNEWT_VAL_BLE_LL_CFG_FEAT_LE_2M_PHY=1
+  endif
+  ifneq (,$(filter ble_phy_coded,$(FEATURES_USED)))
+    CFLAGS += -DMYNEWT_VAL_BLE_LL_CFG_FEAT_LE_CODED_PHY=1
+  endif
 endif
 
 # include nimble host headers
@@ -94,18 +102,6 @@ ifneq (,$(filter nimble_adv_ext,$(USEMODULE)))
   endif
 endif
 
-ifneq (,$(filter nimble_phy_2mbit,$(USEMODULE)))
-  ifneq (,$(filter nimble_controller,$(USEMODULE)))
-    CFLAGS += -DMYNEWT_VAL_BLE_LL_CFG_FEAT_LE_2M_PHY=1
-  endif
-endif
-
-ifneq (,$(filter nimble_phy_coded,$(USEMODULE)))
-  ifneq (,$(filter nimble_controller,$(USEMODULE)))
-    CFLAGS += -DMYNEWT_VAL_BLE_LL_CFG_FEAT_LE_CODED_PHY=1
-  endif
-endif
-
 ifneq (,$(filter nimble_netif,$(USEMODULE)))
   INCLUDES += -I$(RIOTPKG)/nimble/netif/include
 
@@ -134,6 +130,17 @@ ifneq (,$(filter nimble_netif,$(USEMODULE)))
     CFLAGS += -DMYNEWT_VAL_BLE_LL_MAX_PKT_SIZE=251
     CFLAGS += -DMYNEWT_VAL_BLE_LL_CONN_INIT_SLOTS=1
     CFLAGS += -DMYNEWT_VAL_BLE_LL_CFG_FEAT_DATA_LEN_EXT=1
+  endif
+else
+  ifneq (,$(filter stdio_nimble,$(USEMODULE)))
+    # the maximum fragment size that we can receive. For maximum efficiency this
+    # should be equal to the maximum configured link layer packet size.
+    # WARNING: this value MUST never be larger than MYNEWT_VAL_BLE_LL_MAX_PKT_SIZE
+    CFLAGS += -DMYNEWT_VAL_BLE_L2CAP_COC_MPS=251
+
+    # in order to fit a 251 byte COC data segment into a single mbuf buffer, the
+    # used block size must be at least 297 byte (251 data + 48 overhead)
+    CFLAGS += -DMYNEWT_VAL_MSYS_1_BLOCK_SIZE="(MYNEWT_VAL_BLE_L2CAP_COC_MPS + 48)"
   endif
 endif
 

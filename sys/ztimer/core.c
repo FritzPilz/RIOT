@@ -37,10 +37,10 @@
 #include "debug.h"
 
 static void _add_entry_to_list(ztimer_clock_t *clock, ztimer_base_t *entry);
-static void _del_entry_from_list(ztimer_clock_t *clock, ztimer_base_t *entry);
+static bool _del_entry_from_list(ztimer_clock_t *clock, ztimer_base_t *entry);
 static void _ztimer_update(ztimer_clock_t *clock);
 static void _ztimer_print(const ztimer_clock_t *clock);
-static void _ztimer_update_head_offset(ztimer_clock_t *clock);
+static uint32_t _ztimer_update_head_offset(ztimer_clock_t *clock);
 
 #ifdef MODULE_ZTIMER_EXTEND
 static inline uint32_t _min_u32(uint32_t a, uint32_t b)
@@ -68,28 +68,31 @@ unsigned ztimer_is_set(const ztimer_clock_t *clock, const ztimer_t *timer)
     return res;
 }
 
-void ztimer_remove(ztimer_clock_t *clock, ztimer_t *timer)
+bool ztimer_remove(ztimer_clock_t *clock, ztimer_t *timer)
 {
+    bool was_removed = false;
     unsigned state = irq_disable();
 
     if (_is_set(clock, timer)) {
         _ztimer_update_head_offset(clock);
-        _del_entry_from_list(clock, &timer->base);
+        was_removed = _del_entry_from_list(clock, &timer->base);
 
         _ztimer_update(clock);
     }
 
     irq_restore(state);
+    return was_removed;
 }
 
-void ztimer_set(ztimer_clock_t *clock, ztimer_t *timer, uint32_t val)
+uint32_t ztimer_set(ztimer_clock_t *clock, ztimer_t *timer, uint32_t val)
 {
     DEBUG("ztimer_set(): %p: set %p at %" PRIu32 " offset %" PRIu32 "\n",
           (void *)clock, (void *)timer, clock->ops->now(clock), val);
 
     unsigned state = irq_disable();
 
-    _ztimer_update_head_offset(clock);
+    uint32_t now = _ztimer_update_head_offset(clock);
+
     if (_is_set(clock, timer)) {
         _del_entry_from_list(clock, &timer->base);
     }
@@ -115,6 +118,7 @@ void ztimer_set(ztimer_clock_t *clock, ztimer_t *timer, uint32_t val)
     }
 
     irq_restore(state);
+    return now;
 }
 
 static void _add_entry_to_list(ztimer_clock_t *clock, ztimer_base_t *entry)
@@ -187,7 +191,7 @@ ztimer_now_t _ztimer_now_extend(ztimer_clock_t *clock)
 }
 #endif /* MODULE_ZTIMER_EXTEND */
 
-static void _ztimer_update_head_offset(ztimer_clock_t *clock)
+static uint32_t _ztimer_update_head_offset(ztimer_clock_t *clock)
 {
     uint32_t old_base = clock->list.offset;
     uint32_t now = ztimer_now(clock);
@@ -227,10 +231,13 @@ static void _ztimer_update_head_offset(ztimer_clock_t *clock)
     }
 
     clock->list.offset = now;
+    return now;
 }
 
-static void _del_entry_from_list(ztimer_clock_t *clock, ztimer_base_t *entry)
+static bool _del_entry_from_list(ztimer_clock_t *clock, ztimer_base_t *entry)
 {
+    bool was_removed = false;
+
     DEBUG("_del_entry_from_list()\n");
     ztimer_base_t *list = &clock->list;
 
@@ -251,6 +258,7 @@ static void _del_entry_from_list(ztimer_clock_t *clock, ztimer_base_t *entry)
                 list_entry->offset += entry->offset;
             }
 
+            was_removed = true;
             /* reset the entry's next pointer so _is_set() considers it unset */
             entry->next = NULL;
             break;
@@ -265,6 +273,8 @@ static void _del_entry_from_list(ztimer_clock_t *clock, ztimer_base_t *entry)
         pm_unblock(clock->block_pm_mode);
     }
 #endif
+
+    return was_removed;
 }
 
 static ztimer_t *_now_next(ztimer_clock_t *clock)
@@ -363,20 +373,23 @@ void ztimer_handler(ztimer_clock_t *clock)
     }
 #endif
 
-    clock->list.offset += clock->list.next->offset;
-    clock->list.next->offset = 0;
+    if (clock->list.next) {
+        clock->list.offset += clock->list.next->offset;
+        clock->list.next->offset = 0;
 
-    ztimer_t *entry = _now_next(clock);
-    while (entry) {
-        DEBUG("ztimer_handler(): trigger %p->%p at %" PRIu32 "\n",
-              (void *)entry, (void *)entry->base.next, clock->ops->now(clock));
-        entry->callback(entry->arg);
-        entry = _now_next(clock);
-        if (!entry) {
-            /* See if any more alarms expired during callback processing */
-            /* This reduces the number of implicit calls to clock->ops->now() */
-            _ztimer_update_head_offset(clock);
+        ztimer_t *entry = _now_next(clock);
+        while (entry) {
+            DEBUG("ztimer_handler(): trigger %p->%p at %" PRIu32 "\n",
+                  (void *)entry, (void *)entry->base.next, clock->ops->now(
+                      clock));
+            entry->callback(entry->arg);
             entry = _now_next(clock);
+            if (!entry) {
+                /* See if any more alarms expired during callback processing */
+                /* This reduces the number of implicit calls to clock->ops->now() */
+                _ztimer_update_head_offset(clock);
+                entry = _now_next(clock);
+            }
         }
     }
 

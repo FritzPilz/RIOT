@@ -10,7 +10,7 @@
 
 # include external modules dependencies
 # processed before RIOT ones to be evaluated before the 'default' rules.
--include $(EXTERNAL_MODULE_PATHS:%=%/Makefile.dep)
+-include $(EXTERNAL_MODULE_PATHS:%=%Makefile.dep)
 
 # pull dependencies from sys and drivers
 include $(RIOTBASE)/sys/Makefile.dep
@@ -20,7 +20,7 @@ include $(RIOTBASE)/drivers/Makefile.dep
 -include $(sort $(USEMODULE:%=$(RIOTBASE)/drivers/%/Makefile.dep))
 
 # pull dependencies from packages
--include $(USEPKG:%=$(RIOTPKG)/%/Makefile.dep)
+-include $(PKG_PATHS:%=%Makefile.dep)
 
 ifneq (,$(filter mpu_stack_guard,$(USEMODULE)))
   FEATURES_REQUIRED += cortexm_mpu

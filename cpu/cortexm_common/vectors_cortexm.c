@@ -138,6 +138,9 @@ void reset_handler_default(void)
     }
 
 #ifdef CPU_HAS_BACKUP_RAM
+#if BACKUP_RAM_HAS_INIT
+    backup_ram_init();
+#endif
     if (!cpu_woke_from_backup() ||
         CPU_BACKUP_RAM_NOT_RETAINED) {
 
@@ -159,10 +162,7 @@ void reset_handler_default(void)
 #endif /* CPU_HAS_BACKUP_RAM */
 
 #ifdef MODULE_MPU_NOEXEC_RAM
-    /* Mark the RAM non executable. This is a protection mechanism which
-     * makes exploitation of buffer overflows significantly harder.
-     *
-     * This marks the memory region from 0x20000000 to 0x3FFFFFFF as non
+    /* This marks the memory region from 0x20000000 to 0x3FFFFFFF as non
      * executable. This is the Cortex-M SRAM region used for on-chip RAM.
      */
     mpu_configure(

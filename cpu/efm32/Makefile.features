@@ -11,6 +11,7 @@ endif
 FEATURES_PROVIDED += arch_efm32
 FEATURES_PROVIDED += periph_cpuid
 FEATURES_PROVIDED += periph_flashpage
+FEATURES_PROVIDED += periph_flashpage_in_address_space
 FEATURES_PROVIDED += periph_flashpage_pagewise
 FEATURES_PROVIDED += periph_gpio periph_gpio_irq
 FEATURES_PROVIDED += periph_rtt_set_counter
@@ -38,5 +39,5 @@ include $(RIOTCPU)/cortexm_common/Makefile.features
 # This configuration enables modules that are only available when using Kconfig
 # module modelling
 ifeq (1,$(TEST_KCONFIG))
-  KCONFIG_ADD_CONFIG += $(RIOTCPU)/efm32/efm32.config
+  KCONFIG_CPU_CONFIG += $(RIOTCPU)/efm32/efm32.config
 endif

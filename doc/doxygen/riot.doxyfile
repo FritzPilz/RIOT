@@ -32,7 +32,7 @@ DOXYFILE_ENCODING      = UTF-8
 # title of most generated pages and in a few other places.
 # The default value is: My Project.
 
-PROJECT_NAME           =
+PROJECT_NAME           = "RIOT OS"
 
 # The PROJECT_NUMBER tag can be used to enter a project or revision number. This
 # could be handy for archiving the generated documentation or if some version
@@ -275,7 +275,9 @@ OPTIMIZE_OUTPUT_VHDL   = NO
 # Note that for custom extensions you also need to set FILE_PATTERNS otherwise
 # the files are not read by doxygen.
 
-EXTENSION_MAPPING      =
+# Python is close enough that we can have Makefile comments starting with `##`
+# that are both recognized by Doxygen and comments to Make
+EXTENSION_MAPPING      = mk=Python
 
 # If the MARKDOWN_SUPPORT tag is enabled then doxygen pre-processes all comments
 # according to the Markdown format, which allows for more readable
@@ -762,15 +764,19 @@ INPUT                  = ../../doc.txt \
                          src/porting-boards.md \
                          src/driver-guide.md \
                          src/getting-started.md \
+                         src/build-in-docker.md \
                          ../../tests/README.md \
                          src/build-system-basics.md \
                          src/kconfig/kconfig.md \
                          src/using-cpp.md \
+                         src/using-rust.md \
                          src/advanced-build-system-tricks.md \
+                         src/debugging-aids.md \
                          src/emulators.md \
                          src/release-cycle.md \
                          src/changelog.md \
-                         ../../LOSTANDFOUND.md
+                         ../../LOSTANDFOUND.md \
+                         ../../makefiles/pseudomodules.inc.mk
 
 # This tag can be used to specify the character encoding of the source files
 # that doxygen parses. Internally doxygen uses the UTF-8 encoding. Doxygen uses
@@ -854,7 +860,7 @@ EXCLUDE_SYMBOLS        = *CMSIS* \
 # that contain example code fragments that are included (see the \include
 # command).
 
-EXAMPLE_PATH           =
+EXAMPLE_PATH           = ../../
 
 # If the value of the EXAMPLE_PATH tag contains directories, you can use the
 # EXAMPLE_PATTERNS tag to specify one or more wildcard pattern (like *.cpp and

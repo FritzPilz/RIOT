@@ -29,16 +29,6 @@ extern "C" {
 #endif
 
 /**
- * @name    Clock configuration
- * @{
- */
-#ifndef CLOCK_CORECLOCK
-/* Using 32MHz internal oscillator as default clock source */
-#define CLOCK_CORECLOCK     (32000000ul)
-#endif
-/** @} */
-
-/**
  * @name    LED configuration
  * @{
  */
@@ -76,11 +66,6 @@ extern "C" {
 extern mtd_dev_t *mtd0;
 #define MTD_0 mtd0
 /** @} */
-
-/**
- * @brief   Initialize board specific hardware
- */
-void board_init(void);
 
 #ifdef __cplusplus
 }

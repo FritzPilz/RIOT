@@ -125,24 +125,29 @@
 #endif
 /** @} */
 
+#ifndef DOXYGEN
+/**
+ * @name    Default configuration parameters for ESP WiFi Enterprise netdev
+ * @{
+ */
+#ifndef ESP_WIFI_EAP_USER
+/** User name used in phase 2 (inner) EAP authentication. */
+#define ESP_WIFI_EAP_USER   "riot-os@riot-os.org"
+#endif /* ESP_WIFI_EAP_USER */
+
+#ifndef ESP_WIFI_EAP_PASS
+/** Password used in phase 2 (inner) EAP authentication. */
+#define ESP_WIFI_EAP_PASS   "riot-os"
+#endif /* ESP_WIFI_EAP_PASS */
+/** @} */
+#endif /* !DOXYGEN */
+
 /* include common board definitions as last step */
 #include "board_common.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-/**
- * @brief Initialize the board specific hardware
- */
-static inline void board_init(void) {
-#if MODULE_ILI9341
-    gpio_init(LCD_BACKLIGHT, GPIO_OUT);
-#endif
-
-    /* there is nothing special to initialize on this board */
-    board_init_common();
-}
 
 #ifdef __cplusplus
 } /* end extern "C" */

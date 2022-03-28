@@ -33,6 +33,11 @@ void auto_init(void)
         void ztimer_init(void);
         ztimer_init();
     }
+    if (IS_USED(MODULE_AUTO_INIT_ZTIMER64)) {
+        LOG_DEBUG("Auto init ztimer64.\n");
+        void ztimer64_init(void);
+        ztimer64_init();
+    }
     if (IS_USED(MODULE_AUTO_INIT_XTIMER) &&
         !IS_USED(MODULE_ZTIMER_XTIMER_COMPAT)) {
         LOG_DEBUG("Auto init xtimer.\n");
@@ -48,6 +53,11 @@ void auto_init(void)
         LOG_DEBUG("Auto init schedstatistics.\n");
         extern void init_schedstatistics(void);
         init_schedstatistics();
+    }
+    if (IS_USED(MODULE_SCHED_ROUND_ROBIN)) {
+        LOG_DEBUG("Auto init sched_round_robin.\n");
+        extern void sched_round_robin_init(void);
+        sched_round_robin_init();
     }
     if (IS_USED(MODULE_DUMMY_THREAD)) {
         extern void dummy_thread_create(void);
@@ -143,6 +153,11 @@ void auto_init(void)
         LOG_DEBUG("Mounting /dev.\n");
         extern void auto_init_devfs(void);
         auto_init_devfs();
+    }
+    if (IS_USED(MODULE_VFS_AUTO_MOUNT)) {
+        LOG_DEBUG("Mounting filesystems.\n");
+        extern void auto_init_vfs(void);
+        auto_init_vfs();
     }
     if (IS_USED(MODULE_AUTO_INIT_GNRC_IPV6_NIB)) {
         LOG_DEBUG("Auto init gnrc_ipv6_nib.\n");
@@ -248,6 +263,12 @@ void auto_init(void)
         suit_init_conditions();
     }
 
+    if (IS_USED(MODULE_MBEDTLS)) {
+        LOG_DEBUG("Auto init mbed TLS.\n");
+        extern void auto_init_mbedtls(void);
+        auto_init_mbedtls();
+    }
+
     if (IS_USED(MODULE_AUTO_INIT_SECURITY)) {
         if (IS_USED(MODULE_CRYPTOAUTHLIB)) {
             LOG_DEBUG("Auto init cryptoauthlib.\n");
@@ -284,6 +305,12 @@ void auto_init(void)
         gnrc_ipv6_auto_subnets_init();
     }
 
+    if (IS_USED(MODULE_AUTO_INIT_TELNET)) {
+        LOG_DEBUG("auto_init TELNET server\n");
+        extern void telnet_server_start(void);
+        telnet_server_start();
+    }
+
     if (IS_USED(MODULE_AUTO_INIT_MULTIMEDIA)) {
         LOG_DEBUG("auto_init MULTIMEDIA\n");
         if (IS_USED(MODULE_DFPLAYER)) {
@@ -302,5 +329,11 @@ void auto_init(void)
         LOG_DEBUG("Auto init UDP benchmark\n");
         extern void benchmark_udp_auto_init(void);
         benchmark_udp_auto_init();
+    }
+
+    if (IS_USED(MODULE_AUTO_INIT_SOCK_DNS)) {
+        LOG_DEBUG("Auto init sock_dns.\n");
+        extern void auto_init_sock_dns(void);
+        auto_init_sock_dns();
     }
 }

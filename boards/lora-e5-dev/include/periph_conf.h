@@ -100,7 +100,7 @@ static const spi_conf_t spi_config[] = {
         .mosi_pin = GPIO_UNDEF,
         .miso_pin = GPIO_UNDEF,
         .sclk_pin = GPIO_UNDEF,
-        .cs_pin   = GPIO_UNDEF,
+        .cs_pin   = SPI_CS_UNDEF,
         .mosi_af  = GPIO_AF_UNDEF,
         .miso_af  = GPIO_AF_UNDEF,
         .sclk_af  = GPIO_AF_UNDEF,
@@ -115,7 +115,7 @@ static const spi_conf_t spi_config[] = {
         .mosi_pin = GPIO_PIN(PORT_A, 10),
         .miso_pin = GPIO_PIN(PORT_B, 14),
         .sclk_pin = GPIO_PIN(PORT_B, 13),
-        .cs_pin   = GPIO_UNDEF,
+        .cs_pin   = SPI_CS_UNDEF,
         .mosi_af  = GPIO_AF5,
         .miso_af  = GPIO_AF5,
         .sclk_af  = GPIO_AF5,
@@ -143,6 +143,7 @@ static const i2c_conf_t i2c_config[] = {
         .sda_af         = GPIO_AF4,
         .bus            = APB1,
         .rcc_mask       = RCC_APB1ENR1_I2C2EN,
+        .rcc_sw_mask    = RCC_CCIPR_I2C2SEL_1,      /* HSI (16 MHz) */
         .irqn           = I2C2_ER_IRQn,
     }
 };
@@ -160,8 +161,10 @@ static const i2c_conf_t i2c_config[] = {
 static const adc_conf_t adc_config[] = {
     { GPIO_PIN(PORT_B, 3), 2 },
     { GPIO_PIN(PORT_B, 4), 3 },
+    { GPIO_UNDEF, 14 }, /* VBAT */
 };
 
+#define VBAT_ADC            ADC_LINE(2) /**< VBAT ADC line */
 #define ADC_NUMOF           ARRAY_SIZE(adc_config)
 /** @} */
 

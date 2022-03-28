@@ -12,6 +12,12 @@ config MODULE_ISL29020
     depends on TEST_KCONFIG
     select MODULE_PERIPH_I2C
 
+config HAVE_ISL29020
+    bool
+    select MODULE_ISL29020 if MODULE_SAUL_DEFAULT
+    help
+        Indicates that a isl29020 sensor is present.
+
 menuconfig KCONFIG_USEMODULE_ISL29020
     bool "Configure ISL29020 driver"
     depends on USEMODULE_ISL29020

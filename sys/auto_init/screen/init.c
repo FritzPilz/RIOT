@@ -18,7 +18,7 @@
 
 #include <stdio.h>
 
-#define ENABLE_DEBUG (0)
+#define ENABLE_DEBUG    0
 #include "debug.h"
 
 void auto_init_screen(void)
@@ -29,6 +29,10 @@ void auto_init_screen(void)
             extern void auto_init_ili9341(void);
             auto_init_ili9341();
         }
+        if (IS_USED(MODULE_PERIPH_LTDC)) {
+            extern void auto_init_periph_ltdc(void);
+            auto_init_periph_ltdc();
+        }
     }
 
     if (IS_USED(MODULE_TOUCH_DEV)) {
@@ -36,6 +40,10 @@ void auto_init_screen(void)
         if (IS_USED(MODULE_STMPE811)) {
             extern void auto_init_stmpe811(void);
             auto_init_stmpe811();
+        }
+        if (IS_USED(MODULE_FT5X06)) {
+            extern void auto_init_ft5x06(void);
+            auto_init_ft5x06();
         }
     }
 

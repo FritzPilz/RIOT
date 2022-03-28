@@ -17,8 +17,10 @@
 
 #include <string.h>
 
-#include "xtimer.h"
+#include "ztimer.h"
+#include "ztimer64.h"
 #include "usb/usbus.h"
+#include "usb/usbus/hid.h"
 #include "usb/usbus/hid_io.h"
 
 #include "fido2/ctap.h"
@@ -34,22 +36,22 @@
  * CTAP specification (version 20190130) section 8.1.8.2
  */
 const uint8_t _hid_report_desc[] = {
-    0x06, 0xD0, 0xF1,   /**< HID_UsagePage ( FIDO_USAGE_PAGE ) */
-    0x09, 0x01,         /**< HID_Usage ( FIDO_USAGE_CTAPHID ) */
-    0xA1, 0x01,         /**< HID_Collection ( HID_Application ) */
-    0x09, 0x20,         /**< HID_Usage ( FIDO_USAGE_DATA_IN ) */
-    0x15, 0x00,         /**< HID_LogicalMin ( 0 ) */
-    0x26, 0xFF, 0x00,   /**< HID_LogicalMaxS ( 0xff ) */
-    0x75, 0x08,         /**< HID_ReportSize ( 8 ) */
-    0x95, 0x40,         /**< HID_ReportCount ( HID_INPUT_REPORT_BYTES ) */
-    0x81, 0x02,         /**< HID_Input ( HID_Data | HID_Absolute | HID_Variable ) */
-    0x09, 0x21,         /**< HID_Usage ( FIDO_USAGE_DATA_OUT ) */
-    0x15, 0x00,         /**< HID_LogicalMin ( 0 ) */
-    0x26, 0xFF, 0x00,   /**< HID_LogicalMaxS ( 0xff ) */
-    0x75, 0x08,         /**< HID_ReportSize ( 8 ) */
-    0x95, 0x40,         /**< HID_ReportCount ( HID_OUTPUT_REPORT_BYTES ) */
-    0x91, 0x02,         /**< HID_Output ( HID_Data | HID_Absolute | HID_Variable ) */
-    0xC0,               /**< HID_EndCollection */
+    USB_HID_USAGE_PAGE16(USB_HID_USAGE_FIDO),
+    USB_HID_USAGE(USB_HID_USAGE_FIDO_U2F_AUTHENTICATOR_DEVICE),
+    USB_HID_COLLECTION(USB_HID_COLLECTION_APPLICATION),
+        USB_HID_USAGE(USB_HID_USAGE_FIDO_INPUT_REPORT_DATA),
+        USB_HID_LOGICAL_MIN8(0),
+        USB_HID_LOGICAL_MAX16(255),
+        USB_HID_REPORT_SIZE(8),
+        USB_HID_REPORT_COUNT(CONFIG_USBUS_HID_INTERRUPT_EP_SIZE),
+        USB_HID_INPUT(0x02),
+        USB_HID_USAGE(USB_HID_USAGE_FIDO_OUTPUT_REPORT_DATA),
+        USB_HID_LOGICAL_MIN8(0),
+        USB_HID_LOGICAL_MAX16(255),
+        USB_HID_REPORT_SIZE(8),
+        USB_HID_REPORT_COUNT(CONFIG_USBUS_HID_INTERRUPT_EP_SIZE),
+        USB_HID_OUTPUT(0x02),
+    USB_HID_END_COLLECTION,
 };
 
 /**
@@ -527,12 +529,12 @@ bool fido2_ctap_transport_hid_should_cancel(void)
 
 void fido2_ctap_transport_hid_check_timeouts(void)
 {
-    uint64_t now = xtimer_now_usec64();
+    uint64_t now = ztimer64_now(ZTIMER64_MSEC);
 
     for (uint8_t i = 0; i < CTAP_HID_CIDS_MAX; i++) {
         /* transaction timed out because cont packets didn't arrive in time */
         if (_is_busy && g_cids[i].taken &&
-            (now - g_cids[i].last_used) >= CTAP_HID_TRANSACTION_TIMEOUT &&
+            (now - g_cids[i].last_used) >= CTAP_HID_TRANSACTION_TIMEOUT_MS &&
             _state.cid == g_cids[i].cid && !_state.is_locked) {
 
             _send_error_response(g_cids[i].cid, CTAP_HID_ERR_MSG_TIMEOUT);
@@ -546,14 +548,14 @@ void fido2_ctap_transport_hid_check_timeouts(void)
 
 static int8_t _add_cid(uint32_t cid)
 {
-    uint64_t oldest = xtimer_now_usec64();
+    uint64_t oldest = ztimer64_now(ZTIMER64_MSEC);
     int8_t index_oldest = -1;
 
     for (int i = 0; i < CTAP_HID_CIDS_MAX; i++) {
         if (!g_cids[i].taken) {
             g_cids[i].taken = true;
             g_cids[i].cid = cid;
-            g_cids[i].last_used = xtimer_now_usec64();
+            g_cids[i].last_used = ztimer64_now(ZTIMER64_MSEC);
 
             return CTAP_HID_OK;
         }
@@ -568,7 +570,7 @@ static int8_t _add_cid(uint32_t cid)
     if (index_oldest > -1) {
         g_cids[index_oldest].taken = true;
         g_cids[index_oldest].cid = cid;
-        g_cids[index_oldest].last_used = xtimer_now_usec64();
+        g_cids[index_oldest].last_used = ztimer64_now(ZTIMER64_MSEC);
         return CTAP_HID_OK;
     }
 
@@ -579,7 +581,7 @@ static int8_t _refresh_cid(uint32_t cid)
 {
     for (int i = 0; i < CTAP_HID_CIDS_MAX; i++) {
         if (g_cids[i].cid == cid) {
-            g_cids[i].last_used = xtimer_now_usec64();
+            g_cids[i].last_used = ztimer64_now(ZTIMER64_MSEC);
             return CTAP_HID_OK;
         }
     }
@@ -621,19 +623,19 @@ static void _wink(uint32_t cid, uint8_t cmd)
     for (int i = 1; i <= 8; i++) {
 #ifdef LED0_TOGGLE
         LED0_TOGGLE;
-        xtimer_msleep(delay);
+        ztimer_sleep(ZTIMER_MSEC, delay);
 #endif
 #ifdef LED1_TOGGLE
         LED1_TOGGLE;
-        xtimer_msleep(delay);
+        ztimer_sleep(ZTIMER_MSEC, delay);
 #endif
 #ifdef LED2_TOGGLE
         LED2_TOGGLE;
-        xtimer_msleep(delay);
+        ztimer_sleep(ZTIMER_MSEC, delay);
 #endif
 #ifdef LED3_TOGGLE
         LED3_TOGGLE;
-        xtimer_msleep(delay);
+        ztimer_sleep(ZTIMER_MSEC, delay);
 #endif
         delay /= 2;
     }

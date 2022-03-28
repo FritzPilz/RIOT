@@ -28,6 +28,36 @@ extern "C" {
 #endif
 
 /**
+ * @name    LCD Backlight control defines
+ * @{
+ */
+#define BACKLIGHT_PIN       GPIO_PIN(PORT_K, 3)     /**< Backlight pin */
+#define BACKLIGHT_MASK      (1 << 3)                /**< Backlight pin mask */
+
+/** Set the backlight pin */
+#define BACKLIGHT_ON        (GPIOK->BSRR = BACKLIGHT_MASK)
+/** Clear the backlight pin */
+#define BACKLIGHT_OFF       (GPIOK->BSRR = (BACKLIGHT_MASK << 16))
+/** Toggle the backlight pin */
+#define BACKLIGHT_TOGGLE    (GPIOK->ODR  ^= BACKLIGHT_MASK)
+/** @} */
+
+/**
+ * @name    LCD display enable pin
+ * @{
+ */
+#define LCD_DISP_PIN        GPIO_PIN(PORT_I, 12)    /**< LCD screen enable pin */
+/** @} */
+
+/**
+ * @name    LCD screen dimensions
+ * @{
+ */
+#define LCD_SCREEN_WIDTH        480     /**< LCD screen width */
+#define LCD_SCREEN_HEIGHT       272     /**< LCD screen height */
+/** @} */
+
+/**
  * @name User button
  * @{
  */
@@ -36,9 +66,15 @@ extern "C" {
 /** @} */
 
 /**
- * @brief   Initialize board specific hardware
+ * @name FT5X06 touch panel configuration
+ * @{
  */
-void board_init(void);
+#define FT5X06_PARAM_I2C_DEV            I2C_DEV(1)              /**< I2C device */
+#define FT5X06_PARAM_INT_PIN            GPIO_PIN(PORT_I, 13)    /**< Interrupt pin */
+#define FT5X06_PARAM_XMAX               (480)                   /**< Max width */
+#define FT5X06_PARAM_YMAX               (272)                   /**< Max height */
+#define FT5X06_PARAM_TYPE               FT5X06_TYPE_FT5336      /**< Device type */
+/** @} */
 
 #ifdef __cplusplus
 }

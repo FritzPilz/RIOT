@@ -59,6 +59,22 @@ supported.
 
 ## Flashing the Board
 
+### Flashing the Board Using the Bootloader
+
+Connect the device to your Micro-USB cable while the button (labeled `BOOTSEL`
+on the silkscreen of the PCB) is pressed to enter the bootloader. The pico
+will present itself as a storage medium to the system, to which a UF2 file
+can be copied perform the flashing of the device. This can be automated by
+running:
+
+```
+make BOARD=rpi-pico flash
+```
+
+This is default flashing option using elf2uf2 PROGRAMMER. If the storage is
+not automatically mounted to `/media/<USER_NAME>/RPI-RP2`, you can overwrite
+the path by exporting the shell environment variable `ELF2UF2_MOUNT_PATH`.
+
 ### Flashing the Board Using OpenOCD
 
 Currently (June 2021), only two methods for debugging via OpenOCD are supported:
@@ -67,7 +83,7 @@ Currently (June 2021), only two methods for debugging via OpenOCD are supported:
 2. Using a virtual CMSIS-DAP adapter provided by the second CPU core via
    https://github.com/majbthrd/pico-debug
 
-Since option 2 requires no additional hardware, this is currently the default. However, you need to
+Option 2 requires no additional hardware however, you need to
 first "flash" the gimme-cache variant of [pico-debug](https://github.com/majbthrd/pico-debug)
 into RAM using the UF2 bootloader. For this, plug in the USB cable while holding down the BOOTSEL
 button of the Pico and copy the `pico-debug-gimmecache.uf2` from the
@@ -76,7 +92,7 @@ formatted drive the bootloader provides. Once this drive is unmounted again, thi
 the Raspberry Pi Pico showing up as CMSIS-DAP debugger. Afterwards run:
 
 ```
-make BOARD=rpi-pico flash
+make BOARD=rpi-pico PROGRAMMER=openocd flash
 ```
 
 @warning    The `rpi-pico` virtual debugger is not persistent and needs to be "flashed" into RAM
@@ -87,15 +103,6 @@ make BOARD=rpi-pico flash
             The OpenOCD fork of the Raspberry Pi foundation is incompatible with OpenOCD
             configuration provided, so please stick with upstream OpenOCD.
 
-### Flashing the Board Using the Bootloader
-
-Connect the device to your Micro-USB cable while the button (labeled `BOOTSEL` on the silkscreen
-of the PCB) is pressed to enter the bootloader. Afterwards run:
-
-```
-make BOARD=rpi-pico PROGRAMMER=uf2conv flash
-```
-
 ### Flashing the Board Using J-Link
 
 Connect the Board to an Segger J-Link debugger, e.g. the EDU mini debugger is relatively affordable,
@@ -104,6 +111,20 @@ but limited to educational purposes. Afterwards run:
 ```
 make BOARD=rpi-pico PROGRAMMER=jlink flash
 ```
+
+## Accessing RIOT shell
+
+This board's default access to RIOT shell is via UART (UART0 TX - pin 1, UART0 RX - pin 2).
+
+The default baud rate is 115 200.
+
+The simplest way to connect to the shell is the execution of the command:
+
+```
+make BOARD=rpi-pico term
+```
+
+@warning Raspberry Pi Pico board is not 5V tolerant. Use voltage divider or logic level shifter when connecting to 5V UART.
 
 ## On-Chip Debugging
 
