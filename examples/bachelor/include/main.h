@@ -1,6 +1,4 @@
-#ifndef MAIN
-#define MAIN
-
-void configureSAU(void);
+#ifndef MAIN_H
+#define MAIN_H
 
 #endif

@@ -470,6 +470,7 @@ void __attribute__((naked)) __attribute__((used)) isr_svc(void)
 }
 
 #include "SAU.h"
+#include "arm_cmse.h"
 
 static void __attribute__((used)) _svc_dispatch(unsigned int *svc_args)
 {
@@ -501,6 +502,9 @@ static void __attribute__((used)) _svc_dispatch(unsigned int *svc_args)
 	      break;
 	case: 3
 	      configureSAU(0);
+	      break;
+	case: 4
+	      cmse_TT(svc_args[0]);
 	      break;
         default:
             DEBUG("svc: unhandled SVC #%u\n", svc_number);

@@ -18,6 +18,8 @@ QUIET ?= 1
 FEATURES_REQUIRED += riotboot
 FEATURES_OPTIONAL += periph_timer
 
+USEMODULE += ztimer_usec
+
 CFLAGS += -mcmse
 
 include $(RIOTBASE)/Makefile.include

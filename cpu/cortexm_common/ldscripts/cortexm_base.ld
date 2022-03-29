@@ -115,13 +115,11 @@ SECTIONS
         KEEP (*(SORT(.dtors.*)))
         KEEP (*crtend.o(.dtors))
 
-	. = ALIGN(8);
-	PROVIDE(__START__ = .);
-	KEEP(*(.secure))
-	. = ALIGN(8);
-	PROVIDE(__SECURE__ = .);
+	. = ALIGN(32);
+	PROVIDE(__START_NS__ = .);
 	KEEP(*(.non-secure))
-	PROVIDE(__NS__ = .);
+	PROVIDE(__END_NS__ = .);
+	. = ALIGN(32);
 
 
 
@@ -133,11 +131,11 @@ SECTIONS
     .gnu.sgstubs :
     {
 	. = ALIGN(8);
-    	PROVIDE(__STARTNSC__ = .);
+    	PROVIDE(__START_NSC__ = .);
 	KEEP(*(.nsc));
 	*(.gnu.sgstubs*)
 	. = ALIGN(8);
-	PROVIDE(__NSC__ = .);
+	PROVIDE(__END_NSC__ = .);
 	. = ALIGN(8);
     } > rom
 
