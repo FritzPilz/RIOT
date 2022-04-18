@@ -19,7 +19,8 @@ FEATURES_REQUIRED += riotboot
 FEATURES_OPTIONAL += periph_timer
 
 USEMODULE += ztimer_usec
+USEMODULE += cortexm_svc
 
-CFLAGS += -mcmse
+CFLAGS += -mcmse -O0
 
 include $(RIOTBASE)/Makefile.include

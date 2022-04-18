@@ -1,4 +1,7 @@
 #include "cpu.h"
+#include "include/main.h"
+#include <stdio.h>
+#include <stdlib.h>
 
 extern char __START_NS__[], __END_NS__[];
 extern char __START_NSC__[], __END_NSC__[];
@@ -12,10 +15,27 @@ void defineRegion(unsigned int regNum, unsigned int baseAddr, unsigned int limit
 
 void configureSAU(int enable)
 {
+	for(int i = 0; i < 6; ++i){
+		toggle_S(i%3);
+	}
+	char buffer[16];
+	puts("NS-Region");
+	puts(__itoa((unsigned int)__START_NS__,buffer,16));
+	puts(__itoa((unsigned int)__END_NS__,buffer,16));
+	//puts("NSC-Region");
+	//puts(__itoa((unsigned int)__START_NSC__,buffer,16));
+	//puts(__itoa((unsigned int)__END_NSC__,buffer,16));
 	if(enable)
 	{
 		defineRegion(0U,(unsigned int)__START_NS__, (unsigned int)__END_NS__, 0U);
-		defineRegion(1U,(unsigned int)__START_NSC__,(unsigned int)__END_NSC__, 1U);
+		//defineRegion(1U,(unsigned int)__START_NSC__,(unsigned int)__END_NSC__, 1U);
+
+		__DSB();
+		__ISB();
+
+		//__HAL_RCC_SYSCFG_CLK_ENABLE();
+		SYSCFG->CSLCKR |= SYSCFG_CSLCKR_LOCKSAU;
+
 		TZ_SAU_Enable();
 	}else{
 		TZ_SAU_Disable();

@@ -24,6 +24,9 @@
 #include "ztimer.h"
 #include "arm_cmse.h"
 #include "include/ns.h"
+#include "include/main.h"
+#include "include/SAU.h"
+void configureSAU(int enable);
 
 #define CPUID_NS 0xE002ED00
 
@@ -34,14 +37,18 @@ unsigned int isSecure_S(void)
 	return *(volatile unsigned int *) CPUID_NS;
 }
 
-void startSAU(void)
+void __attribute__((noinline)) startSAU(void)
 {
-	__asm volatile (	"svc 2 \n\t"	);
+	//toggle_S(0);
+	//__asm volatile (	"svc 2 \n\t"	);
+	configureSAU(1);
 }
 
-void endSAU(void)
+void __attribute((noinline)) endSAU(void)
 {
-	__asm volatile (	"svc 3 \n\t"	);
+	//toggle_S(0);
+	//__asm volatile (	"svc 3 \n\t"	);
+	configureSAU(0);
 }
 
 struct cmse_address_info testRegion(void* addr)
@@ -67,17 +74,18 @@ void toggle_S(uint32_t t)
 	ztimer_sleep(ZTIMER_USEC, 500*1000);
 }
 
-__attribute__((cmse_nonsecure_entry)) void callback(nsfp* fp)
+void __attribute__((cmse_nonsecure_entry)) callback(nsfp* fp)
 {
 	toggle_S(1);
 	toggle_S(1);
-	__asm volatile ("bkpt 2");
 	fp();
 }
 
 int main(void)
 {
-	char buffer[33];
+	//char buffer[33];
+
+	endSAU();
 	startSAU();
 
 	volatile unsigned int secure = isSecure_S();
@@ -89,12 +97,14 @@ int main(void)
 		toggle_S(2);
 	}
 
-	nsfp *fp = (nsfp *) (ns_test);
-	struct cmse_address_info info = testRegion((void *) fp);
-	puts("Info struct for ns_test:(secure-bit, sau-region, valid-region)");
+	nsfp *fp = (nsfp *) (main);
+	//union cmse_address_info_t info = cmse_TT((void *) fp);
+	//TODO: CAST void* to struct
+	/*cmse_address_info_t info = cmse_TT_fptr(fp).;
+	puts("Info struct for main:(secure-bit, sau-region, valid-region)");
 	puts(__itoa(info.secure,buffer,2));
 	puts(__itoa(info.sau_region,buffer,2));
-	puts(__itoa(info.sau_region_valid,buffer,2));
+	puts(__itoa(info.sau_region_valid,buffer,2));*/
 	fp = cmse_nsfptr_create(fp);
 	callback(fp);
 	
