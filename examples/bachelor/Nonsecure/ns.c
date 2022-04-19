@@ -1,7 +1,7 @@
 #include "board.h"
 #include "timex.h"
 #include "ztimer.h"
-#include "include/main.h"
+#include "arm_cmse.h"
 
 #define CPUID_NS 0xE002ED00
 
@@ -33,8 +33,9 @@ __attribute__((section(".test"), used)) void ns_test(void)
 	}*/
 }
 
-__attribute__((section(".test_start"),used)) void ns_init(void)
+__attribute__((section(".test_start"),used)) int main(void)
 {
-	__TZ_set_PSP_NS(0x20027F00);
+	//__TZ_set_PSP_NS(0x20027F00);
 	ns_test();
+	while(1){};
 }

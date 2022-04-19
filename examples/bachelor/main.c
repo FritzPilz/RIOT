@@ -23,7 +23,6 @@
 #include "timex.h"
 #include "ztimer.h"
 #include "arm_cmse.h"
-#include "include/ns.h"
 #include "include/main.h"
 #include "include/SAU.h"
 void configureSAU(int enable);
@@ -97,7 +96,8 @@ int main(void)
 		toggle_S(2);
 	}
 
-	nsfp *fp = (nsfp *) (ns_test);
+	nsfp *fp = (nsfp *) 0x8040000;
+	__TZ_set_MSP_NS(0x20027F00);
 	//puts("NS-PSP:");
 	//puts(__itoa((int)__TZ_get_PSP_NS(),buffer,16));
 	//union cmse_address_info_t info = cmse_TT((void *) fp);
