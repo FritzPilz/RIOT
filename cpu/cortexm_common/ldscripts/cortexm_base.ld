@@ -37,25 +37,6 @@ ENTRY(reset_handler_default)
 _backup_ram_start_addr = DEFINED( _backup_ram_start_addr ) ? _backup_ram_start_addr : 0x0 ;
 _backup_ram_len = DEFINED( _backup_ram_len ) ? _backup_ram_len : 0x0 ;
 
-/*MEMORY
-{
-	external (w!rx) : ORIGIN = 0x08000000 , LENGTH = 0x03FFFFFF
-}
-SECTIONS
-{
-    . = ALIGN(4);
-    . = 0x08000000;
-    .secure :
-    {} > external
-    . = 0x09000000;
-    .non-secure :
-    {} > external
-    . = 0x0A000000;
-    .nsc :
-    {} > external
-
-}*/
-
 /* not all Cortex-M platforms use cortexm.ld yet */
 MEMORY
 {
@@ -115,14 +96,6 @@ SECTIONS
         KEEP (*(SORT(.dtors.*)))
         KEEP (*crtend.o(.dtors))
 
-	. = ALIGN(32);
-	PROVIDE(__START_NS__ = .);
-	KEEP(*(.non-secure))
-	PROVIDE(__END_NS__ = .);
-	. = ALIGN(32);
-
-
-
         . = ALIGN(4);
         _efixed = .;            /* End of text section */
     } > rom
@@ -130,13 +103,13 @@ SECTIONS
     /* The compiler needs this section to place any sg-stubs for transitioning from NS to S*/
     .gnu.sgstubs :
     {
-	. = ALIGN(8);
+	. = ALIGN(32);
     	PROVIDE(__START_NSC__ = .);
 	KEEP(*(.nsc));
 	*(.gnu.sgstubs*)
-	. = ALIGN(8);
+	. += 32;
 	PROVIDE(__END_NSC__ = .);
-	. = ALIGN(8);
+	. = ALIGN(32);
     } > rom
 
     /*

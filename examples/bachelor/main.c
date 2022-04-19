@@ -97,7 +97,9 @@ int main(void)
 		toggle_S(2);
 	}
 
-	nsfp *fp = (nsfp *) (main);
+	nsfp *fp = (nsfp *) (ns_test);
+	//puts("NS-PSP:");
+	//puts(__itoa((int)__TZ_get_PSP_NS(),buffer,16));
 	//union cmse_address_info_t info = cmse_TT((void *) fp);
 	//TODO: CAST void* to struct
 	/*cmse_address_info_t info = cmse_TT_fptr(fp).;
@@ -110,6 +112,6 @@ int main(void)
 	
 	endSAU();
 	while(1){
-		toggle_S(2);
+		//toggle_S(2);
 	}
 }
