@@ -97,7 +97,7 @@ int main(void)
 		toggle_S(2);
 	}
 
-	nsfp *fp = (nsfp *) (main);
+	nsfp *fp = (nsfp *) (ns_test);
 	//union cmse_address_info_t info = cmse_TT((void *) fp);
 	//TODO: CAST void* to struct
 	/*cmse_address_info_t info = cmse_TT_fptr(fp).;
