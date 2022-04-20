@@ -26,11 +26,11 @@
 #include "include/ns.h"
 #include "include/main.h"
 #include "include/SAU.h"
-void configureSAU(int enable);
 
 #define CPUID_NS 0xE002ED00
 
 typedef void __attribute__((cmse_nonsecure_call)) nsfp(void);
+SAU_Region regions[3] = {{0}};
 
 unsigned int isSecure_S(void)
 {
@@ -41,14 +41,14 @@ void __attribute__((noinline)) startSAU(void)
 {
 	//toggle_S(0);
 	//__asm volatile (	"svc 2 \n\t"	);
-	configureSAU(1);
+	configureSAU(1, regions);
 }
 
 void __attribute((noinline)) endSAU(void)
 {
 	//toggle_S(0);
 	//__asm volatile (	"svc 3 \n\t"	);
-	configureSAU(0);
+	configureSAU(0, regions);
 }
 
 struct cmse_address_info testRegion(void* addr)
@@ -71,7 +71,7 @@ void toggle_S(uint32_t t)
 		case 2: LED2_TOGGLE; break;
 		default: break;
 	}
-	ztimer_sleep(ZTIMER_USEC, 500*1000);
+	//ztimer_sleep(ZTIMER_USEC, 500*1000);
 }
 
 void __attribute__((cmse_nonsecure_entry)) callback(nsfp* fp)
@@ -81,12 +81,16 @@ void __attribute__((cmse_nonsecure_entry)) callback(nsfp* fp)
 	fp();
 }
 
+extern char __NS_STACK_END__[];
+
 int main(void)
 {
-	//char buffer[33];
+	char buffer[33];
 
 	endSAU();
 	startSAU();
+
+	//__asm volatile ("bkpt");
 
 	volatile unsigned int secure = isSecure_S();
 	if(secure){
@@ -97,16 +101,33 @@ int main(void)
 		toggle_S(2);
 	}
 
-	nsfp *fp = (nsfp *) (ns_test);
-	//union cmse_address_info_t info = cmse_TT((void *) fp);
-	//TODO: CAST void* to struct
-	/*cmse_address_info_t info = cmse_TT_fptr(fp).;
-	puts("Info struct for main:(secure-bit, sau-region, valid-region)");
-	puts(__itoa(info.secure,buffer,2));
-	puts(__itoa(info.sau_region,buffer,2));
-	puts(__itoa(info.sau_region_valid,buffer,2));*/
+	nsfp *fp = (nsfp *) ((unsigned int) ns_test);
+	cmse_address_info_t info = cmse_TT_fptr(fp);
+	puts("Info struct for ns_test:(secure-bit, sau-region, valid-region)");
+	puts(__itoa(info.flags.secure,buffer,2));
+	puts(__itoa(info.flags.sau_region,buffer,2));
+	puts(__itoa(info.flags.sau_region_valid,buffer,2));
+	info = cmse_TT_fptr(__NS_STACK_END__);
+	puts("Info struct for ns-stack:(secure-bit, sau-region, valid-region)");
+	puts(__itoa(info.flags.secure,buffer,2));
+	puts(__itoa(info.flags.sau_region,buffer,2));
+	puts(__itoa(info.flags.sau_region_valid,buffer,2));
+	for(int i = 0; i < 3; ++i){
+		puts("SAU-Region info (region,base,limit,nsc):");
+		puts(__itoa(regions[i].region,buffer,16));
+		puts(__itoa(regions[i].base,buffer,16));
+		puts(__itoa(regions[i].limit,buffer,16));
+		puts(__itoa(regions[i].nsc,buffer,16));
+	}
+
 	fp = cmse_nsfptr_create(fp);
-	callback(fp);
+	if(cmse_is_nsfptr(fp)){
+		puts("Pointer is Nonsecure");
+		callback(fp);
+	}else{
+		puts("Pointer is secure");
+	       	ns_test();
+	}
 	
 	endSAU();
 	while(1){

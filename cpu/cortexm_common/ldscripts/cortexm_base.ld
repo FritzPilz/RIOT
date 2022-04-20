@@ -41,20 +41,6 @@ _backup_ram_len = DEFINED( _backup_ram_len ) ? _backup_ram_len : 0x0 ;
 {
 	external (w!rx) : ORIGIN = 0x08000000 , LENGTH = 0x03FFFFFF
 }
-SECTIONS
-{
-    . = ALIGN(4);
-    . = 0x08000000;
-    .secure :
-    {} > external
-    . = 0x09000000;
-    .non-secure :
-    {} > external
-    . = 0x0A000000;
-    .nsc :
-    {} > external
-
-}*/
 
 /* not all Cortex-M platforms use cortexm.ld yet */
 MEMORY
@@ -80,6 +66,13 @@ SECTIONS
         KEEP (*(SORT(.roxfa.*)))
         *(.ARM.extab* .gnu.linkonce.armextab.*)
 
+	. = ALIGN(32);
+	PROVIDE(__START_NS__ = .);
+	KEEP(*(.non-secure))
+	PROVIDE(__END_NS__ = .);
+	. = ALIGN(32);
+
+
         /* Support C constructors, and C destructors in both user code
            and the C library. This also provides support for C++ code. */
         . = ALIGN(4);
@@ -94,6 +87,7 @@ SECTIONS
         KEEP (*(SORT(.init_array.*)))
         KEEP (*(.init_array))
         __init_array_end = .;
+
 
         . = ALIGN(0x4);
         KEEP (*crtbegin.o(.ctors))
@@ -115,14 +109,6 @@ SECTIONS
         KEEP (*(SORT(.dtors.*)))
         KEEP (*crtend.o(.dtors))
 
-	. = ALIGN(32);
-	PROVIDE(__START_NS__ = .);
-	KEEP(*(.non-secure))
-	PROVIDE(__END_NS__ = .);
-	. = ALIGN(32);
-
-
-
         . = ALIGN(4);
         _efixed = .;            /* End of text section */
     } > rom
@@ -130,13 +116,12 @@ SECTIONS
     /* The compiler needs this section to place any sg-stubs for transitioning from NS to S*/
     .gnu.sgstubs :
     {
-	. = ALIGN(8);
+	. = ALIGN(32);
     	PROVIDE(__START_NSC__ = .);
 	KEEP(*(.nsc));
 	*(.gnu.sgstubs*)
-	. = ALIGN(8);
+	. = ALIGN(32);
 	PROVIDE(__END_NSC__ = .);
-	. = ALIGN(8);
     } > rom
 
     /*
@@ -202,6 +187,15 @@ SECTIONS
         KEEP (*(.isr_stack))
         . = ALIGN(8);
         _estack = .;
+    } > ram
+
+    .ns_stack (NOLOAD):
+    {
+	    . = ALIGN(32);
+	    PROVIDE(__NS_STACK_END__ = .);
+	    . = . + 1024;
+	    . = ALIGN(32);
+	    PROVIDE(__NS_STACK_START__ = .);
     } > ram
 
     .relocate :
