@@ -1,6 +1,6 @@
 APPLICATION = bachelor_ns
 
-BOARD ?= nucleo-l552ze-q
+BOARD ?= native
 
 RIOTBASE = $(CURDIR)/../../..
 

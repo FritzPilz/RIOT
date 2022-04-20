@@ -1,7 +1,7 @@
-#include "board.h"
-#include "timex.h"
-#include "ztimer.h"
-#include "arm_cmse.h"
+// #include "board.h"
+// #include "timex.h"
+// #include "ztimer.h"
+// #include "arm_cmse.h"
 
 #define CPUID_NS 0xE002ED00
 
@@ -10,7 +10,7 @@ __attribute__((section(".test"), used)) unsigned int isSecure_NS(void)
 	return *(unsigned int volatile*) CPUID_NS;
 }
 
-__attribute__((section(".test"), used)) void toggle_NS(uint32_t t)
+/*__attribute__((section(".test"), used)) void toggle_NS(unsigned int t)
 {
 	switch(t){
 		case 0: LED0_TOGGLE; break;
@@ -19,7 +19,7 @@ __attribute__((section(".test"), used)) void toggle_NS(uint32_t t)
 		default: break;
 	}
 	ztimer_sleep(ZTIMER_USEC, 500*1000);
-}
+}*/
 
 __attribute__((section(".test"), used)) void ns_test(void)
 {
