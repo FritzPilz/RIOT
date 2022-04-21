@@ -66,13 +66,6 @@ SECTIONS
         KEEP (*(SORT(.roxfa.*)))
         *(.ARM.extab* .gnu.linkonce.armextab.*)
 
-	. = ALIGN(32);
-	PROVIDE(__START_NS__ = .);
-	KEEP(*(.non-secure))
-	PROVIDE(__END_NS__ = .);
-	. = ALIGN(32);
-
-
         /* Support C constructors, and C destructors in both user code
            and the C library. This also provides support for C++ code. */
         . = ALIGN(4);
@@ -111,6 +104,13 @@ SECTIONS
 
         . = ALIGN(4);
         _efixed = .;            /* End of text section */
+
+	. = ALIGN(32);
+	PROVIDE(__START_NS__ = .);
+	KEEP(*(.non-secure))
+	PROVIDE(__END_NS__ = .);
+	. = ALIGN(32);
+
     } > rom
 
     /* The compiler needs this section to place any sg-stubs for transitioning from NS to S*/

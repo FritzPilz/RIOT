@@ -85,12 +85,11 @@ extern char __NS_STACK_END__[];
 
 int main(void)
 {
-	char buffer[33];
-
+	//char buffer[33];
+	
 	endSAU();
 	startSAU();
 
-	//__asm volatile ("bkpt");
 
 	volatile unsigned int secure = isSecure_S();
 	if(secure){
@@ -101,8 +100,8 @@ int main(void)
 		toggle_S(2);
 	}
 
-	nsfp *fp = (nsfp *) ((unsigned int) ns_test);
-	cmse_address_info_t info = cmse_TT_fptr(fp);
+	nsfp *fp = (nsfp *) (((unsigned int) ns_test | 0xC000000));
+	/*cmse_address_info_t info = cmse_TT_fptr(ns_test);
 	puts("Info struct for ns_test:(secure-bit, sau-region, valid-region)");
 	puts(__itoa(info.flags.secure,buffer,2));
 	puts(__itoa(info.flags.sau_region,buffer,2));
@@ -118,14 +117,15 @@ int main(void)
 		puts(__itoa(regions[i].base,buffer,16));
 		puts(__itoa(regions[i].limit,buffer,16));
 		puts(__itoa(regions[i].nsc,buffer,16));
-	}
+	}*/
 
 	fp = cmse_nsfptr_create(fp);
+	__asm volatile ("bkpt");
 	if(cmse_is_nsfptr(fp)){
-		puts("Pointer is Nonsecure");
+		//puts("Pointer is Nonsecure");
 		callback(fp);
 	}else{
-		puts("Pointer is secure");
+		//puts("Pointer is secure");
 	       	ns_test();
 	}
 	
