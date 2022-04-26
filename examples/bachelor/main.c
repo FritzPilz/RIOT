@@ -40,14 +40,14 @@ unsigned int isSecure_S(void)
 void __attribute__((noinline)) startSAU(void)
 {
 	//toggle_S(0);
-	//__asm volatile (	"svc 2 \n\t"	);
+	__asm volatile (	"svc 2 \n\t"	);
 	configureSAU(1, regions);
 }
 
 void __attribute((noinline)) endSAU(void)
 {
 	//toggle_S(0);
-	//__asm volatile (	"svc 3 \n\t"	);
+	__asm volatile (	"svc 3 \n\t"	);
 	configureSAU(0, regions);
 }
 
@@ -74,6 +74,8 @@ void toggle_S(uint32_t t)
 	//ztimer_sleep(ZTIMER_USEC, 500*1000);
 }
 
+extern char __NS_STACK_END__[];
+
 void __attribute__((cmse_nonsecure_entry)) callback(nsfp* fp)
 {
 	toggle_S(1);
@@ -81,12 +83,11 @@ void __attribute__((cmse_nonsecure_entry)) callback(nsfp* fp)
 	fp();
 }
 
-extern char __NS_STACK_END__[];
-
 int main(void)
 {
-	//char buffer[33];
-	
+	char buffer[33];
+
+	__asm volatile("bkpt");	
 	endSAU();
 	startSAU();
 
@@ -100,14 +101,25 @@ int main(void)
 		toggle_S(2);
 	}
 
-	nsfp *fp = (nsfp *) (((unsigned int) ns_test | 0xC000000));
-	/*cmse_address_info_t info = cmse_TT_fptr(ns_test);
-	puts("Info struct for ns_test:(secure-bit, sau-region, valid-region)");
+	puts("CPUID_NS:");
+	puts(__itoa(secure,buffer,16));
+
+	nsfp *fp = cmse_nsfptr_create((nsfp *) (((unsigned int) ns_test)));
+	cmse_address_info_t info = cmse_TT_fptr(fp);
+	puts("Info struct for ns_test:(address, secure-bit, sau-region, valid-region)");
+	puts(__itoa((unsigned int)fp,buffer,16));
+	puts(__itoa(info.flags.secure,buffer,2));
+	puts(__itoa(info.flags.sau_region,buffer,2));
+	puts(__itoa(info.flags.sau_region_valid,buffer,2));
+	info = cmse_TT_fptr((unsigned int) (fp) | 0xC000000);
+	puts("Info struct for ns_test:(address, secure-bit, sau-region, valid-region)");
+	puts(__itoa((unsigned int)fp|0xC000000,buffer,16));
 	puts(__itoa(info.flags.secure,buffer,2));
 	puts(__itoa(info.flags.sau_region,buffer,2));
 	puts(__itoa(info.flags.sau_region_valid,buffer,2));
 	info = cmse_TT_fptr(__NS_STACK_END__);
-	puts("Info struct for ns-stack:(secure-bit, sau-region, valid-region)");
+	puts("Info struct for ns-stack:(address, secure-bit, sau-region, valid-region)");
+	puts(__itoa((unsigned int)__NS_STACK_END__,buffer,16));
 	puts(__itoa(info.flags.secure,buffer,2));
 	puts(__itoa(info.flags.sau_region,buffer,2));
 	puts(__itoa(info.flags.sau_region_valid,buffer,2));
@@ -117,15 +129,14 @@ int main(void)
 		puts(__itoa(regions[i].base,buffer,16));
 		puts(__itoa(regions[i].limit,buffer,16));
 		puts(__itoa(regions[i].nsc,buffer,16));
-	}*/
+	}
 
-	fp = cmse_nsfptr_create(fp);
 	__asm volatile ("bkpt");
 	if(cmse_is_nsfptr(fp)){
-		//puts("Pointer is Nonsecure");
+		puts("Pointer is Nonsecure");
 		callback(fp);
 	}else{
-		//puts("Pointer is secure");
+		puts("Pointer is secure");
 	       	ns_test();
 	}
 	

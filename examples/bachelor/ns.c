@@ -1,3 +1,5 @@
+#include <stdio.h>
+
 #include "board.h"
 #include "timex.h"
 #include "ztimer.h"
@@ -23,12 +25,15 @@ __attribute__((section(".non-secure"), used)) void toggle_NS(uint32_t t)
 
 __attribute__((section(".non-secure"), used)) void ns_test(void)
 {
-	/*unsigned int volatile secure = isSecure_NS();
+	__asm volatile("bkpt");
+	unsigned int volatile secure = isSecure_NS();
 	if(!secure){
-		toggle_NS(0);
-		toggle_NS(0);
+		puts("Nonsecure: Success");
+		//toggle_NS(0);
+		//toggle_NS(0);
 	}else{
-		toggle_NS(2);
-		toggle_NS(2);
-	}*/
+		puts("Secure: Failure");
+		//toggle_NS(2);
+		//toggle_NS(2);
+	}
 }
