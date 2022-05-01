@@ -466,6 +466,18 @@ static int _atwinc15x0_set(netdev_t *netdev, netopt_t opt, const void *val,
         case NETOPT_STATE:
             assert(max_len <= sizeof(netopt_state_t));
             return _set_state(dev, *((const netopt_state_t *)val));
+        case NETOPT_L2_GROUP:
+            if (m2m_wifi_enable_mac_mcast((void *)val, 1)) {
+                return -EINVAL;
+            } else {
+                return max_len;
+            }
+        case NETOPT_L2_GROUP_LEAVE:
+            if (m2m_wifi_enable_mac_mcast((void *)val, 0)) {
+                return -EINVAL;
+            } else {
+                return max_len;
+            }
         default:
             return netdev_eth_set(netdev, opt, val, max_len);
     }
@@ -575,13 +587,15 @@ const netdev_driver_t atwinc15x0_netdev_driver = {
     .set = _atwinc15x0_set,
 };
 
-void atwinc15x0_setup(atwinc15x0_t *dev, const atwinc15x0_params_t *params)
+void atwinc15x0_setup(atwinc15x0_t *dev, const atwinc15x0_params_t *params, uint8_t idx)
 {
     assert(dev);
 
     atwinc15x0 = dev;
     atwinc15x0->netdev.driver = &atwinc15x0_netdev_driver;
     atwinc15x0->params = *params;
+
+    netdev_register(&dev->netdev, NETDEV_ATWINC15X0, idx);
 }
 
 void atwinc15x0_irq(void)
