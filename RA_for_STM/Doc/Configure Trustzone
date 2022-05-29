@@ -1,0 +1,102 @@
+This document is dedicated to document how to configure the SAU to actually control the placement of secure, non-secure and secure non-secure callable memory regions and how to place functions within these regions to call functions from non-secure code and from secure code. (Secure monitor?) (What about the memory controller? https://developer.arm.com/documentation/102418/0101TrustZone-in-the processor)
+
+ *First Chapter: The SAU and its configuration*
+ 
+ One uses the SAU and the IDAU to configure whether a region is Secure (S), Non-Secure (NS), or Secure Non-Secure Callable (S-NSC or NSC). Please note that little Endian is used.
+ 
+ The SAU is controlled through the following registers ¹:
+ 
+ SAU_CTRL (reset: 0x0000 0000): The Bits 2 to 31 are reserved by the system, the first two bytes control for the...
+ ... 0th Bit (ENABLE) that the SAU is enabled and every Memory Region is controlled through the following registers
+ ... 1st Bit (ALLNS) that the Regions are either Secure (0) or Non-Secure (1)
+ 
+ SAU_TYPE (reset: 0x0000 000x): The Bits 8 to 31 are reserved, the other bits determine how many regions are to be configured
+ 
+ SAU_RNR: The Bits 8 to 31 are reserved, the other bits determine for which region the Base Address and the Limit address are set (see below)
+ 
+ SAU_RBAR: The bits 0 to 4 are reserved, the other Bits determine the base address of a region (consequently, values written in this register should have the first 5 Bits set to zero)
+ 
+ SAU_RLAR: The Bits 2 to 4 are reserved, the other bits do the following...
+ 0th Bit (Enable)
+ ... 5 to 31 determine the limit adress, the last five Bits of the address are set to 0x1F
+ ... 1st bit (NSC) determines whether the region is NSC (1) or not NSC (0)
+ ... 0th bit (ENABLE) enable SAU regions (1) or disable it (0)
+ 
+ Note 1: The Regions should be defined before the SAU is enabled.
+ 
+ *Second Chapter: How to call Secure areas from non-secure* ²
+ 
+ To call a secure function from non-secure, one needs to have defined Secure, NSC and NS areas to call a secure function from NS-State.
+ 
+ Instead of calling directly the secure function, one should call a so called veneer function residing in the NSC memory area. This function firstly executes the SG-Assembler instruction, afterwards a branch to the secure function is performed, then the secure function is executed.
+ In order to jump back to the NS-Function one uses the BXNS instruction to directly jump to the original NS-function.
+ 
+ *Third Chapter: How to call Non-Secure Areas from Secure Area* ²
+ 
+ If a secure functions wishes to call a Non-Secure Function a special BLXNS function is to be used which saves some process information as well as the return adress on the secure stack while the LR register contains a special FNC_RETURN value. A Branch to this value brings the non-secure function back to the secure function.
+ 
+ *Fourth Chapter: Implemantation*
+ 
+ A test function should be written to check if the state transition happened as planned and print some processor information on the terminal (there is some coprocesor that monitors the current security state, for which a system call has been written. I can assume the privliged and unpriviliged stats are correctly implemented).
+
+ **First Test:**
+ 
+ Goal: Test if the transition work as intended (NS to S)
+ Possible problemes:
+    1. HardFault --> Probleme with the transitioning of the state namely with the veneer function, check NSC area. There might be an issue with the flash controller, this would require further investigation
+    2. Unexpected return value --> check if the functions reside at the correct memory address
+ 
+ func_test:
+    state := check_security_state()
+    IF state == secure
+        print "state is secure"
+    ELSE                                %expected result
+        print "state is non-secure"
+    call veneer_func
+    while 1: DO NOTHING
+    
+ veneer_func:
+    SG
+    b secure_test
+    
+ secure_func:
+    state := check_security_state()
+    IF state == secure                  %expected result
+        print "state is secure"
+    ELSE
+        print "state is non-secure"
+    bxns lr
+    
+ **Second test:**
+ Goal: Test if the transition work as intended (S to NS)
+ Possible Problemes:
+    1. HardFault: Most probably caused by using the wrong branch instruction.
+    2. Unexpected return value: Same as HardFault and first test.
+ 
+ We can use the first test and only modify the secure func, as well as add a new non-secure function:
+ 
+ secure_func:
+    state := check_security_state()
+    IF state == secure                  %expected result
+        print "state is secure"
+    ELSE
+        print "state is non-secure"
+    blxns ns-test
+    state := check_security_state()
+    IF state == secure                  %expected result
+        print "state is secure"
+    ELSE
+        print "state is non-secure"
+    bxns lr
+    
+ ns-test:
+    state := check_security_state()
+    IF state == secure                  %expected result
+        print "state is secure"
+    ELSE
+        print "state is non-secure"
+    bx lr
+    
+
+ ¹: https://developer.arm.com/documentation/100690/0200/SAU-registers?lang=en
+ ²: https://developer.arm.com/documentation/100690(0201/Switching-between-Secure-and-Non-secure-states

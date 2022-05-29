@@ -52,7 +52,7 @@ int main(void)
     while (1) {
         delay();
 #ifdef LED0_TOGGLE
-        LED0_TOGGLE;
+        LED1_TOGGLE;
 #else
         puts("Blink! (No LED present or configured...)");
 #endif

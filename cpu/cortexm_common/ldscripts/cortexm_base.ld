@@ -37,10 +37,16 @@ ENTRY(reset_handler_default)
 _backup_ram_start_addr = DEFINED( _backup_ram_start_addr ) ? _backup_ram_start_addr : 0x0 ;
 _backup_ram_len = DEFINED( _backup_ram_len ) ? _backup_ram_len : 0x0 ;
 
+/*MEMORY
+{
+	external (w!rx) : ORIGIN = 0x08000000 , LENGTH = 0x03FFFFFF
+}
+
 /* not all Cortex-M platforms use cortexm.ld yet */
 MEMORY
 {
     bkup_ram (w!rx) : ORIGIN = _backup_ram_start_addr, LENGTH = _backup_ram_len
+    ROM_NSC (rx)    : ORIGIN = 0x0C03E000, LENGTH = 8K	/* Copied from ld-script in cubeide  */
 }
 
 /* Section Definitions */
@@ -52,6 +58,8 @@ SECTIONS
         _sfixed = .;
         _isr_vectors = DEFINED(_isr_vectors) ? _isr_vectors : . ;
         KEEP(*(SORT(.vectors*)))
+	
+	
         *(.text .text.* .gnu.linkonce.t.*)
         *(.glue_7t) *(.glue_7)
         *(.rodata .rodata* .gnu.linkonce.r.*)
@@ -72,6 +80,7 @@ SECTIONS
         KEEP (*(SORT(.init_array.*)))
         KEEP (*(.init_array))
         __init_array_end = .;
+
 
         . = ALIGN(0x4);
         KEEP (*crtbegin.o(.ctors))
@@ -101,6 +110,24 @@ SECTIONS
         PROVIDE(__END_NS__ = .);
         . = ALIGN(32);
         _efixed = .;            /* End of text section */
+
+	. = ALIGN(32);
+	PROVIDE(__START_NS__ = .);
+	KEEP(*(.non-secure))
+	PROVIDE(__END_NS__ = .);
+	. = ALIGN(32);
+
+    } > rom
+
+    /* The compiler needs this section to place any sg-stubs for transitioning from NS to S*/
+    .gnu.sgstubs :
+    {
+	. = ALIGN(32);
+    	PROVIDE(__START_NSC__ = .);
+	KEEP(*(.nsc));
+	*(.gnu.sgstubs*)
+	. = ALIGN(32);
+	PROVIDE(__END_NSC__ = .);
     } > rom
     
     .gnu.sgstubs :
@@ -178,6 +205,15 @@ SECTIONS
         _estack = .;
     } > ram
     
+    .ns_stack (NOLOAD):
+    {
+	    . = ALIGN(32);
+	    PROVIDE(__NS_STACK_END__ = .);
+	    . = . + 1024;
+	    . = ALIGN(32);
+	    PROVIDE(__NS_STACK_START__ = .);
+    } > ram
+
     .ns_stack (NOLOAD):
     {
 	    . = ALIGN(32);

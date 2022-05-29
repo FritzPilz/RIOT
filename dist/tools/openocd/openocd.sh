@@ -143,7 +143,7 @@
 
 # Handle OPENOCD_RESET_USE_CONNECT_ASSERT_SRST
 if [ "${OPENOCD_RESET_USE_CONNECT_ASSERT_SRST}" = "1" ]; then
-  OPENOCD_EXTRA_RESET_INIT+="-c 'reset_config connect_assert_srst'"
+  +="-c 'reset_config connect_assert_srst'"
 fi
 
 #
@@ -350,6 +350,8 @@ do_flash() {
     fi
 
     # flash device
+    echo "${OPENOCD_CONFIG}"
+    echo "Offset: ${IMAGE_OFFSET}"
     sh -c "${OPENOCD} \
             ${OPENOCD_ADAPTER_INIT} \
             -f '${OPENOCD_CONFIG}' \
@@ -362,7 +364,7 @@ do_flash() {
             -c 'targets' \
             -c 'reset halt' \
             ${OPENOCD_PRE_FLASH_CMDS} \
-            -c 'flash write_image erase \"${IMAGE_FILE}\" ${IMAGE_OFFSET} ${IMAGE_TYPE}' \
+            -c 'flash write_image \"${IMAGE_FILE}\" ${IMAGE_OFFSET} ${IMAGE_TYPE}' \
             ${OPENOCD_PRE_VERIFY_CMDS} \
             ${OPENOCD_VERIFY} \
             -c 'reset run' \
