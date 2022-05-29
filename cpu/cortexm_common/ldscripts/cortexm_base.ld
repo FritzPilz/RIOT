@@ -94,7 +94,23 @@ SECTIONS
         KEEP (*crtend.o(.dtors))
 
         . = ALIGN(4);
+        
+        . = ALIGN(32);
+        PROVIDE(__START_NS__ = .);
+        KEEP(*(.non-secure))
+        PROVIDE(__END_NS__ = .);
+        . = ALIGN(32);
         _efixed = .;            /* End of text section */
+    } > rom
+    
+    .gnu.sgstubs :
+    {
+	. = ALIGN(32);
+    	PROVIDE(__START_NSC__ = .);
+	KEEP(*(.nsc));
+	*(.gnu.sgstubs*)
+	. = ALIGN(32);
+	PROVIDE(__END_NSC__ = .);
     } > rom
 
     /*
@@ -160,6 +176,15 @@ SECTIONS
         KEEP (*(.isr_stack))
         . = ALIGN(8);
         _estack = .;
+    } > ram
+    
+    .ns_stack (NOLOAD):
+    {
+	    . = ALIGN(32);
+	    PROVIDE(__NS_STACK_END__ = .);
+	    . = . + 1024;
+	    . = ALIGN(32);
+	    PROVIDE(__NS_STACK_START__ = .);
     } > ram
 
     .relocate :

@@ -2,7 +2,7 @@
 APPLICATION = hello-world
 
 # If no BOARD is found in the environment, use this default:
-BOARD ?= native
+BOARD ?= nucleo-l552ze-q
 
 # This has to be the absolute path to the RIOT base directory:
 RIOTBASE ?= $(CURDIR)/../..
@@ -14,5 +14,7 @@ DEVELHELP ?= 1
 
 # Change this to 0 show compiler invocation lines by default:
 QUIET ?= 1
+
+CFLAGS += -mcmse
 
 include $(RIOTBASE)/Makefile.include
