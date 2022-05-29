@@ -15,6 +15,6 @@ DEVELHELP ?= 1
 # Change this to 0 show compiler invocation lines by default:
 QUIET ?= 1
 
-CFLAGS += -mcmse
+CFLAGS += -mcmse -Og
 
 include $(RIOTBASE)/Makefile.include
