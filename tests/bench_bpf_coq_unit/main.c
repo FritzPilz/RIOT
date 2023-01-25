@@ -88,9 +88,21 @@ static const test_content_t tests[] = {
     },
     {
         .instruction = {
+            .opcode = 0x84,
+        },
+        .name = "ALU neg32",
+    },
+    {
+        .instruction = {
             .opcode = 0x07,
         },
         .name = "ALU Add",
+    },
+    {
+        .instruction = {
+            .opcode = 0x0c,
+        },
+        .name = "ALU Add32",
     },
     {
         .instruction = {
@@ -100,11 +112,25 @@ static const test_content_t tests[] = {
     },
     {
         .instruction = {
+            .opcode = 0x04,
+        },
+        .name = "ALU Add32 imm",
+    },
+    {
+        .instruction = {
             .opcode = 0x2f,
             .dst = 0,
             .immediate = 45,
         },
         .name = "ALU mul imm",
+    },
+    {
+        .instruction = {
+            .opcode = 0x24,
+            .dst = 0,
+            .immediate = 45,
+        },
+        .name = "ALU mul32 imm",
     },
     {
         .instruction = {
@@ -180,6 +206,13 @@ static test_application_t test_app;
 
 int main(void)
 {
+#ifdef MODULE_GEN_BPF
+    puts("CertrBPF");
+#elif defined(MODULE_IBPF)
+    puts("JIT!");
+#else
+    puts("Other");
+#endif
 #if CSV_OUT
     puts("duration,code,usperinst,instrpersec");
 #else
@@ -200,9 +233,6 @@ int main(void)
         };
 #elif defined(MODULE_IBPF)
         jitted_thumb_list = ibpf_state.jitted_thumb_list;
-        ibpf_full_state_init(&ibpf_state);
-        ibpf_set_code(&ibpf_state, test_app.text, sizeof(test_app.text));
-        jit_alu32(&ibpf_state.st);
 #else
         bpf_t bpf = {
             .application = (uint8_t*)&test_app,
@@ -216,6 +246,11 @@ int main(void)
 #endif
         fill_instruction(&tests[test_idx].instruction, &test_app);
 
+#ifdef MODULE_IBPF
+        ibpf_full_state_init(&ibpf_state);
+        ibpf_set_code(&ibpf_state, test_app.text, sizeof(test_app.text));
+        jit_alu32(&ibpf_state.st);
+#endif
         uint32_t begin = ztimer_now(ZTIMER_USEC); // unsigned long long -> uint64_t
 #ifdef MODULE_GEN_BPF
         int result = bpf_interpreter(&st, 10000);
