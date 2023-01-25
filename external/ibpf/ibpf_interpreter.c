@@ -487,7 +487,7 @@ static __attribute__((always_inline)) inline void upd_ibpf(struct jit_state* st,
 }
 
 static __attribute__((always_inline)) inline void add_new_entry_point(struct jit_state* st, unsigned int v){
-  if ((*st).ins_len < ENTRY_POINT_MAX_LENGTH){
+  if (v < ENTRY_POINT_MAX_LENGTH){
     (*st).ep_list[(*st).entry_len] = v;
     (*st).entry_len = (*st).entry_len + 1U;
     return ;
@@ -1760,33 +1760,12 @@ void jit_alu32(struct jit_state* st)
 {
   unsigned int len;
   unsigned int el;
-  unsigned int id0;
-  unsigned int ofs;
   reset_init_entry_point(st);
   len = eval_ins_len(st);
   jit_alu32_entry_points_list(st, len, 0U, 0);
   el = eval_entry_len(st);
-  id0 = eval_epl_ep(st, 0U);
-  if (el == 1U && id0 == 0U) {
-    jit_alu32_to_thumb_pass1(st, len, 0U);
-    jit_alu32_pre(st);
-    upd_IR11_jittedthumb(st, 1);
-    jit_alu32_thumb_save(st);
-    jit_alu32_thumb_load(st);
-    copy_thumb_list_from_to(st);
-    ofs = eval_offset(st);
-    if (ofs == len - 1U) {
-      jit_alu32_thumb_store_succ_R0(st);
-    } else {
-      jit_alu32_thumb_store(st);
-    }
-    jit_alu32_thumb_reset(st);
-    jit_alu32_post(st);
-    return;
-  } else {
-    jit_alu32_aux(st, el, 0U);
-    return;
-  }
+  jit_alu32_aux(st, el, 0U);
+  return;
 }
 
 static __attribute__((always_inline)) inline unsigned int reg64_to_reg32(unsigned long long d)
