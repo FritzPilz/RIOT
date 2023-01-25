@@ -1,7 +1,7 @@
 #include<stdio.h>
 
-/*                                                                              
-defining bpf_flag                                                               
+/*
+defining bpf_flag
  */
 
 enum BPF_FLAG {
@@ -18,8 +18,8 @@ enum BPF_FLAG {
     vBPF_ILLEGAL_DIV         = -9,
 };
 
-/*                                                                              
-defining bpf_permission                                                               
+/*
+defining bpf_permission
  */
 
 enum BPF_PERM {
@@ -37,13 +37,13 @@ struct memory_region {
 };
 
 struct bpf_state {
-  int state_pc;
+  unsigned int state_pc;
   int bpf_flag;
   unsigned long long regsmap[11];
+  unsigned int ins_len;
+  const unsigned long long * ins;
   unsigned int mrs_num;
   struct memory_region *mrs;
-  int ins_len;
-  const unsigned long long * ins;
 };
 
 unsigned long long bpf_interpreter(struct bpf_state *, unsigned int);
