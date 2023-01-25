@@ -29,20 +29,55 @@
 #include "unaligned.h"
 #include "util.h"
 
-#if BPF_COQ
+#ifdef MODULE_GEN_BPF
 #include "interpreter.h"
+#elif defined(MODULE_IBPF)
+#include "ibpf_util.h"
 #else
 #include "bpf.h"
 #endif
 
-static uint8_t _bpf_stack[512];
+#ifdef MODULE_IBPF
+static uint16_t *jitted_thumb_list;
 
-#if BPF_COQ
+ibpf_full_state_t ibpf_state;
+
+__attribute__ ((noinline)) void _magic_function(unsigned int ofs, struct jit_state* st){
+  int res = 0;
+  //printf("magic_function ofs=%d\n", ofs);
+  //printf("magic_function jitted_thumb start address =0x%hn\n", jitted_thumb_list);
+  //printf("magic_function jitted_thumb start address + ofs =0x%hn\n", jitted_thumb_list + ofs);
+  //printf("magic_function st start address =0x%x\n", st);
+  //printf("magic_function st.jitted_list start address =0x%x\n", (*st).jitted_list);
+
+  // disables some compiler optimizations
+  __asm volatile (
+    "orr %[input_0], #0x1\n\t"
+    "mov r12, sp\n\t"
+    "sub sp, sp, #48\n\t"
+    "str r12, [sp, #0]\n\t"
+    "mov pc, %[input_0]\n\t"
+    : [result] "=r" (res)
+    : [input_1] "r" (st), [input_0] "r" (jitted_thumb_list + ofs)
+    : "cc" //The instruction modifies the condition code flags
+  );
+  //(*st).flag = vBPF_SUCC_RETURN;
+  //printf("magic function result = %d\n", res);
+  return ;
+}
+#else
+/* ibpf defines this within the struct */
+static uint8_t _bpf_stack[512];
+#endif
+
+#ifdef MODULE_GEN_BPF
 static struct memory_region mr_stack = {.start_addr = (uintptr_t)_bpf_stack,
                                         .block_size = sizeof(_bpf_stack),
                                         .block_perm = Freeable,
                                         .block_ptr = _bpf_stack};
 #endif
+
+
 
 static const test_content_t tests[] = {
     {
@@ -146,13 +181,13 @@ static test_application_t test_app;
 int main(void)
 {
 #if CSV_OUT
-    puts("\"test\",\"duration\",\"code\",\"usperinst\",\"instrpersec\"");
+    puts("duration,code,usperinst,instrpersec");
 #else
     printf("| %-16s | %-8s | %-6s | %-6s | %-16s |\n",
            "Test", "duration", "code", "us/instr", "instr per sec");
 #endif
     for (size_t test_idx = 0; test_idx < ARRAY_SIZE(tests); test_idx++) {
-#if BPF_COQ
+#ifdef MODULE_GEN_BPF
         struct memory_region memory_regions[] = { mr_stack };
         struct bpf_state st = {
             .state_pc = 0,
@@ -163,6 +198,11 @@ int main(void)
             .ins = test_app.text,
             .ins_len = sizeof(test_app.text),
         };
+#elif defined(MODULE_IBPF)
+        jitted_thumb_list = ibpf_state.jitted_thumb_list;
+        ibpf_full_state_init(&ibpf_state);
+        ibpf_set_code(&ibpf_state, test_app.text, sizeof(test_app.text));
+        jit_alu32(&ibpf_state.st);
 #else
         bpf_t bpf = {
             .application = (uint8_t*)&test_app,
@@ -177,8 +217,10 @@ int main(void)
         fill_instruction(&tests[test_idx].instruction, &test_app);
 
         uint32_t begin = ztimer_now(ZTIMER_USEC); // unsigned long long -> uint64_t
-#if BPF_COQ
+#ifdef MODULE_GEN_BPF
         int result = bpf_interpreter(&st, 10000);
+#elif defined(MODULE_IBPF)
+        int result = ibpf_interpreter(&ibpf_state.st, 10000);
 #else
         int result = bpf_execute_ctx(&bpf, NULL, 0, &res);
 #endif
@@ -187,12 +229,13 @@ int main(void)
         float us_per_op = duration/NUM_INSTRUCTIONS;
         float kops_per_sec = (float)(NUM_INSTRUCTIONS*US_PER_MS) / duration;
 #if CSV_OUT
-        printf("\"%s\",\"%f\",\"%d\",\"%f\",\"%f\"\n",
+        printf("%f,%d,%f,%f\n",
+                duration/US_PER_MS, (signed)result, us_per_op, kops_per_sec);
 #else
         printf("| %-16s | %2.4fms | %6d | %2.4fus | %7.2f kops/sec |\n",
-#endif
                 tests[test_idx].name,
                 duration/US_PER_MS, (signed)result, us_per_op, kops_per_sec);
+#endif
 
     }
 
