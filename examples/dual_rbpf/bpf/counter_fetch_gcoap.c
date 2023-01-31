@@ -1,4 +1,5 @@
 #include <stdint.h>
+#include <stddef.h>
 #include "bpf/bpfapi/helpers.h"
 
 #define SHARED_KEY 0x50

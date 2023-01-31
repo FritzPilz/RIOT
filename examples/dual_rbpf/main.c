@@ -22,7 +22,7 @@
 #include "msg.h"
 
 #include "net/gcoap.h"
-#include "kernel_types.h"
+#include "thread.h"
 #include "shell.h"
 
 #include "bpf.h"
@@ -53,8 +53,6 @@ static void *_counter_thread(void *arg)
     int res = bpf_execute(&bpf, &ctx, sizeof(ctx), &result);
 
     printf("Return code: %d\n", res);
-
-    assert(false);
     return NULL;
 }
 
