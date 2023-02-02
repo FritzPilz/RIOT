@@ -18,25 +18,7 @@ typedef struct {
     struct jit_state st;
 } ibpf_full_state_t;
 
-
-static inline void ibpf_full_state_init(ibpf_full_state_t *state)
-{
-    memset(state, 0, sizeof(ibpf_full_state_t));
-    state->bpf_flag = vBPF_OK;
-    state->st.flag = &state->bpf_flag;
-    state->st.regs_st = state->bpf_regs_map;
-    state->st.mrs_num = 2;
-    state->st.bpf_mrs = state->mrs;
-    state->st.ep_list = state->entry_point_list;
-    state->st.load_store_regs = state->bpf_load_store_regs;
-    state->st.thumb = state->thumb_list;
-    state->st.jitted_list = state->jitted_thumb_list;
-
-    state->mrs[0].start_addr = (uintptr_t)state->stack;
-    state->mrs[0].block_size = 512;
-    state->mrs[0].block_perm = Writable;
-    state->mrs[0].block_ptr = state->stack;
-}
+void ibpf_full_state_init(ibpf_full_state_t *state);
 
 static inline void ibpf_set_mem_region(ibpf_full_state_t *state, void *ptr, size_t len, unsigned perm)
 {
