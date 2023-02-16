@@ -68,9 +68,8 @@ int ks_trampoline(void){
     insertionSort(s1, SIZE1); insertionSort(s2, SIZE2);
     
     KS_Test_Setup setup = {.arr1 = s1, .arr2 = s2, .len1 = SIZE1, .len2 = SIZE2, .significance = 0.05};
-	KS_Test_Results result;
+	KS_Test_Results result = {.max_diff = 0, .p_value = 0};
 	
-    //kolmogorov_smirnov_test(&setup, &result);
     bpf_t ks_bpf = {
         .application = kolmogorov_smirnov_test_bin,
         .application_len = sizeof(kolmogorov_smirnov_test_bin),
@@ -82,9 +81,9 @@ int ks_trampoline(void){
 
     KS_Context ctx = {.setup = &setup, .result = &result};
     bpf_setup(&ks_bpf);
-    bpf_execute(&ks_bpf,(void*)&ctx,sizeof(ctx),&res);
+    bpf_execute(&ks_bpf,&ctx,sizeof(&ctx),&res);
 
-    float corrected_result = result.max_diff/(float)RANGE;
+    float corrected_result = ctx.result->max_diff/(float)RANGE;
 
 	printf("+++++++++++++++++++++++++++++++++++++++++++++++\n");
 
@@ -92,12 +91,12 @@ int ks_trampoline(void){
 		if(i >= SIZE1){
 			printf("x%i: No value          + ", i+1);
 		}else{
-			printf("x%i: %f                + ", i+1, (s1[i])/(float)RANGE);
+			printf("x%i: %f                + ", i+1, (ctx.setup->arr1[i])/(float)RANGE);
 		}
 		if(i >= SIZE2){
 			printf("y%i: No value", i+1);
 		}else{
-			printf("y%i: %f", i+1, s2[i]/(float)RANGE);
+			printf("y%i: %f", i+1, ctx.setup->arr2[i]/(float)RANGE);
 		}
 		printf("\n");
 	}
@@ -117,7 +116,6 @@ int* create_sample(int* sample, int size, int seed){
 }
 
 int* insertionSort(int* arr, int size){
-	//float tmp = 0;
 	for(int i = 0; i < size; ++i){
 		int j = i - 1; int key = arr[i];
 		while(j >= 0 && arr[j] > arr[i]){
