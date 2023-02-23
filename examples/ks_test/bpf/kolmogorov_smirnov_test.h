@@ -31,7 +31,7 @@ typedef struct {
     __bpf_shared_ptr(KS_Context *, kolmogorov_ctx);
 } kolmogorov_ctx_t;
 
-KS_Test_Results* kolmogorov_smirnov_test(KS_Context* ctx);
+KS_Test_Results* kolmogorov_smirnov_test(kolmogorov_ctx_t* ctx);
 
 uint32_t* create_sample(uint32_t* sample, uint32_t size, uint32_t seed);
 

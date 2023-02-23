@@ -87,7 +87,7 @@ uint32_t ks_trampoline(void){
     KS_Context raw_ctx = {.setup = &setup, .result = &result};
 	kolmogorov32_ctx_t ctx = {.data = &raw_ctx};
     bpf_setup(&ks_bpf);
-    int code = bpf_execute_ctx(&ks_bpf,&ctx,sizeof(&ctx),&res);
+    int code = bpf_execute(&ks_bpf,&ctx,sizeof(&ctx),&res);
 
     float corrected_result = ctx.data->result->max_diff/(float)RANGE;
 
@@ -107,6 +107,7 @@ uint32_t ks_trampoline(void){
 		printf("\n");
 	}
 	printf("+++++++++++++++++++++++++++++++++++++++++++++++\n");
+	printf("Size of ctx: %d\n", sizeof(&ctx));
 	printf("Return code: %d\n", code);
 	printf("Result: max_diff: %f, p_value: %f\n", corrected_result, (float)result.p_value);
 	return 0;
