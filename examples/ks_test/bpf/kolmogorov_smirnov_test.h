@@ -15,16 +15,16 @@ typedef struct KS_Test_Results{
 } KS_Test_Results;
 
 typedef struct KS_Test_Setup{
-    uint32_t* arr1;
+    __bpf_shared_ptr(uint32_t *, arr1);
+    __bpf_shared_ptr(uint32_t *, arr2);
     uint32_t len1;
-    uint32_t* arr2;
     uint32_t len2;
     uint32_t significance;
 } KS_Test_Setup;
 
 typedef struct KS_Context{
-    KS_Test_Setup* setup;
-    KS_Test_Results* result;
+    __bpf_shared_ptr(KS_Test_Setup*, setup);
+    __bpf_shared_ptr(KS_Test_Results*, result);
 } KS_Context __attribute__((aligned(64)));
 
 typedef struct {
