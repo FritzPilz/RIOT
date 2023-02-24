@@ -86,8 +86,19 @@ uint32_t ks_trampoline(void){
 
     KS_Context raw_ctx = {.setup = &setup, .result = &result};
 	kolmogorov32_ctx_t ctx = {.data = &raw_ctx};
+
+    bpf_mem_region_t raw_ctx_region, setup_region, result_region, s1_region, s2_region;
+
     bpf_setup(&ks_bpf);
-    int code = bpf_execute(&ks_bpf,&ctx,sizeof(&ctx),&res);
+
+    bpf_add_region(&ks_bpf, &raw_ctx_region, &raw_ctx, sizeof(raw_ctx), BPF_MEM_REGION_READ | BPF_MEM_REGION_WRITE);
+    bpf_add_region(&ks_bpf, &setup_region, &setup, sizeof(setup), BPF_MEM_REGION_READ | BPF_MEM_REGION_WRITE);
+    bpf_add_region(&ks_bpf, &result_region, &result, sizeof(result), BPF_MEM_REGION_READ | BPF_MEM_REGION_WRITE);
+    bpf_add_region(&ks_bpf, &s1_region, s1, sizeof(s1), BPF_MEM_REGION_READ | BPF_MEM_REGION_WRITE);
+    bpf_add_region(&ks_bpf, &s2_region, s2, sizeof(s2), BPF_MEM_REGION_READ | BPF_MEM_REGION_WRITE);
+
+    int code = bpf_execute_ctx(&ks_bpf, &ctx, sizeof(ctx),&res);
+
 
     float corrected_result = ctx.data->result->max_diff/(float)RANGE;
 
