@@ -1,29 +1,35 @@
 #include "kolmogorov_smirnov_test.h"
 #include "bpf/bpfapi/helpers.h"
 
+static const char enter_msg[] = "Entered bpf-application\n";
+static const char count_msg[] = "Loop: %i, Count: %i\n";
+
 KS_Test_Results* kolmogorov_smirnov_test(kolmogorov_ctx_t* ctx){
+	bpf_printf(enter_msg);
 	uint32_t F_s1[STEPS]; uint32_t F_s2[STEPS]; uint32_t observations = 0; uint32_t max = 0;
     //get the occurences within i*STEP > x >= (i+1)*STEP from the first array and save them in function F_s1
-	for(uint32_t i = 1; i <= STEPS; ++i){
+	for(uint32_t j = 0; j < ctx->kolmogorov_ctx->setup->len1; ++j){
 		// TODO: Fix condition in for-loop to take previous iterations of the outer loop uint32_to account (i.e. the new length)
-		for(uint32_t j = 0; j < ctx->kolmogorov_ctx->setup->len1; ++j){
+		for(uint32_t i = 1; i <= STEPS; ++i){
+			bpf_printf(count_msg, 1, j);
 			if(i*STEP <= ctx->kolmogorov_ctx->setup->arr1[observations]){
 				break;
 			}
 			++observations;
 		}
-		F_s1[i-1] = observations;
+		F_s1[j-1] = observations;
 	}
 	observations = 0;
     //get the occurences within i*STEP > x >= (i+1)*STEP from the second array and save them in function F_s2
-	for(uint32_t i = 1; i <= STEPS; ++i){
-		for(uint32_t j = 0; j < ctx->kolmogorov_ctx->setup->len2; ++j){
+	for(uint32_t j = 0; j < ctx->kolmogorov_ctx->setup->len2; ++j){
+		for(uint32_t i = 1; i <= STEPS; ++i){
+			bpf_printf(count_msg, 2, j);
 			if(i*STEP <= ctx->kolmogorov_ctx->setup->arr2[observations]){
 				break;
 			}
 			++observations;
 		}
-		F_s2[i-1] = observations;
+		F_s2[j-1] = observations;
 	}
     //check for highest difference
 	for(uint32_t i = 0; i < STEPS; ++i){
