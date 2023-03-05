@@ -7,7 +7,7 @@
 #define STEP 5.0
 #define STEPS 20
 #define SIZE1 20
-#define SIZE2 15
+#define SIZE2 10
 
 typedef struct KS_Test_Results{
 	uint32_t max_diff;

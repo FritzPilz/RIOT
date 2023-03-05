@@ -134,9 +134,9 @@ uint32_t* create_sample(uint32_t* sample, uint32_t size, uint32_t seed){
 }
 
 uint32_t* insertionSort(uint32_t* arr, uint32_t size){
-	for(int i = 0; (uint32_t)i < size; ++i){
+	for(uint32_t i = 0; i < size; ++i){
 		int j = i - 1; uint32_t key = arr[i];
-		while(j >= 0 && arr[j] > arr[i]){
+		while(j >= 0 && arr[j] > key){
 			arr[j+1] = arr[j];
 			j = j - 1;
 		}
