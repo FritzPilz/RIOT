@@ -72,7 +72,7 @@ void create_function(void){
 	//Assume that all values are equally distributed
     random_init(7);
 	for(uint32_t i = 0; i < STEPS; ++i){
-		expectedFunction[i] = STEP*(i+1);
+		expectedFunction[i] = STEP*(STEPS-i);
 	}
 }
 
