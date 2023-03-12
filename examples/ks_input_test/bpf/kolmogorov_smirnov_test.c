@@ -9,12 +9,12 @@ uint32_t delta_kolmogorov_smirnov_test(kolmogorov_ctx_t* ctx){
 		if(ctx->kolmogorov_ctx->value < (i+1)*STEPS){
 			continue;
 		}else{
-			ctx->kolmogorov_ctx->empiricalFunction[i];
+			++ctx->kolmogorov_ctx->empiricalFunction[i];
 		}
 	}
 	ctx->kolmogorov_ctx->result = 0;
 	for(int i = 0; i < STEPS; ++i){
-		int32_t tmp = ctx->kolmogorov_ctx->expectedFunction[i]-ctx->kolmogorov_ctx->empiricalFunction[i];
+		int32_t tmp = (ctx->kolmogorov_ctx->expectedFunction[i]) - (ctx->kolmogorov_ctx->empiricalFunction[i]);
 		if(tmp < 0){
 			tmp = -tmp;
 		}

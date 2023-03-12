@@ -63,6 +63,8 @@ int main(void){
 		}
 	}
 
+	printList(expectedFunction, empiricalFunction);
+
 	return 0;
 }
 
@@ -70,7 +72,13 @@ void create_function(void){
 	//Assume that all values are equally distributed
     random_init(7);
 	for(uint32_t i = 0; i < STEPS; ++i){
-		expectedFunction[i] = STEP;
+		expectedFunction[i] = STEP*(i+1);
+	}
+}
+
+void printList(int32_t* arr1, int32_t* arr2){
+	for(int i = 0; i < 16; ++i){
+		printf("x%i: %d, y%i: %d\n", i, arr1[i], i, arr2[i]);
 	}
 }
 
