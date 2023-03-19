@@ -53,7 +53,7 @@ int main(void){
 	bpf_add_region(&ks_bpf, &ks_state_region, &ks_state, sizeof(ks_state), BPF_MEM_REGION_READ | BPF_MEM_REGION_WRITE);
 	bpf_add_region(&ks_bpf, &expectedFunction_region, &expectedFunction, sizeof(expectedFunction), BPF_MEM_REGION_READ | BPF_MEM_REGION_WRITE);
     bpf_add_region(&ks_bpf, &empiricalFunction_region, &empiricalFunction, sizeof(empiricalFunction), BPF_MEM_REGION_READ | BPF_MEM_REGION_WRITE);
-
+	random_init(43);
 	for(uint32_t i = 0; i < RANGE; ++i){
 		ks_state.value = random_uint32_range(0,1024);
 		bpf_execute_ctx(&ks_bpf, &ctx, sizeof(ctx), &res);
@@ -69,7 +69,6 @@ int main(void){
 
 void create_function(void){
 	//Assume that all values are equally distributed
-    random_init(7);
 	for(uint32_t i = 0; i < STEPS; ++i){
 		expectedFunction[i] = STEP*(STEPS-i);
 	}
