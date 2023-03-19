@@ -59,7 +59,6 @@ int main(void){
 		int code = bpf_execute_ctx(&ks_bpf, &ctx, sizeof(ctx), &res);
 		if(i % STEPS == 15){
 			printf("max: %d\n", ks_state.result);
-			printf("exit code: %i\n", code);
 		}
 	}
 

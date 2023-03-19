@@ -6,7 +6,7 @@
 uint32_t delta_kolmogorov_smirnov_test(kolmogorov_ctx_t* ctx){
 //	bpf_printf(enter_msg);
 	for(int i = 0; i < STEPS; ++i){
-		if(ctx->kolmogorov_ctx->value < (i+1)*STEPS){
+		if(ctx->kolmogorov_ctx->value < i*STEP){
 			continue;
 		}else{
 			++ctx->kolmogorov_ctx->empiricalFunction[i];
