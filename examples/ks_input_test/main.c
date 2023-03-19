@@ -18,6 +18,7 @@
  * @}
  */
 #include <stdio.h>
+#include "xtimer.h"
 #include "random.h"
 #include "bpf/shared.h"
 #include "bpf/kolmogorov_smirnov_test.h"
@@ -53,7 +54,9 @@ int main(void){
 	bpf_add_region(&ks_bpf, &ks_state_region, &ks_state, sizeof(ks_state), BPF_MEM_REGION_READ | BPF_MEM_REGION_WRITE);
 	bpf_add_region(&ks_bpf, &expectedFunction_region, &expectedFunction, sizeof(expectedFunction), BPF_MEM_REGION_READ | BPF_MEM_REGION_WRITE);
     bpf_add_region(&ks_bpf, &empiricalFunction_region, &empiricalFunction, sizeof(empiricalFunction), BPF_MEM_REGION_READ | BPF_MEM_REGION_WRITE);
+	xtimer_init();
 	random_init(43);
+	int msec_start = xtimer_now_usec64();
 	for(uint32_t i = 0; i < RANGE; ++i){
 		ks_state.value = random_uint32_range(0,1024);
 		bpf_execute_ctx(&ks_bpf, &ctx, sizeof(ctx), &res);
@@ -61,8 +64,10 @@ int main(void){
 			printf("max: %d\n", ks_state.result);
 		}
 	}
+	int msec_finish = xtimer_now_usec64();
 
 	printList(expectedFunction, empiricalFunction);
+	printf("Time taken: %f microseconds\n",(float)(msec_finish-msec_start)/(float)1000.0);
 
 	return 0;
 }
