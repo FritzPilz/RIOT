@@ -56,7 +56,7 @@ int main(void){
 
 	for(uint32_t i = 0; i < RANGE; ++i){
 		ks_state.value = random_uint32_range(0,1024);
-		int code = bpf_execute_ctx(&ks_bpf, &ctx, sizeof(ctx), &res);
+		bpf_execute_ctx(&ks_bpf, &ctx, sizeof(ctx), &res);
 		if(i % STEPS == 15){
 			printf("max: %d\n", ks_state.result);
 		}
