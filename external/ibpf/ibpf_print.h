@@ -4,7 +4,7 @@ void print_reg (unsigned int r) {
   return ;
 }
 
-void print_bpf_insstruction (unsigned long long ins){
+void print_bpf_instruction (unsigned long long ins){
   unsigned int op, dst, src;
   int imm, ofs;
   op  = (unsigned int) ins & 255LLU;

@@ -1,8 +1,7 @@
 #include<stdio.h>
-#include "fmt.h"
 
 #ifndef JITTED_LIST_MAX_LENGTH
-#define JITTED_LIST_MAX_LENGTH 3000
+#define JITTED_LIST_MAX_LENGTH 1000
 #endif
 #ifndef ENTRY_POINT_MAX_LENGTH
 #define ENTRY_POINT_MAX_LENGTH 100
@@ -50,6 +49,10 @@ enum LoadStorePerm {
     LoadAndStore = 3,
 };
 
+struct key_value2 {
+  unsigned int arm_ofs;
+  unsigned int alu32_ofs;
+};
 
 struct memory_region {
   unsigned int start_addr;
@@ -60,19 +63,18 @@ struct memory_region {
 
 struct jit_state {
   unsigned int pc_loc;
-  unsigned int *flag;
-  unsigned long long *regs_st;
+  unsigned int flag;
+  unsigned long long regs_st[11];
   unsigned int mrs_num;
   struct memory_region *bpf_mrs;
   unsigned int ins_len;
-  unsigned int entry_len;
-  unsigned int *ep_list;
+  unsigned long long *jit_ins;
+  struct key_value2 *kv2;
   _Bool use_IR11;
   unsigned int *load_store_regs;
   unsigned int offset;
   unsigned int thumb_len;
   unsigned short *thumb;
-  unsigned long long *ibpf;
   unsigned int jitted_len;
   unsigned short *jitted_list;
 };
