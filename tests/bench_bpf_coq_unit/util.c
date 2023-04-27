@@ -38,6 +38,8 @@ void fill_instruction(const bpf_instruction_t *instr, test_application_t *test_a
 
     for (size_t i = 0; i < NUM_INSTRUCTIONS; i++) {
         memcpy(&test_app->text[i], instr, sizeof(bpf_instruction_t));
+        ((bpf_instruction_t*)test_app->text)[i].src = (i + 3) & 0xf;
+        ((bpf_instruction_t*)test_app->text)[i].dst = (i + 1) & 0xf;
     }
     static const bpf_instruction_t return_instr = {
         .opcode = BPF_INSTRUCTION_CLS_BRANCH | BPF_INSTRUCTION_BRANCH_EXIT

@@ -38,19 +38,28 @@
 #endif
 
 #ifdef MODULE_IBPF
+ibpf_full_state_t ibpf_state;
+#else
+
+/* ibpf defines this within the struct */
+static uint8_t _bpf_stack[512];
+
+#endif
+
+#ifdef MODULE_GEN_BPF
+static struct memory_region mr_stack = {.start_addr = (uintptr_t)_bpf_stack,
+                                        .block_size = sizeof(_bpf_stack),
+                                        .block_perm = Freeable,
+                                        .block_ptr = _bpf_stack};
+#endif
+
+#ifdef MODULE_IBPF
 static uint16_t *jitted_thumb_list;
 
 ibpf_full_state_t ibpf_state;
 
 __attribute__ ((noinline)) void _magic_function(unsigned int ofs, struct jit_state* st){
   int res = 0;
-  //printf("magic_function ofs=%d\n", ofs);
-  //printf("magic_function jitted_thumb start address =0x%hn\n", jitted_thumb_list);
-  //printf("magic_function jitted_thumb start address + ofs =0x%hn\n", jitted_thumb_list + ofs);
-  //printf("magic_function st start address =0x%x\n", st);
-  //printf("magic_function st.jitted_list start address =0x%x\n", (*st).jitted_list);
-
-  // disables some compiler optimizations
   __asm volatile (
     "orr %[input_0], #0x1\n\t"
     "mov r12, sp\n\t"
@@ -61,23 +70,9 @@ __attribute__ ((noinline)) void _magic_function(unsigned int ofs, struct jit_sta
     : [input_1] "r" (st), [input_0] "r" (jitted_thumb_list + ofs)
     : "cc" //The instruction modifies the condition code flags
   );
-  //(*st).flag = vBPF_SUCC_RETURN;
-  //printf("magic function result = %d\n", res);
   return ;
 }
-#else
-/* ibpf defines this within the struct */
-static uint8_t _bpf_stack[512];
 #endif
-
-#ifdef MODULE_GEN_BPF
-static struct memory_region mr_stack = {.start_addr = (uintptr_t)_bpf_stack,
-                                        .block_size = sizeof(_bpf_stack),
-                                        .block_perm = Freeable,
-                                        .block_ptr = _bpf_stack};
-#endif
-
-
 
 static const test_content_t tests[] = {
     {
@@ -150,6 +145,14 @@ static const test_content_t tests[] = {
     },
     {
         .instruction = {
+            .opcode = 0x34,
+            .dst = 0,
+            .immediate = 5,
+        },
+        .name = "ALU div32 imm",
+    },
+    {
+        .instruction = {
             .opcode = 0x79,
             .dst = 0,
             .src = 10,
@@ -210,14 +213,15 @@ int main(void)
     puts("CertrBPF");
 #elif defined(MODULE_IBPF)
     puts("JIT!");
+    printf("Size of BPF context %u\n", sizeof(ibpf_state));
 #else
     puts("Other");
 #endif
 #if CSV_OUT
     puts("duration,code,usperinst,instrpersec");
 #else
-    printf("| %-16s | %-8s | %-6s | %-6s | %-16s |\n",
-           "Test", "duration", "code", "us/instr", "instr per sec");
+    printf("| %-16s | %-8s | %-6s | %-6s | %-16s | %-8s | %-16s |\n",
+           "Test", "duration", "code", "us/instr", "instr per sec", "JIT dur", "JIT us/instr");
 #endif
     for (size_t test_idx = 0; test_idx < ARRAY_SIZE(tests); test_idx++) {
 #ifdef MODULE_GEN_BPF
@@ -232,7 +236,6 @@ int main(void)
             .ins_len = sizeof(test_app.text),
         };
 #elif defined(MODULE_IBPF)
-        jitted_thumb_list = ibpf_state.jitted_thumb_list;
 #else
         bpf_t bpf = {
             .application = (uint8_t*)&test_app,
@@ -242,16 +245,22 @@ int main(void)
             .flags = BPF_FLAG_PREFLIGHT_DONE,
         };
         bpf_setup(&bpf);
+
         int64_t res = 0;
 #endif
         fill_instruction(&tests[test_idx].instruction, &test_app);
 
 #ifdef MODULE_IBPF
-        ibpf_full_state_init(&ibpf_state);
+        jitted_thumb_list = ibpf_state.jitted_thumb_list;
+        ibpf_full_state_init(&ibpf_state, 0);
         ibpf_set_code(&ibpf_state, test_app.text, sizeof(test_app.text));
+        uint32_t jit_begin = ztimer_now(ZTIMER_USEC); // unsigned long long -> uint64_t
         jit_alu32(&ibpf_state.st);
 #endif
         uint32_t begin = ztimer_now(ZTIMER_USEC); // unsigned long long -> uint64_t
+#ifndef MODULE_IBPF
+        uint32_t jit_begin = begin;
+#endif
 #ifdef MODULE_GEN_BPF
         int result = bpf_interpreter(&st, 10000);
 #elif defined(MODULE_IBPF)
@@ -263,13 +272,15 @@ int main(void)
         float duration = (float)(end-begin);
         float us_per_op = duration/NUM_INSTRUCTIONS;
         float kops_per_sec = (float)(NUM_INSTRUCTIONS*US_PER_MS) / duration;
+        float jit_duration = (float)(begin - jit_begin);
+        float jit_per_instruction = (float)(jit_duration / NUM_INSTRUCTIONS);
 #if CSV_OUT
-        printf("%f,%d,%f,%f\n",
-                duration/US_PER_MS, (signed)result, us_per_op, kops_per_sec);
+        printf("%f,%d,%f,%f,%f,%f\n",
+                duration/US_PER_MS, (signed)result, us_per_op, kops_per_sec,jit_duration,jit_per_instruction);
 #else
-        printf("| %-16s | %2.4fms | %6d | %2.4fus | %7.2f kops/sec |\n",
+        printf("| %-16s | %2.4fms | %6d | %2.4fus | %7.2f kops/sec | %2.4fms | %7.2f us\n",
                 tests[test_idx].name,
-                duration/US_PER_MS, (signed)result, us_per_op, kops_per_sec);
+                duration/US_PER_MS, (signed)result, us_per_op, kops_per_sec, jit_duration/US_PER_MS, jit_per_instruction);
 #endif
 
     }
