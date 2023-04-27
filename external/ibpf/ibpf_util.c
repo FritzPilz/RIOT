@@ -11,21 +11,21 @@
 
 uint16_t *jitted_thumb_list;
 
-//__attribute__ ((noinline)) void _magic_function(unsigned int ofs, struct jit_state* st){
-//  int res = 0;
-//  // disables some compiler optimizations
-//  __asm volatile (
-//    "orr %[input_0], #0x1\n\t"
-//    "mov r12, sp\n\t"
-//    "sub sp, sp, #48\n\t"
-//    "str r12, [sp, #0]\n\t"
-//    "mov pc, %[input_0]\n\t"
-//    : [result] "=r" (res)
-//    : [input_1] "r" (st), [input_0] "r" (jitted_thumb_list + ofs)
-//    : "cc" //The instruction modifies the condition code flags
-//  );
-//  return ;
-//}
+__attribute__ ((noinline)) void _magic_function(unsigned int ofs, struct jit_state* st){
+  int res = 0;
+  // disables some compiler optimizations
+  __asm volatile (
+    "orr %[input_0], #0x1\n\t"
+    "mov r12, sp\n\t"
+    "sub sp, sp, #48\n\t"
+    "str r12, [sp, #0]\n\t"
+    "mov pc, %[input_0]\n\t"
+    : [result] "=r" (res)
+    : [input_1] "r" (st), [input_0] "r" (jitted_thumb_list + ofs)
+    : "cc" //The instruction modifies the condition code flags
+  );
+  return ;
+}
 
 void ibpf_full_state_init(ibpf_full_state_t *state)
 {
