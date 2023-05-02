@@ -16,29 +16,252 @@
 /*                                                                        */
 /**************************************************************************/
 
-typedef void bpf_t;
-
 #include "interpreter.h"
-#include "bpf/shared.h"
-#include "bpf/call.h"
-
+#include "fmt.h"
 #include <stdint.h> /* for uintptr_t */
-/*
-#include <inttypes.h>
-#include<stdlib.h>
-#include<stddef.h>
 
-void print_bpf_state(struct bpf_state* st){
-  printf("pc= %" PRIu64 "\n", (unsigned long long) (*st).state_pc);
-  printf("flag= %d\n", (*st).bpf_flag);
-  for(int i = 0; i < 11; i++){
-    printf("R%d",i);
-    printf("= %" PRIu64 ";", (unsigned long long) (*st).regsmap[i]);
-  }
-  printf("\n");
+
+void print_reg (unsigned int r) {
+  printf("R%d ", r);
+  return ;
 }
-*/
 
+void print_bpf_instruction (unsigned long long ins){
+  unsigned int op, dst, src;
+  int imm, ofs;
+  op  = (unsigned int) ins & 255LLU;
+  dst = (unsigned int) ((ins & 4095LLU) >> 8LLU);
+  src = (unsigned int) ((ins & 65535LLU) >> 12LLU);
+  imm = (int) (ins >> 32LLU);
+  ofs = (int) (short) (ins << 32LLU >> 48LLU);
+  switch (op) {
+    //alu64
+    case 0x07:
+      printf("bpf_add64 "); print_reg(dst); printf("%d", imm); return ;
+    case 0x17:
+      printf("bpf_sub64 "); print_reg(dst); printf("%d", imm); return ;
+    case 0x27:
+      printf("bpf_mul64 "); print_reg(dst); printf("%d", imm); return ;
+    case 0x37:
+      printf("bpf_div64 "); print_reg(dst); printf("%d", imm); return ;
+    case 0x47:
+      printf("bpf_or64  "); print_reg(dst); printf("%d", imm); return ;
+    case 0x57:
+      printf("bpf_and64 "); print_reg(dst); printf("%d", imm); return ;
+    case 0x67:
+      printf("bpf_lsh64 "); print_reg(dst); printf("%d", imm); return ;
+    case 0x77:
+      printf("bpf_rsh64 "); print_reg(dst); printf("%d", imm); return ;
+    case 0x87:
+      printf("bpf_neg64 "); print_reg(dst); printf("%d", imm); return ;
+    case 0x97:
+      printf("bpf_mod64 "); print_reg(dst); printf("%d", imm); return ;
+    case 0xa7:
+      printf("bpf_xor64 "); print_reg(dst); printf("%d", imm); return ;
+    case 0xb7:
+      printf("bpf_mov64 "); print_reg(dst); printf("%d", imm); return ;
+    case 0xc7:
+      printf("bpf_arsh64 "); print_reg(dst); printf("%d", imm); return ;
+
+    case 0x0f:
+      printf("bpf_add64 "); print_reg(dst); print_reg(src); return ;
+    case 0x1f:
+      printf("bpf_sub64 "); print_reg(dst); print_reg(src); return ;
+    case 0x2f:
+      printf("bpf_mul64 "); print_reg(dst); print_reg(src); return ;
+    case 0x3f:
+      printf("bpf_div64 "); print_reg(dst); print_reg(src); return ;
+    case 0x4f:
+      printf("bpf_or64  "); print_reg(dst); print_reg(src); return ;
+    case 0x5f:
+      printf("bpf_and64 "); print_reg(dst); print_reg(src); return ;
+    case 0x6f:
+      printf("bpf_lsh64 "); print_reg(dst); print_reg(src); return ;
+    case 0x7f:
+      printf("bpf_rsh64 "); print_reg(dst); print_reg(src); return ;
+    case 0x9f:
+      printf("bpf_mod64 "); print_reg(dst); print_reg(src); return ;
+    case 0xaf:
+      printf("bpf_xor64 "); print_reg(dst); print_reg(src); return ;
+    case 0xbf:
+      printf("bpf_mov64 "); print_reg(dst); print_reg(src); return ;
+    case 0xcf:
+      printf("bpf_arsh64 "); print_reg(dst); print_reg(src); return ;
+
+    //alu32
+    case 0x04:
+      printf("bpf_add32 "); print_reg(dst); printf("%d", imm); return ;
+    case 0x14:
+      printf("bpf_sub32 "); print_reg(dst); printf("%d", imm); return ;
+    case 0x24:
+      printf("bpf_mul32 "); print_reg(dst); printf("%d", imm); return ;
+    case 0x34:
+      printf("bpf_div32 "); print_reg(dst); printf("%d", imm); return ;
+    case 0x44:
+      printf("bpf_or32  "); print_reg(dst); printf("%d", imm); return ;
+    case 0x54:
+      printf("bpf_and32 "); print_reg(dst); printf("%d", imm); return ;
+    case 0x64:
+      printf("bpf_lsh32 "); print_reg(dst); printf("%d", imm); return ;
+    case 0x74:
+      printf("bpf_rsh32 "); print_reg(dst); printf("%d", imm); return ;
+    case 0x84:
+      printf("bpf_neg32 "); print_reg(dst); printf("%d", imm); return ;
+    case 0x94:
+      printf("bpf_mod32 "); print_reg(dst); printf("%d", imm); return ;
+    case 0xa4:
+      printf("bpf_xor32 "); print_reg(dst); printf("%d", imm); return ;
+    case 0xb4:
+      printf("bpf_mov32 "); print_reg(dst); printf("%d", imm); return ;
+    case 0xc4:
+      printf("bpf_arsh32 "); print_reg(dst); printf("%d", imm); return ;
+    case 0xd4:
+      printf("bpf_jit "); printf("%d", ofs); printf(", %d", imm); return ;
+
+    case 0x0c:
+      printf("bpf_add32 "); print_reg(dst); print_reg(src); return ;
+    case 0x1c:
+      printf("bpf_sub32 "); print_reg(dst); print_reg(src); return ;
+    case 0x2c:
+      printf("bpf_mul32 "); print_reg(dst); print_reg(src); return ;
+    case 0x3c:
+      printf("bpf_div32 "); print_reg(dst); print_reg(src); return ;
+    case 0x4c:
+      printf("bpf_or32  "); print_reg(dst); print_reg(src); return ;
+    case 0x5c:
+      printf("bpf_and32 "); print_reg(dst); print_reg(src); return ;
+    case 0x6c:
+      printf("bpf_lsh32 "); print_reg(dst); print_reg(src); return ;
+    case 0x7c:
+      printf("bpf_rsh32 "); print_reg(dst); print_reg(src); return ;
+    case 0x9c:
+      printf("bpf_mod32 "); print_reg(dst); print_reg(src); return ;
+    case 0xac:
+      printf("bpf_xor32 "); print_reg(dst); print_reg(src); return ;
+    case 0xbc:
+      printf("bpf_mov32 "); print_reg(dst); print_reg(src); return ;
+    case 0xcc:
+      printf("bpf_arsh32 "); print_reg(dst); print_reg(src); return ;
+
+    //memory
+    case 0x10:
+      printf("bpf_lddw_low "); print_reg(dst); printf("%d", imm); return ;
+    case 0x18:
+      printf("bpf_lddw_high "); print_reg(dst); printf("%d", imm); return ;
+
+    case 0x61:
+      printf("bpf_ldxw  "); print_reg(dst); printf(", ["); print_reg(src); printf("+ %d]", ofs); return ;
+    case 0x69:
+      printf("bpf_ldxh  "); print_reg(dst); printf(", ["); print_reg(src); printf("+ %d]", ofs); return ;
+    case 0x71:
+      printf("bpf_ldxb  "); print_reg(dst); printf(", ["); print_reg(src); printf("+ %d]", ofs); return ;
+    case 0x79:
+      printf("bpf_ldxdw "); print_reg(dst); printf(", ["); print_reg(src); printf("+ %d]", ofs); return ;
+
+    case 0x62:
+      printf("bpf_stw  "); printf("["); print_reg(dst); printf("+ %d]", ofs); printf(", %d", imm); return ;
+    case 0x6a:
+      printf("bpf_sth  "); printf("["); print_reg(dst); printf("+ %d]", ofs); printf(", %d", imm); return ;
+    case 0x72:
+      printf("bpf_stb  "); printf("["); print_reg(dst); printf("+ %d]", ofs); printf(", %d", imm); return ;
+    case 0x7a:
+      printf("bpf_stdw "); printf("["); print_reg(dst); printf("+ %d]", ofs); printf(", %d", imm); return ;
+
+    case 0x63:
+      printf("bpf_stxw  "); printf("["); print_reg(dst); printf("+ %d]", ofs); printf(", %d", imm); return ;
+    case 0x6b:
+      printf("bpf_stxh  "); printf("["); print_reg(dst); printf("+ %d]", ofs); printf(", %d", imm); return ;
+    case 0x73:
+      printf("bpf_stxb  "); printf("["); print_reg(dst); printf("+ %d]", ofs); printf(", %d", imm); return ;
+    case 0x7b:
+      printf("bpf_stxdw "); printf("["); print_reg(dst); printf("+ %d]", ofs); printf(", %d", imm); return ;
+
+    //branch
+    case 0x05:
+      printf("bpf_ja "); printf(" +%d]", ofs); return ;
+
+    case 0x15:
+      printf("bpf_jeq "); print_reg(dst); printf(", %d", imm);  printf(", +%d", ofs); return ;
+    case 0x25:
+      printf("bpf_jgt "); print_reg(dst); printf(", %d", imm);  printf(", +%d", ofs); return ;
+    case 0x35:
+      printf("bpf_jge "); print_reg(dst); printf(", %d", imm);  printf(", +%d", ofs); return ;
+    case 0xa5:
+      printf("bpf_jlt "); print_reg(dst); printf(", %d", imm);  printf(", +%d", ofs); return ;
+    case 0xb5:
+      printf("bpf_jle "); print_reg(dst); printf(", %d", imm);  printf(", +%d", ofs); return ;
+    case 0x45:
+      printf("bpf_jset "); print_reg(dst); printf(", %d", imm);  printf(", +%d", ofs); return ;
+    case 0x55:
+      printf("bpf_jne "); print_reg(dst); printf(", %d", imm);  printf(", +%d", ofs); return ;
+    case 0x65:
+      printf("bpf_jsgt "); print_reg(dst); printf(", %d", imm);  printf(", +%d", ofs); return ;
+    case 0x75:
+      printf("bpf_jsge "); print_reg(dst); printf(", %d", imm);  printf(", +%d", ofs); return ;
+    case 0xc5:
+      printf("bpf_jslt "); print_reg(dst); printf(", %d", imm);  printf(", +%d", ofs); return ;
+    case 0xd5:
+      printf("bpf_jsle "); print_reg(dst); printf(", %d", imm);  printf(", +%d", ofs); return ;
+
+    case 0x1d:
+      printf("bpf_jeq "); print_reg(dst); printf(", "); print_reg(src);  printf(", +%d", ofs); return ;
+    case 0x2d:
+      printf("bpf_jgt "); print_reg(dst); printf(", "); print_reg(src);  printf(", +%d", ofs); return ;
+    case 0x3d:
+      printf("bpf_jge "); print_reg(dst); printf(", "); print_reg(src);  printf(", +%d", ofs); return ;
+    case 0xad:
+      printf("bpf_jlt "); print_reg(dst); printf(", "); print_reg(src);  printf(", +%d", ofs); return ;
+    case 0xbd:
+      printf("bpf_jle "); print_reg(dst); printf(", "); print_reg(src);  printf(", +%d", ofs); return ;
+    case 0x4d:
+      printf("bpf_jset "); print_reg(dst); printf(", "); print_reg(src);  printf(", +%d", ofs); return ;
+    case 0x5d:
+      printf("bpf_jne "); print_reg(dst); printf(", "); print_reg(src);  printf(", +%d", ofs); return ;
+    case 0x6d:
+      printf("bpf_jsgt "); print_reg(dst); printf(", "); print_reg(src);  printf(", +%d", ofs); return ;
+    case 0x7d:
+      printf("bpf_jsge "); print_reg(dst); printf(", "); print_reg(src);  printf(", +%d", ofs); return ;
+    case 0xcd:
+      printf("bpf_jslt "); print_reg(dst); printf(", "); print_reg(src);  printf(", +%d", ofs); return ;
+    case 0xdd:
+      printf("bpf_jsle "); print_reg(dst); printf(", "); print_reg(src);  printf(", +%d", ofs); return ;
+
+    case 0x85:
+      printf("bpf_call "); printf(" %d", imm); return ;
+    case 0x95:
+      printf("bpf_exit "); return ;
+    default: printf("error: op = %x", op);
+      return;
+
+  }
+}
+
+void print_bpf_state(struct bpf_state* st){ print_bpf_instruction (*((*st).ins + (*st).state_pc));
+  printf("pc= %02d flag= %d\n",  (*st).state_pc, (*st).bpf_flag);
+    print_u64_dec((*st).regsmap[0]);
+    printf("(R0)\n");
+    print_u64_dec((*st).regsmap[1]);
+    printf("(R1)\n");
+    print_u64_dec((*st).regsmap[2]);
+    printf("(R2)\n");
+    print_u64_dec((*st).regsmap[3]);
+    printf("(R3)\n");
+    print_u64_dec((*st).regsmap[4]);
+    printf("(R4)\n");
+    print_u64_dec((*st).regsmap[5]);
+    printf("(R5)\n");
+    print_u64_dec((*st).regsmap[6]);
+    printf("(R6)\n");
+    print_u64_dec((*st).regsmap[7]);
+    printf("(R7)\n");
+    print_u64_dec((*st).regsmap[8]);
+    printf("(R8)\n");
+    print_u64_dec((*st).regsmap[9]);
+    printf("(R9)\n");
+    print_u64_dec((*st).regsmap[10]);
+    printf("(R10)\n");
+  return ;
+}
 
 static __attribute__((always_inline)) inline unsigned int eval_pc (struct bpf_state* st) {
   return (*st).state_pc;
@@ -63,11 +286,11 @@ static __attribute__((always_inline)) inline void upd_reg (struct bpf_state* st,
   return ;
 }
 
-static __attribute__((always_inline)) inline int eval_flag(struct bpf_state* st){
+static __attribute__((always_inline)) inline unsigned eval_flag(struct bpf_state* st){
   return (*st).bpf_flag;
 }
 
-static __attribute__((always_inline)) inline void upd_flag(struct bpf_state* st, int f){
+static __attribute__((always_inline)) inline void upd_flag(struct bpf_state* st, unsigned f){
   (*st).bpf_flag = f;
   return ;
 }
@@ -152,10 +375,6 @@ static __attribute__((always_inline)) inline _Bool cmp_ptr32_nullM(unsigned char
    return (addr == 0);
 }
 
-static __attribute__((always_inline)) inline _Bool cmp_ptr32_nullF(bpf_call_t addr){
-   return (addr == 0);
-}
-
 static __attribute__((always_inline)) inline unsigned int get_dst(unsigned long long ins)
 {
   return (unsigned int) ((ins & 4095LLU) >> 8LLU);
@@ -171,66 +390,22 @@ static __attribute__((always_inline)) inline struct memory_region *get_mem_regio
   return mrs + n;
 }
 
-static __attribute__((always_inline)) inline bpf_call_t _bpf_get_call(int imm) {
-    switch(imm) {
-        case BPF_FUNC_BPF_PRINTF:
-            return &bpf_vm_printf;
-        case BPF_FUNC_BPF_MEMCPY:
-            return &bpf_vm_memcpy;
-        case BPF_FUNC_BPF_STORE_LOCAL:
-            return &bpf_vm_store_local;
-        case BPF_FUNC_BPF_STORE_GLOBAL:
-            return &bpf_vm_store_global;
-        case BPF_FUNC_BPF_FETCH_LOCAL:
-            return &bpf_vm_fetch_local;
-        case BPF_FUNC_BPF_FETCH_GLOBAL:
-            return &bpf_vm_fetch_global;
-#ifdef MODULE_XTIMER
-        case BPF_FUNC_BPF_NOW_MS:
-            return &bpf_vm_now_ms;
-#endif
-#ifdef MODULE_SAUL_REG
-        case BPF_FUNC_BPF_SAUL_REG_FIND_NTH:
-            return &bpf_vm_saul_reg_find_nth;
-        case BPF_FUNC_BPF_SAUL_REG_FIND_TYPE:
-            return &bpf_vm_saul_reg_find_type;
-        case BPF_FUNC_BPF_SAUL_REG_READ:
-            return &bpf_vm_saul_reg_read;
-#endif
-#ifdef MODULE_GCOAP
-        case BPF_FUNC_BPF_GCOAP_RESP_INIT:
-            return &bpf_vm_gcoap_resp_init;
-        case BPF_FUNC_BPF_COAP_OPT_FINISH:
-            return &bpf_vm_coap_opt_finish;
-        case BPF_FUNC_BPF_COAP_ADD_FORMAT:
-            return &bpf_vm_coap_add_format;
-        case BPF_FUNC_BPF_COAP_GET_PDU:
-            return &bpf_vm_coap_get_pdu;
-#endif
-#ifdef MODULE_FMT
-        case BPF_FUNC_BPF_FMT_S16_DFP:
-            return &bpf_vm_fmt_s16_dfp;
-        case BPF_FUNC_BPF_FMT_U32_DEC:
-            return &bpf_vm_fmt_u32_dec;
-#endif
-#ifdef MODULE_ZTIMER
-        case BPF_FUNC_BPF_ZTIMER_NOW:
-            return &bpf_vm_ztimer_now;
-        case BPF_FUNC_BPF_ZTIMER_PERIODIC_WAKEUP:
-            return &bpf_vm_ztimer_periodic_wakeup;
-#endif
-    }
+static __attribute__((always_inline)) inline unsigned char *_bpf_get_call(int imm) {
+  /* deleting `return NULL;` and adding your system APIs
+  switch (imm) {
+    default: return ...
+  }
+  */
   return NULL;
 }
 
-static __attribute__((always_inline)) inline unsigned int exec_function(struct bpf_state* st, bpf_call_t ptr){
+static __attribute__((always_inline)) inline unsigned int exec_function(struct bpf_state* st, unsigned char * ptr){
   if (ptr == 0){
-    (*st).bpf_flag = -4;
+    (*st).bpf_flag = vBPF_ILLEGAL_CALL;
     return 0U;
   }
   else {
-    st->regsmap[0] = ptr(st, st->regsmap[1], st->regsmap[2],  st->regsmap[3], st->regsmap[4], st->regsmap[5]);
-
+    /**do something e.g. print; */
     return 0U;
   }
 }
@@ -395,7 +570,7 @@ static __attribute__((always_inline)) inline unsigned char *check_mem_aux2(struc
   mr_perm = get_block_perm(mr);
   lo_ofs = get_sub(addr, start);
   hi_ofs = get_add(lo_ofs, chunk);
-  if (hi_ofs < size
+  if (hi_ofs <= size
         && (lo_ofs <= 4294967295U - chunk && 0U == lo_ofs % chunk)
         && mr_perm >= perm) {
     return (*mr).block_ptr + lo_ofs;
@@ -469,7 +644,7 @@ static __attribute__((always_inline)) inline void step_opcode_alu64(struct bpf_s
         upd_reg(st, dst, dst64 / src64);
         return;
       } else {
-        upd_flag(st, -9);
+        upd_flag(st, 10U);
         return;
       }
     case 64:
@@ -484,7 +659,7 @@ static __attribute__((always_inline)) inline void step_opcode_alu64(struct bpf_s
         upd_reg(st, dst, dst64 << src32);
         return;
       } else {
-        upd_flag(st, -10);
+        upd_flag(st, 11U);
         return;
       }
     case 112:
@@ -493,7 +668,7 @@ static __attribute__((always_inline)) inline void step_opcode_alu64(struct bpf_s
         upd_reg(st, dst, dst64 >> src32);
         return;
       } else {
-        upd_flag(st, -10);
+        upd_flag(st, 11U);
         return;
       }
     case 128:
@@ -501,7 +676,7 @@ static __attribute__((always_inline)) inline void step_opcode_alu64(struct bpf_s
         upd_reg(st, dst, -dst64);
         return;
       } else {
-        upd_flag(st, -1);
+        upd_flag(st, 2U);
         return;
       }
     case 144:
@@ -509,7 +684,7 @@ static __attribute__((always_inline)) inline void step_opcode_alu64(struct bpf_s
         upd_reg(st, dst, dst64 % src64);
         return;
       } else {
-        upd_flag(st, -9);
+        upd_flag(st, 10U);
         return;
       }
     case 160:
@@ -524,11 +699,11 @@ static __attribute__((always_inline)) inline void step_opcode_alu64(struct bpf_s
         upd_reg(st, dst, (unsigned long long) ((long long) dst64 >> src32));
         return;
       } else {
-        upd_flag(st, -10);
+        upd_flag(st, 11U);
         return;
       }
     default:
-      upd_flag(st, -1);
+      upd_flag(st, 2U);
       return;
 
   }
@@ -553,7 +728,7 @@ static __attribute__((always_inline)) inline void step_opcode_alu32(struct bpf_s
         upd_reg(st, dst, (unsigned long long) (dst32 / src32));
         return;
       } else {
-        upd_flag(st, -9);
+        upd_flag(st, 10U);
         return;
       }
     case 64:
@@ -567,7 +742,7 @@ static __attribute__((always_inline)) inline void step_opcode_alu32(struct bpf_s
         upd_reg(st, dst, (unsigned long long) (dst32 << src32));
         return;
       } else {
-        upd_flag(st, -10);
+        upd_flag(st, 11U);
         return;
       }
     case 112:
@@ -575,7 +750,7 @@ static __attribute__((always_inline)) inline void step_opcode_alu32(struct bpf_s
         upd_reg(st, dst, (unsigned long long) (dst32 >> src32));
         return;
       } else {
-        upd_flag(st, -10);
+        upd_flag(st, 11U);
         return;
       }
     case 128:
@@ -583,7 +758,7 @@ static __attribute__((always_inline)) inline void step_opcode_alu32(struct bpf_s
         upd_reg(st, dst, (unsigned long long) -dst32);
         return;
       } else {
-        upd_flag(st, -1);
+        upd_flag(st, 2U);
         return;
       }
     case 144:
@@ -591,7 +766,7 @@ static __attribute__((always_inline)) inline void step_opcode_alu32(struct bpf_s
         upd_reg(st, dst, (unsigned long long) (dst32 % src32));
         return;
       } else {
-        upd_flag(st, -9);
+        upd_flag(st, 10U);
         return;
       }
     case 160:
@@ -605,11 +780,11 @@ static __attribute__((always_inline)) inline void step_opcode_alu32(struct bpf_s
         upd_reg(st, dst, (unsigned long long) ((int) dst32 >> src32));
         return;
       } else {
-        upd_flag(st, -10);
+        upd_flag(st, 11U);
         return;
       }
     default:
-      upd_flag(st, -1);
+      upd_flag(st, 2U);
       return;
 
   }
@@ -618,7 +793,7 @@ static __attribute__((always_inline)) inline void step_opcode_alu32(struct bpf_s
 static __attribute__((always_inline)) inline void step_opcode_branch(struct bpf_state* st, unsigned long long dst64, unsigned long long src64, unsigned int pc, unsigned int ofs, unsigned char op)
 {
   unsigned char opcode_jmp;
-  bpf_call_t f_ptr;
+  unsigned char *f_ptr;
   _Bool is_null;
   unsigned int res;
   opcode_jmp = get_opcode_branch(op);
@@ -628,7 +803,7 @@ static __attribute__((always_inline)) inline void step_opcode_branch(struct bpf_
         upd_pc(st, pc + ofs);
         return;
       } else {
-        upd_flag(st, -1);
+        upd_flag(st, 2U);
         return;
       }
     case 16:
@@ -711,9 +886,9 @@ static __attribute__((always_inline)) inline void step_opcode_branch(struct bpf_
     case 128:
       if (op == 133) {
         f_ptr = _bpf_get_call((int) src64);
-        is_null = cmp_ptr32_nullF(f_ptr);
+        is_null = cmp_ptr32_nullM(f_ptr);
         if (is_null) {
-          upd_flag(st, -4);
+          upd_flag(st, 5U);
           return;
         } else {
           res = exec_function(st, f_ptr);
@@ -721,19 +896,19 @@ static __attribute__((always_inline)) inline void step_opcode_branch(struct bpf_
           return;
         }
       } else {
-        upd_flag(st, -1);
+        upd_flag(st, 2U);
         return;
       }
     case 144:
       if (op == 149) {
-        upd_flag(st, 1);
+        upd_flag(st, 1U);
         return;
       } else {
-        upd_flag(st, -1);
+        upd_flag(st, 2U);
         return;
       }
     default:
-      upd_flag(st, -1);
+      upd_flag(st, 2U);
       return;
 
   }
@@ -752,7 +927,7 @@ static __attribute__((always_inline)) inline void step_opcode_mem_ld_imm(struct 
               dst64 | (unsigned long long) (unsigned int) imm << 32U);
       return;
     default:
-      upd_flag(st, -1);
+      upd_flag(st, 2U);
       return;
 
   }
@@ -770,7 +945,7 @@ static __attribute__((always_inline)) inline void step_opcode_mem_ld_reg(struct 
       addr_ptr = check_mem(st, 1U, 4U, addr);
       is_null = cmp_ptr32_nullM(addr_ptr);
       if (is_null) {
-        upd_flag(st, -2);
+        upd_flag(st, 3U);
         return;
       } else {
         v = load_mem(st, 4U, addr_ptr);
@@ -781,7 +956,7 @@ static __attribute__((always_inline)) inline void step_opcode_mem_ld_reg(struct 
       addr_ptr = check_mem(st, 1U, 2U, addr);
       is_null = cmp_ptr32_nullM(addr_ptr);
       if (is_null) {
-        upd_flag(st, -2);
+        upd_flag(st, 3U);
         return;
       } else {
         v = load_mem(st, 2U, addr_ptr);
@@ -792,7 +967,7 @@ static __attribute__((always_inline)) inline void step_opcode_mem_ld_reg(struct 
       addr_ptr = check_mem(st, 1U, 1U, addr);
       is_null = cmp_ptr32_nullM(addr_ptr);
       if (is_null) {
-        upd_flag(st, -2);
+        upd_flag(st, 3U);
         return;
       } else {
         v = load_mem(st, 1U, addr_ptr);
@@ -803,7 +978,7 @@ static __attribute__((always_inline)) inline void step_opcode_mem_ld_reg(struct 
       addr_ptr = check_mem(st, 1U, 8U, addr);
       is_null = cmp_ptr32_nullM(addr_ptr);
       if (is_null) {
-        upd_flag(st, -2);
+        upd_flag(st, 3U);
         return;
       } else {
         v = load_mem(st, 8U, addr_ptr);
@@ -811,13 +986,13 @@ static __attribute__((always_inline)) inline void step_opcode_mem_ld_reg(struct 
         return;
       }
     default:
-      upd_flag(st, -1);
+      upd_flag(st, 2U);
       return;
 
   }
 }
 
-static __attribute__((always_inline)) inline void step_opcode_mem_st_imm(struct bpf_state* st, int imm, unsigned int addr, unsigned int dst, unsigned char op)
+static __attribute__((always_inline)) inline void step_opcode_mem_st_imm(struct bpf_state* st, int imm, unsigned int addr, unsigned char op)
 {
   unsigned char opcode_st;
   unsigned char *addr_ptr;
@@ -828,7 +1003,7 @@ static __attribute__((always_inline)) inline void step_opcode_mem_st_imm(struct 
       addr_ptr = check_mem(st, 2U, 4U, addr);
       is_null = cmp_ptr32_nullM(addr_ptr);
       if (is_null) {
-        upd_flag(st, -2);
+        upd_flag(st, 3U);
         return;
       } else {
         store_mem_imm(st, addr_ptr, 4U, imm);
@@ -838,7 +1013,7 @@ static __attribute__((always_inline)) inline void step_opcode_mem_st_imm(struct 
       addr_ptr = check_mem(st, 2U, 2U, addr);
       is_null = cmp_ptr32_nullM(addr_ptr);
       if (is_null) {
-        upd_flag(st, -2);
+        upd_flag(st, 3U);
         return;
       } else {
         store_mem_imm(st, addr_ptr, 2U, imm);
@@ -848,7 +1023,7 @@ static __attribute__((always_inline)) inline void step_opcode_mem_st_imm(struct 
       addr_ptr = check_mem(st, 2U, 1U, addr);
       is_null = cmp_ptr32_nullM(addr_ptr);
       if (is_null) {
-        upd_flag(st, -2);
+        upd_flag(st, 3U);
         return;
       } else {
         store_mem_imm(st, addr_ptr, 1U, imm);
@@ -858,20 +1033,20 @@ static __attribute__((always_inline)) inline void step_opcode_mem_st_imm(struct 
       addr_ptr = check_mem(st, 2U, 8U, addr);
       is_null = cmp_ptr32_nullM(addr_ptr);
       if (is_null) {
-        upd_flag(st, -2);
+        upd_flag(st, 3U);
         return;
       } else {
         store_mem_imm(st, addr_ptr, 8U, imm);
         return;
       }
     default:
-      upd_flag(st, -1);
+      upd_flag(st, 2U);
       return;
 
   }
 }
 
-static __attribute__((always_inline)) inline void step_opcode_mem_st_reg(struct bpf_state* st, unsigned long long src64, unsigned int addr, unsigned int dst, unsigned char op)
+static __attribute__((always_inline)) inline void step_opcode_mem_st_reg(struct bpf_state* st, unsigned long long src64, unsigned int addr, unsigned char op)
 {
   unsigned char opcode_st;
   unsigned char *addr_ptr;
@@ -882,7 +1057,7 @@ static __attribute__((always_inline)) inline void step_opcode_mem_st_reg(struct 
       addr_ptr = check_mem(st, 2U, 4U, addr);
       is_null = cmp_ptr32_nullM(addr_ptr);
       if (is_null) {
-        upd_flag(st, -2);
+        upd_flag(st, 3U);
         return;
       } else {
         store_mem_reg(st, addr_ptr, 4U, src64);
@@ -892,7 +1067,7 @@ static __attribute__((always_inline)) inline void step_opcode_mem_st_reg(struct 
       addr_ptr = check_mem(st, 2U, 2U, addr);
       is_null = cmp_ptr32_nullM(addr_ptr);
       if (is_null) {
-        upd_flag(st, -2);
+        upd_flag(st, 3U);
         return;
       } else {
         store_mem_reg(st, addr_ptr, 2U, src64);
@@ -902,7 +1077,7 @@ static __attribute__((always_inline)) inline void step_opcode_mem_st_reg(struct 
       addr_ptr = check_mem(st, 2U, 1U, addr);
       is_null = cmp_ptr32_nullM(addr_ptr);
       if (is_null) {
-        upd_flag(st, -2);
+        upd_flag(st, 3U);
         return;
       } else {
         store_mem_reg(st, addr_ptr, 1U, src64);
@@ -912,14 +1087,14 @@ static __attribute__((always_inline)) inline void step_opcode_mem_st_reg(struct 
       addr_ptr = check_mem(st, 2U, 8U, addr);
       is_null = cmp_ptr32_nullM(addr_ptr);
       if (is_null) {
-        upd_flag(st, -2);
+        upd_flag(st, 3U);
         return;
       } else {
         store_mem_reg(st, addr_ptr, 8U, src64);
         return;
       }
     default:
-      upd_flag(st, -1);
+      upd_flag(st, 2U);
       return;
 
   }
@@ -981,7 +1156,7 @@ static __attribute__((always_inline)) inline void step(struct bpf_state* st)
       ofs = get_offset(ins);
       imm = get_immediate(ins);
       addr = get_addr_ofs(dst64, ofs);
-      step_opcode_mem_st_imm(st, imm, addr, dst, op);
+      step_opcode_mem_st_imm(st, imm, addr, op);
       return;
     case 3:
       dst64 = eval_reg(st, dst);
@@ -989,10 +1164,10 @@ static __attribute__((always_inline)) inline void step(struct bpf_state* st)
       src64 = eval_reg(st, src);
       ofs = get_offset(ins);
       addr = get_addr_ofs(dst64, ofs);
-      step_opcode_mem_st_reg(st, src64, addr, dst, op);
+      step_opcode_mem_st_reg(st, src64, addr, op);
       return;
     default:
-      upd_flag(st, -1);
+      upd_flag(st, 2U);
       return;
 
   }
@@ -1003,11 +1178,11 @@ static __attribute__((always_inline)) inline void bpf_interpreter_aux(struct bpf
   unsigned int fuel0;
   unsigned int len;
   unsigned int pc;
-  int f;
+  unsigned int f;
   unsigned int len0;
   unsigned int pc0;
-  if (fuel == 0U) {
-    upd_flag(st, -5);
+  if (fuel == 0U) { printf("no fuel\n");
+    upd_flag(st, 6U);
     return;
   } else {
     fuel0 = fuel - 1U;
@@ -1016,22 +1191,22 @@ static __attribute__((always_inline)) inline void bpf_interpreter_aux(struct bpf
     if (pc < len) {
       step(st); //print_bpf_state(st);
       f = eval_flag(st);
-      if (f == 0) {
+      if (f == 0U) {
         len0 = eval_ins_len(st);
         pc0 = eval_pc(st);
         if (pc0 + 1U < len0) {
           upd_pc_incr(st);
           bpf_interpreter_aux(st, fuel0);
           return;
-        } else {
-          upd_flag(st, -5);
+        } else { printf("out of len0\n");
+          upd_flag(st, 6U);
           return;
         }
       } else {
         return;
       }
-    } else {
-      upd_flag(st, -5);
+    } else { printf("out of len1\n");
+      upd_flag(st, 6U);
       return;
     }
   }
@@ -1039,18 +1214,11 @@ static __attribute__((always_inline)) inline void bpf_interpreter_aux(struct bpf
 
 unsigned long long bpf_interpreter(struct bpf_state* st, unsigned int fuel)
 {
-  struct memory_region *mrs;
-  struct memory_region *bpf_ctx;
-  unsigned int start;
-  int f;
+  unsigned int f;
   unsigned long long res;
-  mrs = eval_mrs_regions(st);
-  bpf_ctx = get_mem_region(0U, mrs);
-  start = get_start_addr(bpf_ctx);
-  upd_reg(st, 1U, (unsigned long long) start);
   bpf_interpreter_aux(st, fuel);
   f = eval_flag(st);
-  if (f == 1) {
+  if (f == 1U) {
     res = eval_reg(st, 0U);
     return res;
   } else {
