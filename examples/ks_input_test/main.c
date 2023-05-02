@@ -58,7 +58,7 @@ int main(void){
 		ks_state.value = random_uint32_range(0,1024);
 		bpf_execute_ctx(&ks_bpf, &ctx, sizeof(ctx), &res);
 		if(i % STEPS == 15){
-			printf("max: %d\n", ks_state.result);
+			printf("max: %ld\n", ks_state.result);
 		}
 	}
 
@@ -76,7 +76,7 @@ void create_function(void){
 
 void printList(int32_t* arr1, int32_t* arr2){
 	for(int i = 0; i < 16; ++i){
-		printf("x%i: %d, y%i: %d\n", i, arr1[i], i, arr2[i]);
+		printf("x%i: %ld, y%i: %ld\n", i, arr1[i], i, arr2[i]);
 	}
 }
 

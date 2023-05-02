@@ -9,8 +9,6 @@ RIOTBASE ?= $(CURDIR)/../..
 
 CFLAGS += -DCONFIG_BPF_BRANCHES_ALLOWED=20000
 
-USEPKG += femto-container
-
 USEMODULE += xtimer
 USEMODULE += bpf
 USEMODULE += random
