@@ -19,6 +19,7 @@
  */
 #include <stdio.h>
 #include "random.h"
+#include "xtimer.h"
 #include "bpf/shared.h"
 #include "bpf/kolmogorov_smirnov_test.h"
 
@@ -30,6 +31,8 @@ static uint8_t _stack[512] = { 0 };
 int main(void){
 	create_function();
 	bpf_init();
+
+	xtimer_ticks32_t start_time = xtimer_now();
 
 	bpf_t ks_bpf = {
         .application = kolmogorov_smirnov_test_bin,
@@ -57,11 +60,18 @@ int main(void){
 	for(uint32_t i = 0; i < RANGE; ++i){
 		ks_state.value = random_uint32_range(0,1024);
 		bpf_execute_ctx(&ks_bpf, &ctx, sizeof(ctx), &res);
-		if(i % STEPS == 15){
-			printf("max: %ld\n", ks_state.result);
-		}
+		//if(i % STEPS == 15){
+		//	printf("max: %ld\n", ks_state.result);
+		//}
 	}
 
+	xtimer_ticks32_t end_time = xtimer_now();
+
+	uint32_t elapsed_time = xtimer_diff(end_time, start_time).ticks32;
+
+	xtimer_sleep(1);
+
+	printf("Elapsed Time: %ld", elapsed_time);
 	printList(expectedFunction, empiricalFunction);
 
 	return 0;
