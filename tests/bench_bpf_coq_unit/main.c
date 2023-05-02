@@ -71,6 +71,7 @@ static struct memory_region mr_stack = {.start_addr = (uintptr_t)_bpf_stack,
 
 
 static const test_content_t tests[] = {
+#if 0
     {
         .instruction = {
             .opcode = 0x87,
@@ -83,11 +84,12 @@ static const test_content_t tests[] = {
         },
         .name = "ALU neg32",
     },
+#endif
     {
         .instruction = {
             .opcode = 0x07,
         },
-        .name = "ALU Add",
+        .name = "ALU Add64",
     },
     {
         .instruction = {
@@ -113,7 +115,7 @@ static const test_content_t tests[] = {
             .dst = 0,
             .immediate = 45,
         },
-        .name = "ALU mul imm",
+        .name = "ALU mul64 imm",
     },
     {
         .instruction = {
@@ -129,7 +131,7 @@ static const test_content_t tests[] = {
             .dst = 0,
             .immediate = 5,
         },
-        .name = "ALU rsh imm",
+        .name = "ALU rsh64 imm",
     },
     {
         .instruction = {
@@ -137,16 +139,9 @@ static const test_content_t tests[] = {
             .dst = 0,
             .immediate = 5,
         },
-        .name = "ALU div imm",
+        .name = "ALU div64 imm",
     },
-    {
-        .instruction = {
-            .opcode = 0x34,
-            .dst = 0,
-            .immediate = 5,
-        },
-        .name = "ALU div32 imm",
-    },
+#if 0
     {
         .instruction = {
             .opcode = 0x79,
@@ -174,6 +169,7 @@ static const test_content_t tests[] = {
         },
         .name = "MEM stxdw",
     },
+#endif
     {
         .instruction = {
             .opcode = 0x05,
@@ -205,12 +201,27 @@ static test_application_t test_app;
 
 int main(void)
 {
-	printf("hello world!\n");
+#ifdef MODULE_GEN_BPF
+    puts("CertrBPF");
+#elif defined(MODULE_GEN_IBPF)
+    puts("JIT!");
+#else
+    puts("Other");
+#endif
 #if CSV_OUT
     puts("duration,code,usperinst,instrpersec");
 #else
-    printf("| %-16s | %-8s | %-6s | %-6s | %-16s |\n",
-           "Test", "duration", "code", "us/instr", "instr per sec");
+    printf("Context size: %u\n",
+#ifdef MODULE_GEN_BPF
+            (unsigned)sizeof(struct bpf_state)
+#elif defined(MODULE_GEN_IBPF)
+            (unsigned)sizeof(ibpf_state)
+#else
+            (unsigned)sizeof(bpf_t)
+#endif
+          );
+    printf("| %-16s | %-8s | %-6s | %-6s | %-16s | %-8s | %-16s |\n",
+           "Test", "duration", "code", "us/instr", "instr per sec", "JIT dur", "JIT us/instr");
 #endif
     for (size_t test_idx = 0; test_idx < ARRAY_SIZE(tests); test_idx++) {
 #ifdef MODULE_GEN_BPF
@@ -225,11 +236,7 @@ int main(void)
             .ins_len = sizeof(test_app.text),
         };
 #elif defined(MODULE_GEN_IBPF)
-	printf("hello world!\n");
         jitted_thumb_list = ibpf_state.jitted_thumb_list;
-        ibpf_full_state_init(&ibpf_state, 2);
-        ibpf_set_code(&ibpf_state, test_app.text, sizeof(test_app.text));
-        jit_alu32(&ibpf_state.st);
 #else
         bpf_t bpf = {
             .application = (uint8_t*)&test_app,
@@ -243,7 +250,18 @@ int main(void)
 #endif
         fill_instruction(&tests[test_idx].instruction, &test_app);
 
+#ifdef MODULE_GEN_IBPF
+        ibpf_full_state_init(&ibpf_state, 2);
+        ibpf_set_code(&ibpf_state, test_app.text, sizeof(test_app.text));
+        uint32_t jit_begin = ztimer_now(ZTIMER_USEC); // unsigned long long -> uint64_t
+        jit_alu32(&ibpf_state.st);
+#endif
+
         uint32_t begin = ztimer_now(ZTIMER_USEC); // unsigned long long -> uint64_t
+#ifndef MODULE_GEN_IBPF
+        uint32_t jit_begin = begin;
+#endif
+
 #ifdef MODULE_GEN_BPF
         int result = bpf_interpreter(&st, 10000);
 #elif defined(MODULE_GEN_IBPF)
@@ -255,13 +273,17 @@ int main(void)
         float duration = (float)(end-begin);
         float us_per_op = duration/NUM_INSTRUCTIONS;
         float kops_per_sec = (float)(NUM_INSTRUCTIONS*US_PER_MS) / duration;
+        float jit_duration = (float)(begin - jit_begin);
+        float jit_per_instruction = (float)(jit_duration / NUM_INSTRUCTIONS);
 #if CSV_OUT
-        printf("%f,%d,%f,%f\n",
-                duration/US_PER_MS, (signed)result, us_per_op, kops_per_sec);
+        printf("%f,%d,%f,%f,%f,%f\n",
+                duration/US_PER_MS, (signed)result, us_per_op, kops_per_sec,jit_duration,jit_per_instruction);
+
 #else
-        printf("| %-16s | %2.4fms | %6d | %2.4fus | %7.2f kops/sec |\n",
+        printf("| %-16s | %2.4fms | %6d | %2.4fus | %7.2f kops/sec | %2.4fms | %7.2f us\n",
                 tests[test_idx].name,
-                duration/US_PER_MS, (signed)result, us_per_op, kops_per_sec);
+                duration/US_PER_MS, (signed)result, us_per_op, kops_per_sec, jit_duration/US_PER_MS, jit_per_instruction);
+
 #endif
 
     }
