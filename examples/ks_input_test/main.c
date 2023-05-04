@@ -27,12 +27,11 @@
 #include "blob/bpf/kolmogorov_smirnov_test.bin.h"
 
 static uint8_t _stack[512] = { 0 };
+static mutex_t _mutex  = MUTEX_INIT;
 
 int main(void){
 	create_function();
 	bpf_init();
-
-	xtimer_ticks32_t start_time = xtimer_now();
 
 	bpf_t ks_bpf = {
         .application = kolmogorov_smirnov_test_bin,
@@ -57,21 +56,24 @@ int main(void){
 	bpf_add_region(&ks_bpf, &expectedFunction_region, &expectedFunction, sizeof(expectedFunction), BPF_MEM_REGION_READ | BPF_MEM_REGION_WRITE);
     bpf_add_region(&ks_bpf, &empiricalFunction_region, &empiricalFunction, sizeof(empiricalFunction), BPF_MEM_REGION_READ | BPF_MEM_REGION_WRITE);
 	random_init(43);
+
+	mutex_lock(&_mutex);
+
+	uint32_t start_time = xtimer_usec_from_ticks(xtimer_now());
+
 	for(uint32_t i = 0; i < RANGE; ++i){
 		ks_state.value = random_uint32_range(0,1024);
 		bpf_execute_ctx(&ks_bpf, &ctx, sizeof(ctx), &res);
-		//if(i % STEPS == 15){
-		//	printf("max: %ld\n", ks_state.result);
-		//}
 	}
 
-	xtimer_ticks32_t end_time = xtimer_now();
+	uint32_t end_time = xtimer_usec_from_ticks(xtimer_now());
 
-	uint32_t elapsed_time = xtimer_diff(end_time, start_time).ticks32;
+	uint32_t elapsed_time_usec = (end_time-start_time);
+	float elapsed_time_msec = elapsed_time_usec/1000.0;
 
-	xtimer_sleep(1);
+	mutex_unlock(&_mutex);
 
-	printf("Elapsed Time: %ld", elapsed_time);
+	printf("Elapsed Time: %f microseconds\n", elapsed_time_msec);
 	printList(expectedFunction, empiricalFunction);
 
 	return 0;
