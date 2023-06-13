@@ -18,6 +18,8 @@
  * @}
  */
 #include <stdio.h>
+//#include "nrf52.h"
+#include "cpu_conf.h"
 #include "random.h"
 #include "xtimer.h"
 #include "bpf/shared.h"
@@ -27,7 +29,6 @@
 #include "blob/bpf/kolmogorov_smirnov_test.bin.h"
 
 static uint8_t _stack[512] = { 0 };
-static mutex_t _mutex  = MUTEX_INIT;
 
 int main(void){
 	create_function();
@@ -60,7 +61,7 @@ int main(void){
 	uint32_t start_time = xtimer_usec_from_ticks(xtimer_now());
 
 	for(uint32_t i = 0; i < RANGE; ++i){
-		ks_state.value = random_uint32_range(0,1024);
+		ks_state.value = read_nrf52_temp();
 		bpf_execute_ctx(&ks_bpf, &ctx, sizeof(ctx), &res);
 	}
 
@@ -90,4 +91,20 @@ void printList(int32_t* arr1, int32_t* arr2){
 
 float toTemperature(uint32_t val){
 	return (val-105)/(1.961);
+}
+
+int32_t read_nrf52_temp(void) {
+	int32_t temp;
+	NRF_TEMP->TASKS_START = 1;
+	
+	while(NRF_TEMP->EVENTS_DATARDY==0){}
+	NRF_TEMP->EVENTS_DATARDY = 0;
+	
+	//Some calculation on the data
+	temp = NRF_TEMP->TEMP;
+	NRF_TEMP->TASKS_STOP = 1;
+	
+	printf("Read temperature: %li\n", temp);
+
+	return temp;
 }
