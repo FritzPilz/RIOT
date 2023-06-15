@@ -18,8 +18,6 @@
  * @}
  */
 #include <stdio.h>
-//#include "nrf52.h"
-#include "cpu_conf.h"
 #include "random.h"
 #include "xtimer.h"
 #include "bpf/shared.h"
@@ -41,11 +39,12 @@ int main(void){
         .stack_size = sizeof(_stack)
     };
 
-	bpf_mem_region_t expectedFunction_region, empiricalFunction_region, ks_state_region;
+	bpf_mem_region_t expectedFunction_region, empiricalFunction_region, ks_state_region, temperature_sensor_region;
 
 	KS_Test_State ks_state = {
 		.empiricalFunction = empiricalFunction,
 		.expectedFunction = expectedFunction,
+		.temp_sensor = NRF_TEMP,
 		.value = 0,
 		.result = 0,
 	};
@@ -56,12 +55,12 @@ int main(void){
 	bpf_add_region(&ks_bpf, &ks_state_region, &ks_state, sizeof(ks_state), BPF_MEM_REGION_READ | BPF_MEM_REGION_WRITE);
 	bpf_add_region(&ks_bpf, &expectedFunction_region, &expectedFunction, sizeof(expectedFunction), BPF_MEM_REGION_READ | BPF_MEM_REGION_WRITE);
     bpf_add_region(&ks_bpf, &empiricalFunction_region, &empiricalFunction, sizeof(empiricalFunction), BPF_MEM_REGION_READ | BPF_MEM_REGION_WRITE);
+	bpf_add_region(&ks_bpf, &temperature_sensor_region ,NRF_TEMP , sizeof(NRF_TEMP), BPF_MEM_REGION_READ | BPF_MEM_REGION_WRITE);
 	random_init(43);
 
 	uint32_t start_time = xtimer_usec_from_ticks(xtimer_now());
 
 	for(uint32_t i = 0; i < RANGE; ++i){
-		ks_state.value = read_nrf52_temp();
 		bpf_execute_ctx(&ks_bpf, &ctx, sizeof(ctx), &res);
 	}
 
@@ -87,24 +86,4 @@ void printList(int32_t* arr1, int32_t* arr2){
 	for(int i = 0; i < 16; ++i){
 		printf("x%i: %ld, y%i: %ld\n", i, arr1[i], i, arr2[i]);
 	}
-}
-
-float toTemperature(uint32_t val){
-	return (val-105)/(1.961);
-}
-
-int32_t read_nrf52_temp(void) {
-	int32_t temp;
-	NRF_TEMP->TASKS_START = 1;
-	
-	while(NRF_TEMP->EVENTS_DATARDY==0){}
-	NRF_TEMP->EVENTS_DATARDY = 0;
-	
-	//Some calculation on the data
-	temp = NRF_TEMP->TEMP;
-	NRF_TEMP->TASKS_STOP = 1;
-	
-	printf("Read temperature: %li\n", temp);
-
-	return temp;
 }

@@ -1,10 +1,17 @@
 #include "kolmogorov_smirnov_test.h"
 //#include "bpf/bpfapi/helpers.h"
 
-//static const char* enter_msg = "Entered bpf-function\n";
-
 uint32_t delta_kolmogorov_smirnov_test(kolmogorov_ctx_t* ctx){
-	//bpf_printf(enter_msg);
+	//Read value from sensor
+	ctx->kolmogorov_ctx->temp_sensor->TASKS_START = 1;
+	
+	while(ctx->kolmogorov_ctx->temp_sensor-->EVENTS_DATARDY==0){}
+	ctx->kolmogorov_ctx->temp_sensor-->EVENTS_DATARDY = 0;
+	
+	ctx->kolmogorov_ctx->value = ctx->kolmogorov_ctx->temp_sensor->TEMP;
+	ctx->kolmogorov_ctx->temp_sensor->TASKS_STOP = 1;
+
+	//Put the read value in the correct position of the read 
 	for(int i = 0; i < STEPS; ++i){
 		if(ctx->kolmogorov_ctx->value < i*STEP){
 			continue;
