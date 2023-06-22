@@ -13,7 +13,6 @@ USEMODULE += xtimer
 USEMODULE += bpf
 USEMODULE += random
 USEMODULE += printf_float
-#USEMODULE += nrf52
 BLOBS += bpf/kolmogorov_smirnov_test.bin
 BLOBS += bpf/increment.bin
 

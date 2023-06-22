@@ -5,8 +5,8 @@ uint32_t delta_kolmogorov_smirnov_test(kolmogorov_ctx_t* ctx){
 	//Read value from sensor
 	ctx->kolmogorov_ctx->temp_sensor->TASKS_START = 1;
 	
-	while(ctx->kolmogorov_ctx->temp_sensor-->EVENTS_DATARDY==0){}
-	ctx->kolmogorov_ctx->temp_sensor-->EVENTS_DATARDY = 0;
+	while(ctx->kolmogorov_ctx->temp_sensor->EVENTS_DATARDY==0){}
+	ctx->kolmogorov_ctx->temp_sensor->EVENTS_DATARDY = 0;
 	
 	ctx->kolmogorov_ctx->value = ctx->kolmogorov_ctx->temp_sensor->TEMP;
 	ctx->kolmogorov_ctx->temp_sensor->TASKS_STOP = 1;
