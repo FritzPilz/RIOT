@@ -32,9 +32,11 @@ void create_function(void);
 
 void printList(int32_t* arr1, int32_t* arr2);
 
+void clearEmpiricalFunction(void);
+
 int32_t expectedFunction[16];
 
-int32_t empiricalFunctions[4][16];
+int32_t empiricalFunction[16];
 
 #ifndef NRF_TEMP_BASE
 #define NRF_TEMP_BASE               0x4000C000UL

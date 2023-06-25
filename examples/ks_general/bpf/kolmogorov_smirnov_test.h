@@ -15,8 +15,8 @@ typedef struct benchmark_runs{
 } benchmark_runs;
 
 typedef struct KS_Test_State{
-    __bpf_shared_ptr(int32_t *, expectedFunction);
-    __bpf_shared_ptr(int32_t *, empiricalFunction);
+    __bpf_shared_ptr(int32_t *, expected_function);
+    __bpf_shared_ptr(int32_t *, empirical_function);
     uint32_t value;
     uint32_t result;
     uint32_t valueRange;
@@ -35,9 +35,9 @@ void print_list(benchmark_runs* run);
 
 void clearEmpiricalFunction(benchmark_runs* run);
 
-int32_t expected_functions[4][32];
+int32_t expected_function[32];
 
-int32_t empirical_functions[4][32];
+int32_t empirical_function[32];
 
 #ifndef NRF_TEMP_BASE
 #define NRF_TEMP_BASE               0x4000C000UL

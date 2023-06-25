@@ -18,12 +18,12 @@ uint32_t delta_kolmogorov_smirnov_test(kolmogorov_ctx_t* ctx){
 		if(ctx->kolmogorov_ctx->value < i*ctx->kolmogorov_ctx->valueRange){
 			continue;
 		}else{
-			++ctx->kolmogorov_ctx->empiricalFunction[i];
+			++ctx->kolmogorov_ctx->empirical_function[i];
 		}
 	}
 	int32_t result = 0;
 	for(uint32_t i = 0; i < ctx->kolmogorov_ctx->values; ++i){
-		int32_t F1 = ctx->kolmogorov_ctx->expectedFunction[i]; int32_t F2 = ctx->kolmogorov_ctx->empiricalFunction[i];
+		int32_t F1 = ctx->kolmogorov_ctx->expected_function[i]; int32_t F2 = ctx->kolmogorov_ctx->empirical_function[i];
 		int32_t diff = F1-F2;
 		if(diff < 0){
 			diff = -diff;

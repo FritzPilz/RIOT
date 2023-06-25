@@ -29,10 +29,10 @@
 
 static uint8_t _stack[512] = { 0 };
 static benchmark_runs test_runs[4] = {
-	{.times_to_run = 32, .time_taken_in_usec = 0, .empiricalFunction = },
-	{.times_to_run = 512, .time_taken_in_usec = 0, .empiricalFunction = },
-	{.times_to_run = 1024, .time_taken_in_usec = 0, .empiricalFunction = },
-	{.times_to_run = 2048, .time_taken_in_usec = 0, .empiricalFunction = }
+	{.times_to_run = 32, .time_taken_in_usec = 0, .empiricalFunction = empiricalFunction},
+	{.times_to_run = 512, .time_taken_in_usec = 0, .empiricalFunction = empiricalFunction},
+	{.times_to_run = 1024, .time_taken_in_usec = 0, .empiricalFunction = empiricalFunction},
+	{.times_to_run = 2048, .time_taken_in_usec = 0, .empiricalFunction = empiricalFunction}
 };
 void runTest(bpf_t* ks_bpf, kolmogorov_ctx_t* ctx, benchmark_runs* test);
 
