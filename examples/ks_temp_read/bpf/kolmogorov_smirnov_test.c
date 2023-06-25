@@ -1,14 +1,17 @@
 #include "kolmogorov_smirnov_test.h"
 
+inline uint64_t read_memory(volatile uint64_t address);
+inline void write_memory(volatile uint64_t address, volatile uint64_t value);
+
 uint32_t delta_kolmogorov_smirnov_test(kolmogorov_ctx_t* ctx){
 	//Read value from sensor
-	ctx->kolmogorov_ctx->temp_sensor->TASKS_START = 1;
+	write_memory(TASKS_START, 1);
 	
-	while(ctx->kolmogorov_ctx->temp_sensor->EVENTS_DATARDY==0){}
-	ctx->kolmogorov_ctx->temp_sensor->EVENTS_DATARDY = 0;
+	while(read_memory(EVENTS_DATARDY)==0){}
+	write_memory(EVENTS_DATARDY, 0);
 	
-	ctx->kolmogorov_ctx->value = ctx->kolmogorov_ctx->temp_sensor->TEMP;
-	ctx->kolmogorov_ctx->temp_sensor->TASKS_STOP = 1;
+	ctx->kolmogorov_ctx->value = read_memory(TEMP);
+	write_memory(TASKS_STOP, 1);
 
 	//Put the read value in the correct position of the read 
 	for(int i = 0; i < STEPS; ++i){
@@ -30,4 +33,12 @@ uint32_t delta_kolmogorov_smirnov_test(kolmogorov_ctx_t* ctx){
 	ctx->kolmogorov_ctx->result = (uint32_t)result;
 
 	return 0;
+}
+
+inline uint64_t read_memory(volatile uint64_t address){
+	return *(volatile uint64_t*) address;
+}
+
+inline void write_memory(volatile uint64_t address, volatile uint64_t value){
+	*(volatile uint64_t *) address = value;
 }
