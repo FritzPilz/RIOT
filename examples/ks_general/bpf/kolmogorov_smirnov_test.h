@@ -29,12 +29,6 @@ typedef struct {
 
 uint32_t delta_kolmogorov_smirnov_test(kolmogorov_ctx_t* ctx);
 
-void create_function(benchmark_runs* run);
-
-void print_list(benchmark_runs* run);
-
-void clearEmpiricalFunction(benchmark_runs* run);
-
 int32_t expected_function[32];
 
 int32_t empirical_function[32];
