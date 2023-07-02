@@ -68,7 +68,7 @@ int main(void){
 	ks_state.expected_function = expected_function;
 	ks_state.empirical_function = empirical_function;
 
-	for(int i = 0; i < 1; ++i){
+	for(int i = 0; i < 4; ++i){
 
 		ks_state.value = 0;
 		ks_state.result = 0;
@@ -83,7 +83,7 @@ int main(void){
 		printf("Value: %li\n", ks_state.value);
 		printf("Result: %li\n", ks_state.result);
 		print_list(&ks_state);
-		//clearEmpiricalFunction(&test_runs[i]);
+		clearEmpiricalFunction(&test_runs[i]);
 	}
 
 	return 0;
