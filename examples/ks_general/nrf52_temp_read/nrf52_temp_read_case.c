@@ -21,11 +21,11 @@
 #include "random.h"
 #include "xtimer.h"
 #include "bpf/shared.h"
-#include "bpf/kolmogorov_smirnov_test.h"
+#include "bpf/nrf52_temp_read_bpf.h"
 #include "cpu_conf.h"
 
 #include "bpf.h"
-#include "blob/bpf/kolmogorov_smirnov_test.bin.h"
+#include "bpf/nrf52_temp_read_bpf.bin.h"
 
 const int32_t runs = 4;
 
@@ -45,12 +45,10 @@ void print_list(KS_Test_State* run);
 
 void clearEmpiricalFunction(benchmark_runs* run);
 
-int main(void){
-	bpf_init();
-
+int launch_test_case(void){
 	bpf_t ks_bpf = {
-	    .application = kolmogorov_smirnov_test_bin,
-    	.application_len = sizeof(kolmogorov_smirnov_test_bin),
+	    .application = nrf52_temp_read_bpf_bin,
+    	.application_len = sizeof(nrf52_temp_read_bpf_bin),
         .stack = _stack,
 	    .stack_size = sizeof(_stack)
     };
