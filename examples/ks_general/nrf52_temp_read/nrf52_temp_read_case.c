@@ -25,7 +25,7 @@
 
 #include "bpf.h"
 #include "bpf/nrf52_temp_read_bpf.bin.h"
-#include "../utility/utility.h"
+#include "../utility/utility_ks.h"
 
 const int32_t runs = 4;
 
@@ -54,8 +54,8 @@ int launch_test_case(void){
 
 	bpf_setup(&ks_bpf);
 
-	bpf_add_region(&ks_bpf, &expectedFunction_region, &expected_function, sizeof(expected_function), BPF_MEM_REGION_READ | BPF_MEM_REGION_WRITE);
-    bpf_add_region(&ks_bpf, &empiricalFunction_region, &empirical_function, sizeof(empirical_function), BPF_MEM_REGION_READ | BPF_MEM_REGION_WRITE);
+	bpf_add_region(&ks_bpf, &expectedFunction_region, &expected_function, sizeof(int32_t)*function_size, BPF_MEM_REGION_READ | BPF_MEM_REGION_WRITE);
+    bpf_add_region(&ks_bpf, &empiricalFunction_region, &empirical_function, sizeof(int32_t)*function_size, BPF_MEM_REGION_READ | BPF_MEM_REGION_WRITE);
 	bpf_add_region(&ks_bpf, &temperature_sensor_region ,NRF_TEMP , sizeof(*NRF_TEMP), BPF_MEM_REGION_READ | BPF_MEM_REGION_WRITE);
 	bpf_add_region(&ks_bpf, &ks_state_region, &ks_state, sizeof(ks_state), BPF_MEM_REGION_READ | BPF_MEM_REGION_WRITE);
 
@@ -91,12 +91,6 @@ void create_function(benchmark_runs* run){
 	}
 }
 
-void print_list(KS_Test_State* state){
-	for(uint32_t i = 0; i < state->values; ++i){
-		printf("x%li: %li, y%li: %li\n", i, state->expected_function[i], i, state->empirical_function[i]);
-	}
-}
-
 void runTest(bpf_t* ks_bpf, kolmogorov_ctx_t* ctx, benchmark_runs* test){
 	int64_t res = 0;
 	create_function(test);
@@ -110,10 +104,4 @@ void runTest(bpf_t* ks_bpf, kolmogorov_ctx_t* ctx, benchmark_runs* test){
 	uint32_t end_time = xtimer_usec_from_ticks(xtimer_now());
 
 	test->time_taken_in_usec = (end_time-start_time);
-}
-
-void clearEmpiricalFunction(benchmark_runs* run){
-	for(uint32_t i = 0; i < run->values; ++i){
-		empirical_function[i] = 0;
-	}
 }

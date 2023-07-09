@@ -31,8 +31,9 @@ uint32_t delta_kolmogorov_smirnov_test(kolmogorov_ctx_t* ctx);
 void print_list(KS_Test_State* run);
 void clearEmpiricalFunction(benchmark_runs* run);
 
-int32_t expected_function[32];
+#define function_size 32
 
-int32_t empirical_function[32];
+extern int32_t expected_function[];
+extern int32_t empirical_function[];
 
 #endif

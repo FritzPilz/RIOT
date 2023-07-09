@@ -15,11 +15,12 @@ DEVELHELP ?= 1
 QUIET ?= 1
 
 USEMODULE += $(TESTCASE)
+USEMODULE += ks_utility
 USEMODULE += bpf
 USEMODULE += xtimer
 USEMODULE += printf_float
 
-DIRS += $(CURDIR)/$(TESTCASE)
+DIRS += $(CURDIR)/$(TESTCASE) $(CURDIR)/utility
 BLOBS += $(TESTCASE)/bpf/$(TESTCASE)_bpf.bin
 
 
