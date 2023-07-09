@@ -27,7 +27,6 @@ typedef struct {
     __bpf_shared_ptr(KS_Test_State *, kolmogorov_ctx);
 } kolmogorov_ctx_t;
 
-uint32_t delta_kolmogorov_smirnov_test(kolmogorov_ctx_t* ctx);
 void print_list(KS_Test_State* run);
 void clearEmpiricalFunction(benchmark_runs* run);
 
