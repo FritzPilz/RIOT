@@ -1,3 +1,4 @@
+#include "../../utility/utility.h"
 #include "nrf52_temp_read_bpf.h"
 #include "bpf/bpfapi/helpers.h"
 

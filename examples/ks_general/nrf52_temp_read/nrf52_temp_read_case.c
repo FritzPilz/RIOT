@@ -21,11 +21,11 @@
 #include "random.h"
 #include "xtimer.h"
 #include "bpf/shared.h"
-#include "bpf/nrf52_temp_read_bpf.h"
 #include "cpu_conf.h"
 
 #include "bpf.h"
 #include "bpf/nrf52_temp_read_bpf.bin.h"
+#include "../utility/utility.h"
 
 const int32_t runs = 4;
 
@@ -40,10 +40,6 @@ static benchmark_runs test_runs[4] =
 void runTest(bpf_t* ks_bpf, kolmogorov_ctx_t* ctx, benchmark_runs* test);
 
 void create_function(benchmark_runs* run);
-
-void print_list(KS_Test_State* run);
-
-void clearEmpiricalFunction(benchmark_runs* run);
 
 int launch_test_case(void){
 	bpf_t ks_bpf = {
