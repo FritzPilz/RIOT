@@ -33,10 +33,10 @@ const int32_t runs = 4;
 static uint8_t _stack[512] = { 0 };
 static benchmark_runs test_runs[4] =
 {
-	{.times_to_run = 32, .time_taken_in_usec = 0, .values = 32, .valueRange = 4},
-	{.times_to_run = 512, .time_taken_in_usec = 0, .values = 32, .valueRange = 4},
-	{.times_to_run = 1024, .time_taken_in_usec = 0, .values = 32, .valueRange = 4},
-	{.times_to_run = 2048, .time_taken_in_usec = 0, .values = 32, .valueRange = 4}
+	{.times_to_run = 32, .time_taken_in_usec = 0, .values = 32, .value_range = 4},
+	{.times_to_run = 512, .time_taken_in_usec = 0, .values = 32, .value_range = 4},
+	{.times_to_run = 1024, .time_taken_in_usec = 0, .values = 32, .value_range = 4},
+	{.times_to_run = 2048, .time_taken_in_usec = 0, .values = 32, .value_range = 4}
 };
 
 void runTest(bpf_t* ks_bpf, kolmogorov_ctx_t* ctx, benchmark_runs* test);
@@ -62,11 +62,11 @@ void launch_test_case(void){
 	ks_state.expected_function = expected_function;
 	ks_state.empirical_function = empirical_function;
 
-	for(int i = 0; i < 4; ++i){
+	for(int i = 0; i < runs; ++i){
 
 		ks_state.value = 0;
 		ks_state.result = 0;
-		ks_state.valueRange = test_runs[i].valueRange;
+		ks_state.valueRange = test_runs[i].value_range;
 		ks_state.values = test_runs[i].values;
 
 		runTest(&ks_bpf, &ctx, &test_runs[i]);
@@ -77,6 +77,7 @@ void launch_test_case(void){
 		printf("Value: %li\n", ks_state.value);
 		printf("Result: %li\n", ks_state.result);
 		print_list(&ks_state);
+		print_csv(test_runs, runs);
 		clearEmpiricalFunction();
 	}
 }
