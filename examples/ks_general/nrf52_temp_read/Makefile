@@ -9,9 +9,4 @@ RIOTBASE ?= $(CURDIR)/../../..
 
 CFLAGS += -DCONFIG_BPF_BRANCHES_ALLOWED=20000
 
-USEMODULE += xtimer
-USEMODULE += bpf
-USEMODULE += random
-USEMODULE += printf_float
-
 include $(RIOTBASE)/Makefile.base

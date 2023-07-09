@@ -13,6 +13,9 @@ DEVELHELP ?= 1
 QUIET ?= 1
 
 USEMODULE += $(TESTCASE)
+USEMODULE += bpf
+USEMODULE += xtimer
+
 DIRS += $(CURDIR)/$(TESTCASE)
 BLOBS += $(TESTCASE)/bpf/nrf52_temp_read_bpf.bin
 
