@@ -5,15 +5,6 @@
 
 #include "bpf/shared.h"
 
-typedef struct benchmark_runs{
-    uint32_t times_to_run;
-    uint32_t time_taken_in_usec;
-    int32_t* empirical_function;
-    int32_t* expected_function;
-    uint32_t valueRange;
-    uint32_t values;
-} benchmark_runs;
-
 typedef struct KS_Test_State{
     __bpf_shared_ptr(int32_t *, expected_function);
     __bpf_shared_ptr(int32_t *, empirical_function);
@@ -28,7 +19,7 @@ typedef struct {
 } kolmogorov_ctx_t;
 
 void print_list(KS_Test_State* run);
-void clearEmpiricalFunction(benchmark_runs* run);
+void clearEmpiricalFunction(void);
 
 #define function_size 32
 

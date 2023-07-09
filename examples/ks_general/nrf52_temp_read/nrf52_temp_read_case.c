@@ -26,22 +26,22 @@
 #include "bpf.h"
 #include "bpf/nrf52_temp_read_bpf.bin.h"
 #include "../utility/utility_ks.h"
+#include "../ks_test.h"
 
 const int32_t runs = 4;
 
 static uint8_t _stack[512] = { 0 };
 static benchmark_runs test_runs[4] =
 {
-	{.times_to_run = 32, .time_taken_in_usec = 0, .empirical_function = empirical_function, .expected_function = expected_function, .values = 32, .valueRange = 4},
-	{.times_to_run = 512, .time_taken_in_usec = 0, .empirical_function = empirical_function, .expected_function = expected_function, .values = 32, .valueRange = 4},
-	{.times_to_run = 1024, .time_taken_in_usec = 0, .empirical_function = empirical_function, .expected_function = expected_function, .values = 32, .valueRange = 4},
-	{.times_to_run = 2048, .time_taken_in_usec = 0, .empirical_function = empirical_function, .expected_function = expected_function, .values = 32, .valueRange = 4}
+	{.times_to_run = 32, .time_taken_in_usec = 0, .values = 32, .valueRange = 4},
+	{.times_to_run = 512, .time_taken_in_usec = 0, .values = 32, .valueRange = 4},
+	{.times_to_run = 1024, .time_taken_in_usec = 0, .values = 32, .valueRange = 4},
+	{.times_to_run = 2048, .time_taken_in_usec = 0, .values = 32, .valueRange = 4}
 };
+
 void runTest(bpf_t* ks_bpf, kolmogorov_ctx_t* ctx, benchmark_runs* test);
 
-void create_function(benchmark_runs* run);
-
-int launch_test_case(void){
+void launch_test_case(void){
 	bpf_t ks_bpf = {
 	    .application = nrf52_temp_read_bpf_bin,
     	.application_len = sizeof(nrf52_temp_read_bpf_bin),
@@ -77,17 +77,15 @@ int launch_test_case(void){
 		printf("Value: %li\n", ks_state.value);
 		printf("Result: %li\n", ks_state.result);
 		print_list(&ks_state);
-		clearEmpiricalFunction(&test_runs[i]);
+		clearEmpiricalFunction();
 	}
-
-	return 0;
 }
 
 void create_function(benchmark_runs* run){
 	//Assume that all values are equally distributed
 	printf("create functtion...\n");
 	for(uint32_t i = 0; i < run->values; ++i){
-		run->expected_function[i] = run->times_to_run/run->values*(run->values-i);
+		expected_function[i] = run->times_to_run/run->values*(run->values-i);
 	}
 }
 

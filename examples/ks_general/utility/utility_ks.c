@@ -1,8 +1,8 @@
 #include <stdio.h>
 #include "utility_ks.h"
 
-void clearEmpiricalFunction(benchmark_runs* run){
-	for(uint32_t i = 0; i < run->values; ++i){
+void clearEmpiricalFunction(void){
+	for(uint32_t i = 0; i < function_size; ++i){
 		empirical_function[i] = 0;
 	}
 }
