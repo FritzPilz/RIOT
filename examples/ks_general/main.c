@@ -15,9 +15,9 @@ void print_csv(benchmark_runs* run, int32_t runs){
     printf("Number of runs,");
     for(int i = 0; i < runs; ++i){
         if(i != runs-1){
-            printf("%f ms,", run[i].times_to_run/1000.0);
+            printf("%li,", run[i].times_to_run);
         }else{
-            printf("%f ms\n", run[i].times_to_run/1000.0);
+            printf("%li\n", run[i].times_to_run);
         }
     }
     printf("Time Taken,");

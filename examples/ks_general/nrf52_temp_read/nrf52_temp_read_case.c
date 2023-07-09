@@ -33,10 +33,10 @@ const int32_t runs = 4;
 static uint8_t _stack[512] = { 0 };
 static benchmark_runs test_runs[4] =
 {
-	{.times_to_run = 32, .time_taken_in_usec = 0, .values = 32, .value_range = 4},
-	{.times_to_run = 512, .time_taken_in_usec = 0, .values = 32, .value_range = 4},
-	{.times_to_run = 1024, .time_taken_in_usec = 0, .values = 32, .value_range = 4},
-	{.times_to_run = 2048, .time_taken_in_usec = 0, .values = 32, .value_range = 4}
+	{.times_to_run = 32, .time_taken_in_usec = 0, .value_range = 4},
+	{.times_to_run = 512, .time_taken_in_usec = 0, .value_range = 4},
+	{.times_to_run = 1024, .time_taken_in_usec = 0, .value_range = 4},
+	{.times_to_run = 2048, .time_taken_in_usec = 0, .value_range = 4}
 };
 
 void runTest(bpf_t* ks_bpf, kolmogorov_ctx_t* ctx, benchmark_runs* test);
@@ -67,7 +67,7 @@ void launch_test_case(void){
 		ks_state.value = 0;
 		ks_state.result = 0;
 		ks_state.valueRange = test_runs[i].value_range;
-		ks_state.values = test_runs[i].values;
+		ks_state.values = function_size;
 
 		runTest(&ks_bpf, &ctx, &test_runs[i]);
 
@@ -76,17 +76,17 @@ void launch_test_case(void){
 		printf("Elapsed Time: %f microseconds\n", elapsed_time_msec);
 		printf("Value: %li\n", ks_state.value);
 		printf("Result: %li\n", ks_state.result);
-		print_list(&ks_state);
-		print_csv(test_runs, runs);
+		#if(VERBOSE_DEBUG == 1)
+			print_list(&ks_state);
+		#endif
 		clearEmpiricalFunction();
 	}
+	print_csv(test_runs, runs);
 }
 
 void create_function(benchmark_runs* run){
-	//Assume that all values are equally distributed
-	printf("create functtion...\n");
-	for(uint32_t i = 0; i < run->values; ++i){
-		expected_function[i] = run->times_to_run/run->values*(run->values-i);
+	for(uint32_t i = 0; i < function_size; ++i){
+		expected_function[i] = run->times_to_run/function_size*(function_size-i);
 	}
 }
 
@@ -101,6 +101,5 @@ void runTest(bpf_t* ks_bpf, kolmogorov_ctx_t* ctx, benchmark_runs* test){
 	}
 
 	uint32_t end_time = xtimer_usec_from_ticks(xtimer_now());
-
 	test->time_taken_in_usec = (end_time-start_time);
 }

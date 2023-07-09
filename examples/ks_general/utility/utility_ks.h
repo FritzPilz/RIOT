@@ -21,7 +21,11 @@ typedef struct {
 void print_list(KS_Test_State* run);
 void clearEmpiricalFunction(void);
 
-#define function_size 32
+#ifdef FUNCTION_SIZE
+#define function_size FUNCTION_SIZE
+#else
+#define function_size 16
+#endif
 
 extern int32_t expected_function[];
 extern int32_t empirical_function[];

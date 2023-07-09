@@ -14,6 +14,11 @@ DEVELHELP ?= 1
 # Change this to 0 show compiler invocation lines by default:
 QUIET ?= 1
 
+VERBOSE_DEBUG ?= 0
+FUNCTION_SIZE ?= 32
+
+CFLAGS += -DVERBOSE_DEBUG=$(VERBOSE_DEBUG) -DFUNCTION_SIZE=$(FUNCTION_SIZE)
+
 USEMODULE += $(TESTCASE)
 USEMODULE += ks_utility
 USEMODULE += bpf
