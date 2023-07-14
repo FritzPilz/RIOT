@@ -1,31 +1,11 @@
-/*
- * Copyright (c) 2021 Koen Zandberg
- *
- * This file is subject to the terms and conditions of the GNU Lesser
- * General Public License v2.1. See the file LICENSE in the top level
- * directory for more details.
- */
-
-/**
- * @ingroup     examples
- * @{
- *
- * @file
- * @brief       Minimal bpf example
- *
- * @author      Koen Zandberg <koen.zandberg@inria.fr>
- *
- * @}
- */
 #include <stdio.h>
 #include "xtimer.h"
-#include "bpf/shared.h"
-#include "cpu_conf.h"
 
 #include "bpf.h"
-#include "bpf/nrf52_temp_read_bpf.bin.h"
-#include "../utility/utility_ks.h"
+#include "bpf/shared.h"
 #include "../ks_test.h"
+#include "../utility/utility_ks.h"
+#include "bpf/random_ks_bpf.bin.h"
 
 const int32_t runs = 4;
 
@@ -42,26 +22,25 @@ void runTest(bpf_t* ks_bpf, kolmogorov_ctx_t* ctx, benchmark_runs* test);
 
 void launch_test_case(void){
 	bpf_t ks_bpf = {
-	    .application = nrf52_temp_read_bpf_bin,
-    	.application_len = sizeof(nrf52_temp_read_bpf_bin),
+	    .application = random_ks_bpf_bin,
+    	.application_len = sizeof(random_ks_bpf_bin),
         .stack = _stack,
 	    .stack_size = sizeof(_stack)
     };
 
-	bpf_mem_region_t expectedFunction_region, empiricalFunction_region, ks_state_region, temperature_sensor_region;
+    bpf_mem_region_t expectedFunction_region, empiricalFunction_region, ks_state_region;
 	KS_Test_State ks_state; kolmogorov_ctx_t ctx = {.kolmogorov_ctx = &ks_state};
 
 	bpf_setup(&ks_bpf);
 
 	bpf_add_region(&ks_bpf, &expectedFunction_region, &expected_function, sizeof(int32_t)*function_size, BPF_MEM_REGION_READ | BPF_MEM_REGION_WRITE);
     bpf_add_region(&ks_bpf, &empiricalFunction_region, &empirical_function, sizeof(int32_t)*function_size, BPF_MEM_REGION_READ | BPF_MEM_REGION_WRITE);
-	bpf_add_region(&ks_bpf, &temperature_sensor_region ,NRF_TEMP , sizeof(*NRF_TEMP), BPF_MEM_REGION_READ | BPF_MEM_REGION_WRITE);
 	bpf_add_region(&ks_bpf, &ks_state_region, &ks_state, sizeof(ks_state), BPF_MEM_REGION_READ | BPF_MEM_REGION_WRITE);
 
 	ks_state.expected_function = expected_function;
 	ks_state.empirical_function = empirical_function;
 
-	for(int i = 0; i < runs; ++i){
+    for(int i = 0; i < runs; ++i){
 
 		ks_state.value = 0;
 		ks_state.result = 0;
@@ -96,6 +75,7 @@ void runTest(bpf_t* ks_bpf, kolmogorov_ctx_t* ctx, benchmark_runs* test){
 	uint32_t start_time = xtimer_usec_from_ticks(xtimer_now());
 
 	for(uint32_t i = 0; i < test->times_to_run; ++i){
+		ctx->kolmogorov_ctx->value = xtimer_usec_from_ticks(xtimer_now())%(function_size*test->value_range);
 		bpf_execute_ctx(ks_bpf, ctx, sizeof(*ctx), &res);
 	}
 
