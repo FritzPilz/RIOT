@@ -20,6 +20,7 @@ typedef struct {
 
 void print_list(KS_Test_State* run);
 void clearEmpiricalFunction(void);
+void launch_test_case(KS_Test_State* ks_state);
 
 #ifdef FUNCTION_SIZE
 #define function_size FUNCTION_SIZE

@@ -9,7 +9,15 @@ int32_t empirical_function[function_size];
 
 int main(void){
     bpf_init();
-    launch_test_case();
+
+    KS_Test_State ks_state;
+    ks_state.expected_function = expected_function;
+	ks_state.empirical_function = empirical_function;
+	ks_state.values = function_size;
+	ks_state.value_range = granularity;
+
+
+    launch_test_case(&ks_state);
 }
 
 void print_csv(benchmark_runs* run, int32_t runs){

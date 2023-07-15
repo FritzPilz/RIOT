@@ -21,7 +21,7 @@ static benchmark_runs test_runs[4] =
 void runBpfTest(bpf_t* ks_bpf, kolmogorov_ctx_t* ctx, benchmark_runs* test);
 void runReferenceTest(benchmark_runs* test);
 
-void launch_test_case(void){
+void launch_test_case(KS_Test_State* ks_state){
 	bpf_t ks_bpf = {
 	    .application = random_ks_bpf_bin,
     	.application_len = sizeof(random_ks_bpf_bin),
@@ -30,29 +30,23 @@ void launch_test_case(void){
     };
 
     bpf_mem_region_t expectedFunction_region, empiricalFunction_region, ks_state_region;
-	KS_Test_State ks_state; kolmogorov_ctx_t ctx = {.kolmogorov_ctx = &ks_state};
+	kolmogorov_ctx_t ctx = {.kolmogorov_ctx = ks_state};
 
 	bpf_setup(&ks_bpf);
 
 	bpf_add_region(&ks_bpf, &expectedFunction_region, &expected_function, sizeof(int32_t)*function_size, BPF_MEM_REGION_READ | BPF_MEM_REGION_WRITE);
     bpf_add_region(&ks_bpf, &empiricalFunction_region, &empirical_function, sizeof(int32_t)*function_size, BPF_MEM_REGION_READ | BPF_MEM_REGION_WRITE);
-	bpf_add_region(&ks_bpf, &ks_state_region, &ks_state, sizeof(ks_state), BPF_MEM_REGION_READ | BPF_MEM_REGION_WRITE);
-
-	ks_state.expected_function = expected_function;
-	ks_state.empirical_function = empirical_function;
-	ks_state.values = function_size;
-	ks_state.value_range = granularity;
-
+	bpf_add_region(&ks_bpf, &ks_state_region, ks_state, sizeof(*ks_state), BPF_MEM_REGION_READ | BPF_MEM_REGION_WRITE);
 	printf("Start bpf test:\n");
 
     for(int i = 0; i < runs; ++i){
-		ks_state.value = 0;
-		ks_state.result = 0;
+		ks_state->value = 0;
+		ks_state->result = 0;
 
 		runBpfTest(&ks_bpf, &ctx, &test_runs[i]);
 
-		printf("Result: %li\n", ks_state.result);
 		#if(VERBOSE_DEBUG == 1)
+			printf("Result: %li\n", ks_state->result);
 			print_list(&ks_state);
 		#endif
 		clearEmpiricalFunction();
@@ -60,11 +54,11 @@ void launch_test_case(void){
 	print_csv(test_runs, runs);
 	printf("Start reference test:\n");
 	for(int i = 0; i < runs; ++i){
-		ks_state.value = 0;
-		ks_state.result = 0;
+		ks_state->value = 0;
+		ks_state->result = 0;
 
 		runReferenceTest(&test_runs[i]);
-		
+
 		#if(VERBOSE_DEBUG == 1)
 			print_list(&ks_state);
 		#endif

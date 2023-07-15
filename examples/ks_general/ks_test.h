@@ -9,7 +9,6 @@ typedef struct benchmark_runs{
     char csv_string[];
 } benchmark_runs;
 
-void launch_test_case(void);
 void create_function(benchmark_runs* run);
 void print_csv(benchmark_runs* run, int32_t runs);
 uint32_t kolmogorov_smirnov_test(uint32_t value);
