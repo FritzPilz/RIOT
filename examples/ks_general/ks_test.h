@@ -10,6 +10,8 @@ typedef struct benchmark_runs{
 } benchmark_runs;
 
 void create_function(benchmark_runs* run);
+void runReferenceTest(benchmark_runs* test);
+
 void print_csv(benchmark_runs* run, int32_t runs);
 uint32_t kolmogorov_smirnov_test(uint32_t value);
 

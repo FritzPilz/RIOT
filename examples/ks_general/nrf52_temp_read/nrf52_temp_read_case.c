@@ -40,7 +40,6 @@ static benchmark_runs test_runs[4] =
 };
 
 void runBpfTest(bpf_t* ks_bpf, kolmogorov_ctx_t* ctx, benchmark_runs* test);
-void runReferenceTest(benchmark_runs* test);
 
 void launch_test_case(KS_Test_State* ks_state){
 	bpf_t ks_bpf = {
@@ -61,7 +60,6 @@ void launch_test_case(KS_Test_State* ks_state){
 	bpf_add_region(&ks_bpf, &ks_state_region, ks_state, sizeof(*ks_state), BPF_MEM_REGION_READ | BPF_MEM_REGION_WRITE);
 
 	printf("Start bpf test:\n");
-
 	for(int i = 0; i < runs; ++i){
 		ks_state->value = 0;
 		ks_state->result = 0;
@@ -75,6 +73,7 @@ void launch_test_case(KS_Test_State* ks_state){
 		clearEmpiricalFunction();
 	}
 	print_csv(test_runs, runs);
+	
 	printf("Start reference test:\n");
 	for(int i = 0; i < runs; ++i){
 		ks_state->value = 0;
