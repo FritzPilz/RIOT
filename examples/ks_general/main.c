@@ -16,6 +16,9 @@ int main(void){
 	ks_state.values = function_size;
 	ks_state.value_range = granularity;
 
+    printf("Granularity: %i\n", granularity);
+    printf("Function size: %i\n", function_size);
+
     launch_test_case(&ks_state);
 }
 

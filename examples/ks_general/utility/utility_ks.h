@@ -28,8 +28,8 @@ void launch_test_case(KS_Test_State* ks_state);
 #define function_size 16
 #endif
 
-#ifdef VALUE_RANGE
-#define granularity VALUE_RANGE
+#ifdef GRANULARITY
+#define granularity GRANULARITY
 #else
 #define granularity 4
 #endif
