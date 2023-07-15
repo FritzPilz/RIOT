@@ -10,7 +10,7 @@ typedef struct KS_Test_State{
     __bpf_shared_ptr(int32_t *, empirical_function);
     uint32_t value;
     uint32_t result;
-    uint32_t valueRange;
+    uint32_t value_range;
     uint32_t values;
 } KS_Test_State;
 
@@ -25,6 +25,12 @@ void clearEmpiricalFunction(void);
 #define function_size FUNCTION_SIZE
 #else
 #define function_size 16
+#endif
+
+#ifdef VALUE_RANGE
+#define granularity VALUE_RANGE
+#else
+#define granularity 4
 #endif
 
 extern int32_t expected_function[];

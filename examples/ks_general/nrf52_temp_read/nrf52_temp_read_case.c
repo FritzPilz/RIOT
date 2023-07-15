@@ -21,6 +21,7 @@
 #include "xtimer.h"
 #include "bpf/shared.h"
 #include "cpu_conf.h"
+#include "bpf/nrf52_temp_read_bpf.h"
 
 #include "bpf.h"
 #include "bpf/nrf52_temp_read_bpf.bin.h"
@@ -32,13 +33,14 @@ const int32_t runs = 4;
 static uint8_t _stack[512] = { 0 };
 static benchmark_runs test_runs[4] =
 {
-	{.times_to_run = 32, .time_taken_in_usec = 0, .value_range = 4},
-	{.times_to_run = 512, .time_taken_in_usec = 0, .value_range = 4},
-	{.times_to_run = 1024, .time_taken_in_usec = 0, .value_range = 4},
-	{.times_to_run = 2048, .time_taken_in_usec = 0, .value_range = 4}
+	{.times_to_run = 32, .time_taken_in_usec = 0},
+	{.times_to_run = 512, .time_taken_in_usec = 0},
+	{.times_to_run = 1024, .time_taken_in_usec = 0},
+	{.times_to_run = 2048, .time_taken_in_usec = 0}
 };
 
-void runTest(bpf_t* ks_bpf, kolmogorov_ctx_t* ctx, benchmark_runs* test);
+void runBpfTest(bpf_t* ks_bpf, kolmogorov_ctx_t* ctx, benchmark_runs* test);
+void runReferenceTest(benchmark_runs* test);
 
 void launch_test_case(void){
 	bpf_t ks_bpf = {
@@ -60,21 +62,31 @@ void launch_test_case(void){
 
 	ks_state.expected_function = expected_function;
 	ks_state.empirical_function = empirical_function;
+	ks_state.values = function_size;
+	ks_state.value_range = granularity;
+
+	printf("Start bpf test:\n");
 
 	for(int i = 0; i < runs; ++i){
-
 		ks_state.value = 0;
 		ks_state.result = 0;
-		ks_state.valueRange = test_runs[i].value_range;
-		ks_state.values = function_size;
 
-		runTest(&ks_bpf, &ctx, &test_runs[i]);
+		runBpfTest(&ks_bpf, &ctx, &test_runs[i]);
 
-		float elapsed_time_msec = test_runs[i].time_taken_in_usec/1000.0;
+		#if(VERBOSE_DEBUG == 1)
+			printf("Result: %li\n", ks_state.result);
+			print_list(&ks_state);
+		#endif
+		clearEmpiricalFunction();
+	}
+	print_csv(test_runs, runs);
+	printf("Start reference test:\n");
+	for(int i = 0; i < runs; ++i){
+		ks_state.value = 0;
+		ks_state.result = 0;
 
-		printf("Elapsed Time: %f microseconds\n", elapsed_time_msec);
-		printf("Value: %li\n", ks_state.value);
-		printf("Result: %li\n", ks_state.result);
+		runReferenceTest(&test_runs[i]);
+		
 		#if(VERBOSE_DEBUG == 1)
 			print_list(&ks_state);
 		#endif
@@ -89,7 +101,7 @@ void create_function(benchmark_runs* run){
 	}
 }
 
-void runTest(bpf_t* ks_bpf, kolmogorov_ctx_t* ctx, benchmark_runs* test){
+void runBpfTest(bpf_t* ks_bpf, kolmogorov_ctx_t* ctx, benchmark_runs* test){
 	int64_t res = 0;
 	create_function(test);
 
@@ -101,4 +113,30 @@ void runTest(bpf_t* ks_bpf, kolmogorov_ctx_t* ctx, benchmark_runs* test){
 
 	uint32_t end_time = xtimer_usec_from_ticks(xtimer_now());
 	test->time_taken_in_usec = (end_time-start_time);
+}
+
+inline uint64_t read_memory(volatile uint32_t address){
+	return *(volatile uint32_t*) address;
+}
+
+inline void write_memory(volatile uint32_t address, volatile uint64_t value){
+	*(volatile uint32_t *) address = value;
+}
+
+void runReferenceTest(benchmark_runs* test){
+	create_function(test);
+
+	uint32_t start_time = xtimer_usec_from_ticks(xtimer_now());
+
+	for(uint32_t i = 0; i < test->times_to_run; ++i){
+		write_memory(TASKS_START, 1);
+		while(read_memory(EVENTS_DATARDY)==0){}
+		write_memory(EVENTS_DATARDY, 0);
+		uint32_t value = read_memory(TEMP);
+		write_memory(TASKS_STOP, 1);
+
+		kolmogorov_smirnov_test(value);
+	}
+	 uint32_t end_time = xtimer_usec_from_ticks(xtimer_now());
+	 test->time_taken_in_usec = (end_time-start_time);
 }

@@ -13,7 +13,7 @@ uint32_t delta_kolmogorov_smirnov_test(kolmogorov_ctx_t* ctx){
 	write_memory(TASKS_STOP, 1);
 
 	for(int i = 0; i < ctx->kolmogorov_ctx->values; ++i){
-		if(ctx->kolmogorov_ctx->value < i*ctx->kolmogorov_ctx->valueRange){
+		if(ctx->kolmogorov_ctx->value < i*ctx->kolmogorov_ctx->value_range){
 			continue;
 		}else{
 			++ctx->kolmogorov_ctx->empirical_function[i];

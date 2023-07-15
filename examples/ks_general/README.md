@@ -1,54 +1,8 @@
-# BPF example application for RIOT
+# Benchmarks using ks_test
 
-This application provides a very minimal demonstrator for the rBPF virtual
-machine implementation. The example includes a tiny (3 instruction) BPF
-application that increments and returns the context value. This application is
-executed in the rBPF VM when running the example. The example provides a
-integer value to the bpf snippet and prints the returned value after running the
-bpf code.
+This project contains two benchmarks for the femtocontainer implementation using the kolmogorov-smirnov-test to determine whether a generated data set follows an expected distribution on the data.
+The project is written to control some parameters of the benchmark from within the console. These parameters are:
 
-## Example use
-
-First compile the rBPF application, then compile the RIOT example here.
-
-### Compiling the rBPF program
-
-The example rBPF snippet called `increment.c` in the bpf directory can be
-compiled with make. It requires LLVM for compiling:
-
-```
-make -C examples/bpf_minimal/bpf
-```
-
-The resulting `increment.bin` contains the raw bpf code.
-
-### Running the example
-
-The bpf example itself is also compiled with make:
-
-```
-make -C examples/bpf_minimal
-```
-
-It will compile in the binary bpf increment application.
-
-Run the example with:
-
-```
-make -C examples/bpf_minimal term
-```
-
-The output it shows should be like:
-
-```
-RIOT native interrupts/signals initialized.
-LED_RED_OFF
-LED_GREEN_ON
-RIOT native board initialized.
-RIOT native hardware initialization complete.
-
-main(): This is RIOT! (Version: 2020.10)
-All up, running the rBPF VM now
-Return code: 0
-Result: 5
-```
+- TESTCASE:         Determines which benchmark is run. The value following the TESTCASE argument most be one of subdirectories in this directory excluding utility and bin (Default: nrf52_temp_read_bpf.c)
+- FUNCTIONS_SIZE:   Determines the size of the expected and empiricl function and is responsible for the amount of data shown in the table (Default: 32)
+- VERBOSE_DEBUG:    Determines that a list with the results of the benchmark_runs is printed, if the value equals 1. Otherwise these logs a omitted (Default: 0)

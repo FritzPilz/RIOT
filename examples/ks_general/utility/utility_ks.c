@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include "../ks_test.h"
 #include "utility_ks.h"
 
 void clearEmpiricalFunction(void){
