@@ -50,8 +50,8 @@ void launch_test_case(KS_Test_State* ks_state){
 		#endif
 		clearEmpiricalFunction();
 	}
-	print_csv(test_runs, runs);
-	
+	print_csv(test_runs, runs, "With Femtocontainer,");
+
 	printf("Start reference test:\n");
 	for(int i = 0; i < runs; ++i){
 		ks_state->value = 0;
@@ -64,7 +64,7 @@ void launch_test_case(KS_Test_State* ks_state){
 		#endif
 		clearEmpiricalFunction();
 	}
-	print_csv(test_runs, runs);
+	print_csv(test_runs, runs, "Without Femtocontainer,");
 }
 
 void create_function(benchmark_runs* run){

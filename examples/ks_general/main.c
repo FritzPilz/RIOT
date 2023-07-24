@@ -22,16 +22,16 @@ int main(void){
     launch_test_case(&ks_state);
 }
 
-void print_csv(benchmark_runs* run, int32_t runs){
-    printf("Number of runs,");
+void print_csv(benchmark_runs* run, int32_t runs, const char* test_type){
+    printf("Kind of test,");
     for(int i = 0; i < runs; ++i){
         if(i != runs-1){
-            printf("%li,", run[i].times_to_run);
+            printf("%li runs,", run[i].times_to_run);
         }else{
-            printf("%li\n", run[i].times_to_run);
+            printf("%li runs\n", run[i].times_to_run);
         }
     }
-    printf("Time Taken,");
+    printf("%s",test_type);
     for(int i = 0; i < runs; ++i){
         if(i != runs-1){
             printf("%f ms,", run[i].time_taken_in_usec/1000.0);

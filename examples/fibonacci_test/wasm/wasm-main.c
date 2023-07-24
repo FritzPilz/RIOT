@@ -10,6 +10,7 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <stdbool.h>
+#include "xtimer.h"
 
 /*provide some test program*/
 #include "blob/test.wasm.h"
@@ -33,11 +34,16 @@ int main(void)
     printf("iwasm_initilised: %s\n", telltruth(iwasm_runtime_init()));
 
     int app_argc = 1;
-    const char *app_argv[] = {24};
 
+    const char *app_argv[] = {"24"};
+    uint32_t start_time = xtimer_usec_from_ticks(xtimer_now());
     int ret = wamr_run_cp(hello_wasm, hello_wasm_len, app_argc, app_argv);
+    uint32_t end_time = xtimer_usec_from_ticks(xtimer_now());
+    printf("fib(%s):\n", app_argv[0]);
     printf("ret = %d\n", ret);
+    printf("Time taken: %f ms\n", (end_time-start_time)/1000.0);
 
     iwasm_runtime_destroy();
-
 }
+
+
