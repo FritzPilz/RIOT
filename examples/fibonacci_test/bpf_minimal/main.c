@@ -42,13 +42,17 @@ int main(void)
     bpf_setup(&bpf);
 
     uint32_t start_time = xtimer_usec_from_ticks(xtimer_now());    
-    int res = bpf_execute(&bpf, (void*)ctx, sizeof(ctx), &result);
+    bpf_execute(&bpf, (void*)ctx, sizeof(ctx), &result);
+    uint32_t mid_time = xtimer_usec_from_ticks(xtimer_now());
+    bpf_execute(&bpf, (void*)ctx, sizeof(ctx), &result);
     uint32_t end_time = xtimer_usec_from_ticks(xtimer_now());
 
+
     printf("fib(%d):\n",ctx);
-    printf("Return code: %d\n", res);
     printf("Result: %ld\n", (unsigned long)result);
-    printf("Time taken: %f\n", (end_time-start_time)/1000.0);
+    printf("Time taken: %fms\n", (end_time-start_time)/1000.0);
+    printf("First run: %fms\n", (mid_time-start_time)/1000.0);
+    printf("Second run: %fms\n", (end_time-mid_time)/1000.0);
 
     /* should never be reached */
     return 0;

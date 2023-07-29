@@ -8,7 +8,8 @@ BOARD ?= nrf52840dk
 RIOTBASE ?= $(CURDIR)/../../..
 
 USEPKG += wamr
-USEMODULE += ztimer_usec
+USEMODULE += xtimer
+USEMODULE += printf_float
 
 BLOBS += hello.wasm
 
