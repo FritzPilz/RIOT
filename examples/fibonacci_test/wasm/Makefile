@@ -1,8 +1,8 @@
 # name of your application
-APPLICATION = nimble_heart_rate_sensor
+APPLICATION = fibonacci
 
 # If no BOARD is found in the environment, use this default:
-BOARD ?= nrf52840dk
+BOARD ?= native
 
 # This has to be the absolute path to the RIOT base directory:
 RIOTBASE ?= $(CURDIR)/../../..
