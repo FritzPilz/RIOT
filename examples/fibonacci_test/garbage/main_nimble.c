@@ -30,6 +30,7 @@
 
 static wasm_module_t fibonacci_module;
 static wasm_module_inst_t fibonacci_instance = NULL;
+static uint8_t fibonacci_bytecode[sizeof(hello_wasm)];
 
 int iwasm_instance_exec_main(wasm_module_inst_t module_inst, int argc, char **argv);
 
@@ -44,15 +45,15 @@ int main(void)
 
     iwasm_runtime_init();
 
-    uint8_t * wasm_buf = malloc(sizeof(hello_wasm));
+    uint8_t * wasm_buf = malloc(sizeof(fibonacci_bytecode));
     if (!wasm_buf) {
         return -1;
     }
 
-    memcpy(wasm_buf, hello_wasm, sizeof(hello_wasm));
+    memcpy(fibonacci_bytecode, wasm_buf, sizeof(fibonacci_bytecode));
 
     char error_buf[128];
-    if (!(fibonacci_module = wasm_runtime_load(wasm_buf, sizeof(hello_wasm),
+    if (!(fibonacci_module = wasm_runtime_load(fibonacci_bytecode, sizeof(fibonacci_bytecode),
         error_buf, sizeof(error_buf)))) {
         puts(error_buf);
     }
@@ -66,9 +67,7 @@ int main(void)
     int argc = 1;
     char *argv[] = { "Test" };
 
-    puts("Start fibonacci...");
     int result = iwasm_instance_exec_main(fibonacci_instance, argc, argv);
-    puts("Fibonacci done!");
 
     wasm_runtime_deinstantiate(fibonacci_instance);
 
