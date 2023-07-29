@@ -1,22 +1,20 @@
-APPLICATION = wasm-example
-# If no BOARD is defined in the environment, use this default:
-BOARD ?= native
+# name of your application
+APPLICATION = nimble_heart_rate_sensor
+
+# If no BOARD is found in the environment, use this default:
+BOARD ?= nrf52840dk
 
 # This has to be the absolute path to the RIOT base directory:
 RIOTBASE ?= $(CURDIR)/../../..
 
 USEPKG += wamr
+USEMODULE += ztimer_usec
 
-USEMODULE += xtimer
-USEMODULE += printf_float
+BLOBS += hello.wasm
 
-ifneq ($(BOARD),native)
-CFLAGS += -DTHREAD_STACKSIZE_MAIN='(6 * 1024)'
-endif
-
+CFLAGS += -DTHREAD_STACKSIZE_MAIN='(4 * 1024)'
+CFLAGS += -DNIMBLE_HOST_STACKSIZE='(4 * 1024)'
 export WAMR_CONFIG := $(abspath config.cmake)
-
-BLOBS += test.wasm hello.wasm
 
 # Comment this out to disable code in RIOT that does safety checking
 # which is not needed in a production environment but helps in the
@@ -28,12 +26,8 @@ QUIET ?= 1
 
 all: hello.wasm
 
-hello.wasm: wasm_sample/hello.c wasm_sample/Makefile
-	make -C wasm_sample hello.wasm
-	mv wasm_sample/hello.wasm .
-
-#######################################################
-# Load the rest of the usual RIOT make infrastructure #
-#######################################################
+hello.wasm: wasm/hello.c wasm/Makefile
+	make -C wasm hello.wasm
+	mv wasm/hello.wasm .
 
 include $(RIOTBASE)/Makefile.include

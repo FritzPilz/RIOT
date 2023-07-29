@@ -13,7 +13,7 @@
 #include "wasm_export.h"
 
 /* execs the main function in an instantiated module */
-static int iwasm_instance_exec_main(wasm_module_inst_t module_inst, int argc, char **argv)
+int iwasm_instance_exec_main(wasm_module_inst_t module_inst, int argc, char **argv)
 {
     /* exception memory is part of instance -> no buffer need */
     const char *exception = 0;
@@ -69,7 +69,6 @@ int iwasm_bytecode_exec_main(uint8_t *bytecode, size_t bytecode_len, int argc, c
     return ret;
 }
 
-/* running this initialises the wamr runtime*/
 bool iwasm_runtime_init(void)
 {
     RuntimeInitArgs init_args;
@@ -79,7 +78,7 @@ bool iwasm_runtime_init(void)
 
     memset(&init_args, 0, sizeof(RuntimeInitArgs));
 #ifdef POOL_ALLOC
-    static char global_heap_buf[256 * 1024] = { 0 };//(256 kB)
+    static char global_heap_buf[128 * 1024] = { 0 };//(256 kB)
 
     init_args.mem_alloc_type = Alloc_With_Pool;
     init_args.mem_alloc_option.pool.heap_buf = global_heap_buf;

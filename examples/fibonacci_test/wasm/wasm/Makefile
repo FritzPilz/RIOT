@@ -78,6 +78,7 @@ COMPILE_FLAGS := -Wall \
 #		--nostdlib \
 #		--nostdinc \
 #		-std=c++14 \
+#
 
 %.show: %.wasm
 	wasm2wat $<
@@ -102,16 +103,6 @@ COMPILE_FLAGS := -Wall \
 
 %.wat: %.wasm Makefile
 	wasm2wat -o $@ $<
-
-ifeq ($(COPY_HELLO),YES)
-hello.wasm: hello_prebuild.wasm
-	@echo "!! NO wasm-ld(-VERSION) found  !!"
-	@echo "!! copying hello_prebuild.wasm !! "
-	cp hello_prebuild.wasm hello.wasm
-else
-hello_prebuild.wasm: hello.wasm
-	cp hello.wasm hello_prebuild.wasm
-endif
 
 
 .PHONY: FORCE
