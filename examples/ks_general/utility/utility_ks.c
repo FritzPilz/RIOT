@@ -2,7 +2,7 @@
 #include "../ks_test.h"
 #include "utility_ks.h"
 
-void clearEmpiricalFunction(void){
+void clear_empirical_function(void){
 	for(uint32_t i = 0; i < function_size; ++i){
 		empirical_function[i] = 0;
 	}

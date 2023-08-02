@@ -19,7 +19,7 @@ typedef struct {
 } kolmogorov_ctx_t;
 
 void print_list(KS_Test_State* run);
-void clearEmpiricalFunction(void);
+void clear_empirical_function(void);
 void launch_test_case(KS_Test_State* ks_state);
 
 #ifdef FUNCTION_SIZE

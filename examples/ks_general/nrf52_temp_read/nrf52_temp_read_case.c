@@ -28,18 +28,19 @@
 #include "../utility/utility_ks.h"
 #include "../ks_test.h"
 
-const int32_t runs = 4;
+#define runs 5
 
 static uint8_t _stack[512] = { 0 };
-static benchmark_runs test_runs[4] =
+static benchmark_runs test_runs[runs] =
 {
-	{.times_to_run = 32, .time_taken_in_usec = 0},
+	{.times_to_run = 1, .time_taken_in_usec = 0},
+	{.times_to_run = 8, .time_taken_in_usec = 0},
+	{.times_to_run = 64, .time_taken_in_usec = 0},
 	{.times_to_run = 512, .time_taken_in_usec = 0},
-	{.times_to_run = 1024, .time_taken_in_usec = 0},
-	{.times_to_run = 2048, .time_taken_in_usec = 0}
+	{.times_to_run = 4096, .time_taken_in_usec = 0}
 };
 
-void runBpfTest(bpf_t* ks_bpf, kolmogorov_ctx_t* ctx, benchmark_runs* test);
+void run_bpf_test(bpf_t* ks_bpf, kolmogorov_ctx_t* ctx, benchmark_runs* test);
 
 void launch_test_case(KS_Test_State* ks_state){
 	bpf_t ks_bpf = {
@@ -64,29 +65,29 @@ void launch_test_case(KS_Test_State* ks_state){
 		ks_state->value = 0;
 		ks_state->result = 0;
 
-		runBpfTest(&ks_bpf, &ctx, &test_runs[i]);
+		run_bpf_test(&ks_bpf, &ctx, &test_runs[i]);
 
 		#if(VERBOSE_DEBUG == 1)
 			printf("Result: %li\n", ks_state->result);
 			print_list(&ks_state);
 		#endif
-		clearEmpiricalFunction();
+		clear_empirical_function();
 	}
-	print_csv(test_runs, runs, "With Femtocontainer,");
+	print_csv(test_runs, runs, "Femtocontainer,");
 	
 	printf("Start reference test:\n");
 	for(int i = 0; i < runs; ++i){
 		ks_state->value = 0;
 		ks_state->result = 0;
 
-		runReferenceTest(&test_runs[i]);
+		run_reference_test(&test_runs[i]);
 
 		#if(VERBOSE_DEBUG == 1)
 			print_list(&ks_state);
 		#endif
-		clearEmpiricalFunction();
+		clear_empirical_function();
 	}
-	print_csv(test_runs, runs, "Without Femtocontainer,");
+	print_csv(test_runs, runs, "Non-Containerized,");
 }
 
 void create_function(benchmark_runs* run){
@@ -95,7 +96,7 @@ void create_function(benchmark_runs* run){
 	}
 }
 
-void runBpfTest(bpf_t* ks_bpf, kolmogorov_ctx_t* ctx, benchmark_runs* test){
+void run_bpf_test(bpf_t* ks_bpf, kolmogorov_ctx_t* ctx, benchmark_runs* test){
 	int64_t res = 0;
 	create_function(test);
 
@@ -117,7 +118,7 @@ inline void write_memory(volatile uint32_t address, volatile uint64_t value){
 	*(volatile uint32_t *) address = value;
 }
 
-void runReferenceTest(benchmark_runs* test){
+void run_reference_test(benchmark_runs* test){
 	create_function(test);
 
 	uint32_t start_time = xtimer_usec_from_ticks(xtimer_now());

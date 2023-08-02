@@ -1,6 +1,5 @@
 #include "../../utility/utility_ks.h"
 #include "nrf52_temp_read_bpf.h"
-#include "bpf/bpfapi/helpers.h"
 
 inline uint64_t read_memory(volatile uint64_t address);
 inline void write_memory(volatile uint64_t address, volatile uint64_t value);

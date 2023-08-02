@@ -23,12 +23,27 @@ int main(void){
 }
 
 void print_csv(benchmark_runs* run, int32_t runs, const char* test_type){
+    float* observations_x = (float*)calloc(runs, sizeof(float));
+    float* observations_y = (float*)calloc(runs, sizeof(float));
+    for(int i = 0; i < runs; ++i){
+        observations_x[i] = (float)run[i].times_to_run;
+        observations_y[i] = (float)run[i].time_taken_in_usec/1000.0;
+    }
+    float linear_coefficient_b = covariance(observations_x, observations_y, runs)/variance(observations_x, runs);
+    float linear_coefficient_a = average(observations_y, runs) - linear_coefficient_b * average(observations_x, runs);
+    float res_square = 0.0; float tot_square = 0.0;
+    for(int i = 0; i < runs; ++i){
+        float temp_res = (observations_y[i]-linear_function(linear_coefficient_a,linear_coefficient_b,observations_x[i]));
+        res_square += temp_res*temp_res;
+        tot_square += (observations_y[i]-average(observations_y, runs))*(observations_y[i]-average(observations_y, runs));
+    }
+    float r_squared = 1.0 - res_square/tot_square;
     printf("Kind of test,");
     for(int i = 0; i < runs; ++i){
         if(i != runs-1){
             printf("%li runs,", run[i].times_to_run);
         }else{
-            printf("%li runs\n", run[i].times_to_run);
+            printf("%li runs,Average time\n", run[i].times_to_run);
         }
     }
     printf("%s",test_type);
@@ -36,9 +51,11 @@ void print_csv(benchmark_runs* run, int32_t runs, const char* test_type){
         if(i != runs-1){
             printf("%f ms,", run[i].time_taken_in_usec/1000.0);
         }else{
-            printf("%f ms\n", run[i].time_taken_in_usec/1000.0);
+            printf("%f ms,%f\n", run[i].time_taken_in_usec/1000.0, average(observations_y, runs));
         }
     }
+    printf("f(x) = %f * x + %f\n", linear_coefficient_b, linear_coefficient_a);
+    printf("R Squared: %f\n", r_squared);
 }
 
 uint32_t kolmogorov_smirnov_test(uint32_t value){
@@ -59,4 +76,34 @@ uint32_t kolmogorov_smirnov_test(uint32_t value){
 		result = (diff > result) ? diff : result;
 	}
 	return (uint32_t)result;
+}
+
+float average(float* observations, int32_t values){
+    float sum = 0.0;
+    for(int i = 0; i < values; ++i){
+        sum += observations[i];
+    }
+    return sum/values;
+}
+
+float variance(float* observations, int32_t values){
+    float average_x = average(observations, values);
+    float sum = 0;
+    for(int i = 0; i < values; ++i){
+        sum += (observations[i] - average_x)*(observations[i] - average_x);
+    }
+    return sum;
+}
+
+float covariance(float* observations_x, float* observations_y, int32_t values){
+    float average_x = average(observations_x, values); float average_y = average(observations_y, values);
+    float sum = 0;
+    for(int i = 0; i < values; ++i){
+        sum += (observations_x[i] - average_x)*(observations_y[i] - average_y);
+    }
+    return sum;
+}
+
+float linear_function(float a, float b, float x){
+    return a+b*x;
 }
