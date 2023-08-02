@@ -29,11 +29,11 @@ void print_csv(benchmark_runs* run, int32_t runs, const char* test_type){
         observations_x[i] = (float)run[i].times_to_run;
         observations_y[i] = (float)run[i].time_taken_in_usec/1000.0;
     }
-    float linear_coefficient_b = covariance(observations_x, observations_y, runs)/variance(observations_x, runs);
-    float linear_coefficient_a = average(observations_y, runs) - linear_coefficient_b * average(observations_x, runs);
+    float coefficient_b = covariance(observations_x, observations_y, runs)/variance(observations_x, runs);
+    float coefficient_a = average(observations_y, runs) - coefficient_b * average(observations_x, runs);
     float res_square = 0.0; float tot_square = 0.0;
     for(int i = 0; i < runs; ++i){
-        float temp_res = (observations_y[i]-linear_function(linear_coefficient_a,linear_coefficient_b,observations_x[i]));
+        float temp_res = (observations_y[i]-linear_function(coefficient_a,coefficient_b,observations_x[i]));
         res_square += temp_res*temp_res;
         tot_square += (observations_y[i]-average(observations_y, runs))*(observations_y[i]-average(observations_y, runs));
     }
@@ -43,7 +43,7 @@ void print_csv(benchmark_runs* run, int32_t runs, const char* test_type){
         if(i != runs-1){
             printf("%li runs,", run[i].times_to_run);
         }else{
-            printf("%li runs,Average time\n", run[i].times_to_run);
+            printf("%li runs,f_r(x) = a+ b \\cdot x, R^2)\n", run[i].times_to_run);
         }
     }
     printf("%s",test_type);
@@ -51,11 +51,9 @@ void print_csv(benchmark_runs* run, int32_t runs, const char* test_type){
         if(i != runs-1){
             printf("%f ms,", run[i].time_taken_in_usec/1000.0);
         }else{
-            printf("%f ms,%f\n", run[i].time_taken_in_usec/1000.0, average(observations_y, runs));
+            printf("%f ms,f_r(x)=%f+%f \\cdot x, %f\n", run[i].time_taken_in_usec/1000.0, coefficient_a, coefficient_b, r_squared);
         }
     }
-    printf("f(x) = %f * x + %f\n", linear_coefficient_b, linear_coefficient_a);
-    printf("R Squared: %f\n", r_squared);
 }
 
 uint32_t kolmogorov_smirnov_test(uint32_t value){
