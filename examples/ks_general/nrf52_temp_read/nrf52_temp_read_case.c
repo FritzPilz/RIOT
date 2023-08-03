@@ -73,7 +73,8 @@ void launch_test_case(KS_Test_State* ks_state){
 		#endif
 		clear_empirical_function();
 	}
-	print_csv(test_runs, runs, "Femtocontainer,");
+	print_csv_header(test_runs, runs);
+	print_csv_body(test_runs, runs, "Temperature FC in ms,");
 	
 	printf("Start reference test:\n");
 	for(int i = 0; i < runs; ++i){
@@ -87,7 +88,7 @@ void launch_test_case(KS_Test_State* ks_state){
 		#endif
 		clear_empirical_function();
 	}
-	print_csv(test_runs, runs, "Non-Containerized,");
+	print_csv_body(test_runs, runs, "Temperature Plain in ms,");
 }
 
 void create_function(benchmark_runs* run){

@@ -5,7 +5,7 @@
 #include "bpf/shared.h"
 #include "../ks_test.h"
 #include "../utility/utility_ks.h"
-#include "bpf/random_ks_bpf.bin.h"
+#include "bpf/incremental_read_only_ks_bpf.bin.h"
 
 #define runs 5
 
@@ -23,8 +23,8 @@ void run_bpf_test(bpf_t* ks_bpf, kolmogorov_ctx_t* ctx, benchmark_runs* test);
 
 void launch_test_case(KS_Test_State* ks_state){
 	bpf_t ks_bpf = {
-	    .application = random_ks_bpf_bin,
-    	.application_len = sizeof(random_ks_bpf_bin),
+	    .application = incremental_read_only_ks_bpf_bin,
+    	.application_len = sizeof(incremental_read_only_ks_bpf_bin),
         .stack = _stack,
 	    .stack_size = sizeof(_stack)
     };
@@ -52,7 +52,7 @@ void launch_test_case(KS_Test_State* ks_state){
 		clear_empirical_function();
 	}
 	print_csv_header(test_runs, runs);
-	print_csv_body(test_runs, runs, "Random FC in ms,");
+	print_csv_body(test_runs, runs, "Incremental FC in ms,");
 
 	printf("Start reference test:\n");
 	for(int i = 0; i < runs; ++i){
@@ -66,7 +66,7 @@ void launch_test_case(KS_Test_State* ks_state){
 		#endif
 		clear_empirical_function();
 	}
-	print_csv_body(test_runs, runs, "Random Plain in ms,");
+	print_csv_body(test_runs, runs, "Incremental Plain in ms,");
 }
 
 void create_function(benchmark_runs* run){
@@ -82,7 +82,10 @@ void run_bpf_test(bpf_t* ks_bpf, kolmogorov_ctx_t* ctx, benchmark_runs* test){
 	uint32_t start_time = xtimer_usec_from_ticks(xtimer_now());
 
 	for(uint32_t i = 0; i < test->times_to_run; ++i){
-		ctx->kolmogorov_ctx->value = xtimer_usec_from_ticks(xtimer_now())%(function_size*granularity);
+        ctx->kolmogorov_ctx->value = 0;
+        for(uint32_t j = 0; j < i; ++j){
+            ++ctx->kolmogorov_ctx->value;
+        }
 		bpf_execute_ctx(ks_bpf, ctx, sizeof(*ctx), &res);
 	}
 

@@ -22,7 +22,18 @@ int main(void){
     launch_test_case(&ks_state);
 }
 
-void print_csv(benchmark_runs* run, int32_t runs, const char* test_type){
+void print_csv_header(benchmark_runs* run, int32_t runs){
+    printf(",");
+    for(int i = 0; i < runs; ++i){
+        if(i != runs-1){
+            printf("%li,", run[i].times_to_run);
+        }else{
+            printf("%li,Regression Slope, Regression Intercept, R^2\n", run[i].times_to_run);
+        }
+    }
+}
+
+void print_csv_body(benchmark_runs* run, int32_t runs, const char* test_type){
     float* observations_x = (float*)calloc(runs, sizeof(float));
     float* observations_y = (float*)calloc(runs, sizeof(float));
     for(int i = 0; i < runs; ++i){
@@ -38,20 +49,12 @@ void print_csv(benchmark_runs* run, int32_t runs, const char* test_type){
         tot_square += (observations_y[i]-average(observations_y, runs))*(observations_y[i]-average(observations_y, runs));
     }
     float r_squared = 1.0 - res_square/tot_square;
-    printf("Kind of test,");
-    for(int i = 0; i < runs; ++i){
-        if(i != runs-1){
-            printf("%li runs,", run[i].times_to_run);
-        }else{
-            printf("%li runs,f_r(x) = a+ b \\cdot x, R^2)\n", run[i].times_to_run);
-        }
-    }
     printf("%s",test_type);
     for(int i = 0; i < runs; ++i){
         if(i != runs-1){
-            printf("%f ms,", run[i].time_taken_in_usec/1000.0);
+            printf("%f,", run[i].time_taken_in_usec/1000.0);
         }else{
-            printf("%f ms,f_r(x)=%f+%f \\cdot x, %f\n", run[i].time_taken_in_usec/1000.0, coefficient_a, coefficient_b, r_squared);
+            printf("%f,%f,%f,%f\n", run[i].time_taken_in_usec/1000.0, coefficient_b, coefficient_a, r_squared);
         }
     }
 }

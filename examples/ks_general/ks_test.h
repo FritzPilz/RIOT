@@ -12,7 +12,8 @@ typedef struct benchmark_runs{
 void create_function(benchmark_runs* run);
 void run_reference_test(benchmark_runs* test);
 
-void print_csv(benchmark_runs* run, int32_t runs, const char* test_type);
+void print_csv_header(benchmark_runs* run, int32_t runs);
+void print_csv_body(benchmark_runs* run, int32_t runs, const char* test_type);
 uint32_t kolmogorov_smirnov_test(uint32_t value);
 
 float average(float* observations, int32_t values);
