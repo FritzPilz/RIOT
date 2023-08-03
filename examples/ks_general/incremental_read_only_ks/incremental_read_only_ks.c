@@ -52,7 +52,7 @@ void launch_test_case(KS_Test_State* ks_state){
 		clear_empirical_function();
 	}
 	print_csv_header(test_runs, runs);
-	print_csv_body(test_runs, runs, "Incremental FC in ms,");
+	print_csv_body(test_runs, runs, "Incremental RO FC in ms,");
 
 	printf("Start reference test:\n");
 	for(int i = 0; i < runs; ++i){
@@ -66,7 +66,7 @@ void launch_test_case(KS_Test_State* ks_state){
 		#endif
 		clear_empirical_function();
 	}
-	print_csv_body(test_runs, runs, "Incremental Plain in ms,");
+	print_csv_body(test_runs, runs, "Incremental RO Plain in ms,");
 }
 
 void create_function(benchmark_runs* run){

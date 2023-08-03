@@ -65,20 +65,26 @@ int main(void)
 
     int argc = 1;
     char *argv[] = { "Test" };
+    int result;
+    xtimer_usleep(500);
+    printf("fib(24):\n");
+    xtimer_usleep(500);
+    printf("WASM results in ms,");
+    xtimer_usleep(500);
+    uint32_t time_taken = 0;
+    for(int i = 0; i < 20; ++i){
+        uint32_t start_time_run = xtimer_usec_from_ticks(xtimer_now());
+        result = iwasm_instance_exec_main(fibonacci_instance, argc, argv);
+        uint32_t end_time_run = xtimer_usec_from_ticks(xtimer_now());
+        time_taken += end_time_run-start_time_run;   
+        printf("%f,", (time_taken)/1000.0);
+        xtimer_usleep(500);
+    }
 
-    uint32_t start_time = xtimer_usec_from_ticks(xtimer_now());   
-    int result = iwasm_instance_exec_main(fibonacci_instance, argc, argv);
-    uint32_t mid_time = xtimer_usec_from_ticks(xtimer_now());
-    result = iwasm_instance_exec_main(fibonacci_instance, argc, argv);
-    uint32_t end_time = xtimer_usec_from_ticks(xtimer_now());
+    printf("\n");
+    printf("Result: %ld\n", (unsigned long)result);
 
     wasm_runtime_deinstantiate(fibonacci_instance);
-
-    printf("fib(24):\n");
-    printf("Result: %ld\n", (unsigned long)result);
-    printf("Time taken: %fms\n", (end_time-start_time)/1000.0);
-    printf("First run: %fms\n", (mid_time-start_time)/1000.0);
-    printf("Second run: %fms\n", (end_time-mid_time)/1000.0);
 
     free(wasm_buf);
 

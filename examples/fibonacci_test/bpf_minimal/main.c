@@ -40,19 +40,22 @@ int main(void)
     int64_t result = 0;
 
     bpf_setup(&bpf);
-
-    uint32_t start_time = xtimer_usec_from_ticks(xtimer_now());    
-    bpf_execute(&bpf, (void*)ctx, sizeof(ctx), &result);
-    uint32_t mid_time = xtimer_usec_from_ticks(xtimer_now());
-    bpf_execute(&bpf, (void*)ctx, sizeof(ctx), &result);
-    uint32_t end_time = xtimer_usec_from_ticks(xtimer_now());
-
-
+    xtimer_usleep(500);
     printf("fib(%d):\n",ctx);
+    xtimer_usleep(500);
+    printf("BPF results in ms,");
+    xtimer_usleep(500);
+    uint32_t time_taken = 0;
+    for(int i = 0; i < 20; ++i){
+        uint32_t start_time_run = xtimer_usec_from_ticks(xtimer_now());
+        bpf_execute(&bpf, (void*)ctx, sizeof(ctx), &result);
+        uint32_t end_time_run = xtimer_usec_from_ticks(xtimer_now());
+        time_taken += end_time_run-start_time_run;
+        printf("%f,", (time_taken)/1000.0);
+        xtimer_usleep(500);
+    }
+    printf("\n");
     printf("Result: %ld\n", (unsigned long)result);
-    printf("Time taken: %fms\n", (end_time-start_time)/1000.0);
-    printf("First run: %fms\n", (mid_time-start_time)/1000.0);
-    printf("Second run: %fms\n", (end_time-mid_time)/1000.0);
 
     /* should never be reached */
     return 0;
