@@ -45,6 +45,7 @@ LINK_FLAGS := -z stack-size=4096 \
 		--export=__heap_base \
 		--export=__data_end \
 		--allow-undefined \
+		--no-entry \
 		--strip-all \
 		--export-dynamic \
 		-error-limit=0 \
@@ -52,14 +53,12 @@ LINK_FLAGS := -z stack-size=4096 \
 		-O3 \
 		--gc-sections\
 		--initial-memory=65536 \
-		--no-entry \
-		#
 
 # --initial-memory may only be set in 64kB steps (pagesize of WASM)
 # even though this one page is 64kB
 #	- data starts at 0, (1024 is chosen by lld)
-#	- stack starts at 4kB growing down
-#	- heap at 4kB growing up (see stack-size option)
+#	- stack starts at 4kB down
+#	- heap at 4kB up (see stack-size option)
 #	-> memory can be smaller than first page
 # without stack-size option stack will start at 64kB
 #	-> heap needs a second page
@@ -79,6 +78,7 @@ COMPILE_FLAGS := -Wall \
 #		--nostdlib \
 #		--nostdinc \
 #		-std=c++14 \
+#
 
 %.show: %.wasm
 	wasm2wat $<
@@ -103,18 +103,6 @@ COMPILE_FLAGS := -Wall \
 
 %.wat: %.wasm Makefile
 	wasm2wat -o $@ $<
-
-hello.wasm:
-
-ifeq ($(COPY_HELLO),YES)
-hello.wasm: hello_prebuild.wasm
-	@echo "!! NO wasm-ld(-VERSION) found  !!"
-	@echo "!! copying hello_prebuild.wasm !! "
-	cp hello_prebuild.wasm hello.wasm
-else
-hello_prebuild.wasm: hello.wasm
-	cp hello.wasm hello_prebuild.wasm
-endif
 
 
 .PHONY: FORCE

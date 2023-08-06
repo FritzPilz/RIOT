@@ -20,16 +20,15 @@ GRANULARITY ?= 4
 
 CFLAGS += -DVERBOSE_DEBUG=$(VERBOSE_DEBUG) -DFUNCTION_SIZE=$(FUNCTION_SIZE) -DGRANULARITY=$(GRANULARITY)
 
+USEMODULE += bpf
 USEMODULE += $(TESTCASE)
 USEMODULE += ks_utility
-USEMODULE += bpf
 USEMODULE += xtimer
 USEMODULE += printf_float
 
-DIRS += $(CURDIR)/$(TESTCASE) $(CURDIR)/utility
 BLOBS += $(TESTCASE)/bpf/$(TESTCASE)_bpf.bin
-
-
 INCLUDES += -I$(CURDIR)/bin/$(BOARD)/application_$(APPLICATION)/blobs/blob/$(TESTCASE)/
+
+DIRS += $(CURDIR)/$(TESTCASE) $(CURDIR)/utility
 
 include $(RIOTBASE)/Makefile.include

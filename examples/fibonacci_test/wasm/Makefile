@@ -14,7 +14,6 @@ USEMODULE += printf_float
 BLOBS += hello.wasm
 
 CFLAGS += -DTHREAD_STACKSIZE_MAIN='(4 * 1024)'
-CFLAGS += -DNIMBLE_HOST_STACKSIZE='(4 * 1024)'
 export WAMR_CONFIG := $(abspath config.cmake)
 
 # Comment this out to disable code in RIOT that does safety checking

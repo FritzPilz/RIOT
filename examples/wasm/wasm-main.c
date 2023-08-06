@@ -32,10 +32,11 @@ int main(void)
 {
     printf("iwasm_initilised: %s\n", telltruth(iwasm_runtime_init()));
 
-    int app_argc = 1;
-    const char *app_argv[] = {24};
-
-    int ret = wamr_run_cp(hello_wasm, hello_wasm_len, app_argc, app_argv);
+    int app_argc = 2;
+    const char *app_argv[] = {"test", "bob"};
+    int ret = wamr_run_cp(test_wasm, test_wasm_len, app_argc, app_argv);
+    printf("ret = %d\n", ret);
+    ret = wamr_run_cp(hello_wasm, hello_wasm_len, app_argc, app_argv);
     printf("ret = %d\n", ret);
 
     iwasm_runtime_destroy();

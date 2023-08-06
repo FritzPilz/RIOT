@@ -13,7 +13,7 @@
 #include "wasm_export.h"
 
 /* execs the main function in an instantiated module */
-static int iwasm_instance_exec_main(wasm_module_inst_t module_inst, int argc, char **argv)
+int iwasm_instance_exec_main(wasm_module_inst_t module_inst, int argc, char **argv)
 {
     /* exception memory is part of instance -> no buffer need */
     const char *exception = 0;
@@ -69,15 +69,32 @@ int iwasm_bytecode_exec_main(uint8_t *bytecode, size_t bytecode_len, int argc, c
     return ret;
 }
 
-/* running this initialises the wamr runtime*/
 bool iwasm_runtime_init(void)
 {
     RuntimeInitArgs init_args;
+/* chose allocator non defaults to system allocator */
+#define FUNC_ALLOC
+// #define POOL_ALLOC
+
     memset(&init_args, 0, sizeof(RuntimeInitArgs));
-    /* using default system allocator, pool allocator and
-     * and allocator function hooks are available
-     * see <wamr>/core/iwasm/include/wasm_export.h l99..*/
+#ifdef POOL_ALLOC
+    static char global_heap_buf[128 * 1024] = { 0 };//(256 kB)
+
+    init_args.mem_alloc_type = Alloc_With_Pool;
+    init_args.mem_alloc_option.pool.heap_buf = global_heap_buf;
+    init_args.mem_alloc_option.pool.heap_size = sizeof(global_heap_buf);
+#elif defined(FUNC_ALLOC)
+    init_args.mem_alloc_type = Alloc_With_Allocator;
+/*deactivate Wpedantic for some lines*/
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wpedantic"
+    init_args.mem_alloc_option.allocator.malloc_func = malloc;
+    init_args.mem_alloc_option.allocator.realloc_func = realloc;
+    init_args.mem_alloc_option.allocator.free_func = free;
+#pragma GCC diagnostic pop
+#else
     init_args.mem_alloc_type = Alloc_With_System_Allocator;
+#endif
 
     /* initialize runtime environment */
     if (!wasm_runtime_full_init(&init_args)) {
