@@ -6,7 +6,7 @@ WAMR_CORE = $(WAMR_BASE)/core
 
 SHARED_LIB_ROOT = $(WAMR_CORE)/shared
 
-TESTCASE ?= random_ks_wasm
+TESTCASE ?= incremental_read_only_ks
 
 BOARD ?= microbit-v2
 
@@ -25,8 +25,8 @@ GRANULARITY ?= 4
 CFLAGS += -DVERBOSE_DEBUG=$(VERBOSE_DEBUG) -DFUNCTION_SIZE=$(FUNCTION_SIZE) -DGRANULARITY=$(GRANULARITY)
 
 INCLUDES += -I$(CURDIR)/bin/$(BOARD)/application_$(APPLICATION)/blobs/blob
-INCLUDES += -I$(WAMR_BASE)/core/app-framework/app-native-shared
-INCLUDES += -I${WAMR_CORE}/shared/utils
+#INCLUDES += -I$(WAMR_BASE)/core/app-framework/app-native-shared
+#INCLUDES += -I${WAMR_CORE}/shared/utils
 
 USEPKG += wamr
 USEMODULE += $(TESTCASE)
@@ -37,7 +37,7 @@ USEMODULE += printf_float
 BLOBS += $(TESTCASE).wasm
 
 CFLAGS += -DTHREAD_STACKSIZE_MAIN='(4 * 1024)'
-CFLAGS := $(subst -Wstrict-prototypes,,$(CFLAGS))
+#CFLAGS := $(subst -Wstrict-prototypes,,$(CFLAGS))
 export WAMR_CONFIG := $(abspath config.cmake)
 
 all: $(TESTCASE).wasm

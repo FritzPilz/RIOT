@@ -82,7 +82,7 @@ void run_bpf_test(bpf_t* ks_bpf, kolmogorov_ctx_t* ctx, benchmark_runs* test){
 	uint32_t start_time = xtimer_usec_from_ticks(xtimer_now());
 
 	for(uint32_t i = 0; i < test->times_to_run; ++i){
-		ctx->kolmogorov_ctx->value = i;
+		ctx->kolmogorov_ctx->value = 100;
 		bpf_execute_ctx(ks_bpf, ctx, sizeof(*ctx), &res);
 	}
 

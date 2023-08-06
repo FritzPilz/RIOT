@@ -1,7 +1,7 @@
 # name of your application
-MODULE = random_ks_wasm
+MODULE = incremental_read_only_ks
 
-TESTCASE = random_ks_wasm
+TESTCASE = incremental_read_only_ks
 
 # If no BOARD is found in the environment, use this default:
 BOARD ?= microbit-v2
