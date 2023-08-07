@@ -69,7 +69,7 @@ void launch_test_case(KS_Test_State* ks_state){
 
 		#if(VERBOSE_DEBUG == 1)
 			printf("Result: %li\n", ks_state->result);
-			print_list(&ks_state);
+			print_list(ks_state);
 		#endif
 		clear_empirical_function();
 	}
@@ -84,7 +84,7 @@ void launch_test_case(KS_Test_State* ks_state){
 		run_reference_test(&test_runs[i]);
 
 		#if(VERBOSE_DEBUG == 1)
-			print_list(&ks_state);
+			print_list(ks_state);
 		#endif
 		clear_empirical_function();
 	}
