@@ -21,8 +21,8 @@ static benchmark_runs test_runs[runs] =
 	{.times_to_run = 4096, .time_taken_in_usec = 0}
 };
 
-static wasm_module_t fibonacci_module;
-static wasm_module_inst_t fibonacci_instance = NULL;
+static wasm_module_t random_module;
+static wasm_module_inst_t random_instance = NULL;
 
 int iwasm_instance_exec_main(wasm_module_inst_t module_inst, int argc, char **argv);
 bool iwasm_runtime_init(void);
@@ -73,15 +73,15 @@ void create_function(benchmark_runs* run){
 
 void run_wasm_test(benchmark_runs* test){
 	create_function(test);
-	int argc = 2;
+	int argc = 1;
 	char buf[10];
 
 	uint32_t start_time = xtimer_usec_from_ticks(xtimer_now());
     for(uint32_t i = 0; i < test->times_to_run; ++i){
 		uint32_t value = xtimer_usec_from_ticks(xtimer_now())%(function_size*granularity);
 		snprintf(buf, sizeof(buf), "%lu", value);
-		char *argv[] = { "100", buf };
-        iwasm_instance_exec_main(fibonacci_instance, argc, argv);
+		char *argv[] = { buf };
+        iwasm_instance_exec_main(random_instance, argc, argv);
     }
 
 	uint32_t end_time = xtimer_usec_from_ticks(xtimer_now());
@@ -110,13 +110,13 @@ int32_t prepare_wasm_run(uint8_t* wasm_buf){
 	memcpy(wasm_buf, random_ks_wasm, sizeof(random_ks_wasm));
 
 	char error_buf[128];
-    if (!(fibonacci_module = wasm_runtime_load(wasm_buf, sizeof(random_ks_wasm),
+    if (!(random_module = wasm_runtime_load(wasm_buf, sizeof(random_ks_wasm),
         error_buf, sizeof(error_buf)))) {
         puts(error_buf);
 		return -1;
     }
 
-    if (!(fibonacci_instance = wasm_runtime_instantiate(fibonacci_module, 8 * 1024,
+    if (!(random_instance = wasm_runtime_instantiate(random_module, 8 * 1024,
         8 * 1024, error_buf, sizeof(error_buf)))) {
         puts(error_buf);
         return -1;
@@ -126,6 +126,6 @@ int32_t prepare_wasm_run(uint8_t* wasm_buf){
 }
 
 void cleanup_wasm(uint8_t* wasm_buf){
-	wasm_runtime_deinstantiate(fibonacci_instance);
+	wasm_runtime_deinstantiate(random_instance);
     free(wasm_buf);
 }

@@ -1,7 +1,6 @@
 #include <stdint.h>
 #include "../../utility/utility_ks.h"
 
-extern int printf( const char *, ...);
 extern long strtol(const char *restrict nptr, char **restrict endptr, int base);
 
 #define WASM_EXPORT __attribute__((visibility("default")))

@@ -1,8 +1,6 @@
 # name of your application
 MODULE = incremental_read_only_ks
 
-TESTCASE = incremental_read_only_ks
-
 # If no BOARD is found in the environment, use this default:
 BOARD ?= microbit-v2
 
