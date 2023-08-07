@@ -1,8 +1,6 @@
 #include <stdint.h>
 #include "../../utility/utility_ks.h"
 
-extern int printf( const char *, ...);
-
 #define WASM_EXPORT __attribute__((visibility("default")))
 
 WASM_EXPORT int main(int argc, char **argv)
@@ -29,17 +27,6 @@ WASM_EXPORT int main(int argc, char **argv)
 		result = (diff > result) ? diff : result;
 	}
 	return (uint32_t)result;
-
-	printf("Arguments:\n");
-	for(int i = 0; i < argc-1; ++i){
-		printf("%u|", (uint32_t)argv[i][1*4-1]);
-		printf("%u|", (uint32_t)argv[i][2*4-1]);
-		printf("%u|", (uint32_t)argv[i][3*4-1]);
-		printf("%u|", (uint32_t)argv[i][4*4-1]);
-		printf("%u|", (uint32_t)argv[i][5*4-1]);
-		printf("%u|", (uint32_t)argv[i][6*4-1]);
-		printf("%u\n", (uint32_t)argv[i][7*4-1]);
-	}
 
 	return result;
 }
