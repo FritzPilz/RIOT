@@ -3,12 +3,13 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include "xtimer.h"
+#include "wasm/nrf52_temp_read_only.h"
 
 #include "../ks_test.h"
 #include "../utility/utility_ks.h"
 #include "wasm_export.h"
 
-#include "incremental_ks.wasm.h"
+#include "nrf52_temp_read_only.wasm.h"
 
 #define runs 5
 
@@ -50,7 +51,7 @@ void launch_test_case(KS_Test_State* ks_state){
 		clear_empirical_function();
 	}
 	print_csv_header(test_runs, runs);
-	print_csv_body(test_runs, runs, "Incremental WASM in ms,");
+	print_csv_body(test_runs, runs, "Temparature WASM in ms,");
 
 	printf("Start reference test:\n");
 	for(int i = 0; i < runs; ++i){
@@ -62,7 +63,15 @@ void launch_test_case(KS_Test_State* ks_state){
 		clear_empirical_function();
 	}
 	cleanup_wasm(wasm_buf);
-	print_csv_body(test_runs, runs, "Incremental Plain in ms,");
+	print_csv_body(test_runs, runs, "Temperature Plain in ms,");
+}
+
+inline uint64_t read_memory(volatile uint32_t address){
+	return *(volatile uint32_t*) address;
+}
+
+inline void write_memory(volatile uint32_t address, volatile uint64_t value){
+	*(volatile uint32_t *) address = value;
 }
 
 void create_function(benchmark_runs* run){
@@ -73,11 +82,18 @@ void create_function(benchmark_runs* run){
 
 void run_wasm_test(benchmark_runs* test){
 	create_function(test);
-	int argc = 1;
-	char *argv[] = { "100" };
+	char buf[10];
+	int argc = 2;
 
 	uint32_t start_time = xtimer_usec_from_ticks(xtimer_now());
     for(uint32_t i = 0; i < test->times_to_run; ++i){
+		write_memory(TASKS_START, 1);
+		while(read_memory(EVENTS_DATARDY)==0){}
+		write_memory(EVENTS_DATARDY, 0);
+		uint32_t value = read_memory(TEMP);
+		write_memory(TASKS_STOP, 1);
+		snprintf(buf, sizeof(buf), "%u", value);
+		char *argv[] = { "100", buf };
         iwasm_instance_exec_main(fibonacci_instance, argc, argv);
     }
 
@@ -91,7 +107,11 @@ void run_reference_test(benchmark_runs* test){
 	uint32_t start_time = xtimer_usec_from_ticks(xtimer_now());
 
 	for(uint32_t i = 0; i < test->times_to_run; ++i){
-		uint32_t value = xtimer_usec_from_ticks(xtimer_now())%(function_size*granularity);
+		write_memory(TASKS_START, 1);
+		while(read_memory(EVENTS_DATARDY)==0){}
+		write_memory(EVENTS_DATARDY, 0);
+		uint32_t value = read_memory(TEMP);
+		write_memory(TASKS_STOP, 1);
 		kolmogorov_smirnov_test(value);
 	}
 	 uint32_t end_time = xtimer_usec_from_ticks(xtimer_now());
@@ -100,14 +120,14 @@ void run_reference_test(benchmark_runs* test){
 
 int32_t prepare_wasm_run(uint8_t* wasm_buf){
 	iwasm_runtime_init();
-	wasm_buf = malloc(sizeof(incremental_ks_wasm));
+	wasm_buf = malloc(sizeof(nrf52_temp_read_only_wasm));
 	if(!wasm_buf){
 		return -1;
 	}
-	memcpy(wasm_buf, incremental_ks_wasm, sizeof(incremental_ks_wasm));
+	memcpy(wasm_buf, nrf52_temp_read_only_wasm, sizeof(nrf52_temp_read_only_wasm));
 
 	char error_buf[128];
-    if (!(fibonacci_module = wasm_runtime_load(wasm_buf, sizeof(incremental_ks_wasm),
+    if (!(fibonacci_module = wasm_runtime_load(wasm_buf, sizeof(nrf52_temp_read_only_wasm),
         error_buf, sizeof(error_buf)))) {
         puts(error_buf);
 		return -1;

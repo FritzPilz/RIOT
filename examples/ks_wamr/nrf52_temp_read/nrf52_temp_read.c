@@ -3,6 +3,7 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include "xtimer.h"
+#include "wasm/nrf52_temp_read.h"
 
 #include "../ks_test.h"
 #include "../utility/utility_ks.h"
@@ -50,7 +51,7 @@ void launch_test_case(KS_Test_State* ks_state){
 		clear_empirical_function();
 	}
 	print_csv_header(test_runs, runs);
-	print_csv_body(test_runs, runs, "Incremental WASM in ms,");
+	print_csv_body(test_runs, runs, "Temparature WASM in ms,");
 
 	printf("Start reference test:\n");
 	for(int i = 0; i < runs; ++i){
@@ -62,7 +63,15 @@ void launch_test_case(KS_Test_State* ks_state){
 		clear_empirical_function();
 	}
 	cleanup_wasm(wasm_buf);
-	print_csv_body(test_runs, runs, "Incremental Plain in ms,");
+	print_csv_body(test_runs, runs, "Temperature Plain in ms,");
+}
+
+inline uint64_t read_memory(volatile uint32_t address){
+	return *(volatile uint32_t*) address;
+}
+
+inline void write_memory(volatile uint32_t address, volatile uint64_t value){
+	*(volatile uint32_t *) address = value;
 }
 
 void create_function(benchmark_runs* run){
@@ -91,7 +100,11 @@ void run_reference_test(benchmark_runs* test){
 	uint32_t start_time = xtimer_usec_from_ticks(xtimer_now());
 
 	for(uint32_t i = 0; i < test->times_to_run; ++i){
-		uint32_t value = xtimer_usec_from_ticks(xtimer_now())%(function_size*granularity);
+		write_memory(TASKS_START, 1);
+		while(read_memory(EVENTS_DATARDY)==0){}
+		write_memory(EVENTS_DATARDY, 0);
+		uint32_t value = read_memory(TEMP);
+		write_memory(TASKS_STOP, 1);
 		kolmogorov_smirnov_test(value);
 	}
 	 uint32_t end_time = xtimer_usec_from_ticks(xtimer_now());
