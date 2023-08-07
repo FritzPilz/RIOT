@@ -5,9 +5,9 @@
 
 WASM_EXPORT int main(int argc, char **argv)
 {
-	int value = 100; int inc = 0;
-	for(int i = 0; i < value;++i){
-		++inc;
+	volatile int value = 0;
+	for(int i = 0; i < 100;++i){
+		++value;
 	}
 
 	for(uint32_t i = 0; i < function_size; ++i){

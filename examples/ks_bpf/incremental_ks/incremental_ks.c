@@ -96,7 +96,7 @@ void run_reference_test(benchmark_runs* test){
 	uint32_t start_time = xtimer_usec_from_ticks(xtimer_now());
 
 	for(uint32_t i = 0; i < test->times_to_run; ++i){
-		int value = 0;
+		volatile int value = 0;
 		for(int j = 0; j < 100; ++j){
 			++value;
 		}

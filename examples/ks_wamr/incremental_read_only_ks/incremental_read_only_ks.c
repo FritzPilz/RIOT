@@ -71,7 +71,7 @@ void create_function(benchmark_runs* run){
 
 void run_wasm_test(benchmark_runs* test){
 	create_function(test);
-		int argc = 0;
+	int argc = 0;
     char *argv[] = { };
 
 	uint32_t start_time = xtimer_usec_from_ticks(xtimer_now());
@@ -89,7 +89,7 @@ void run_reference_test(benchmark_runs* test){
 	uint32_t start_time = xtimer_usec_from_ticks(xtimer_now());
 
 	for(uint32_t i = 0; i < test->times_to_run; ++i){
-		int value = 0;
+		volatile int value = 0;
 		for(int j = 0; j < 100; ++j){
 			++value;
 		}

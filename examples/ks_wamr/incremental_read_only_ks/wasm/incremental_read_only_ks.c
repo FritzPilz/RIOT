@@ -4,11 +4,11 @@
 
 WASM_EXPORT int main(int argc, char **argv)
 {
-	int value = 100; int result = 0;
-	for(int i = 0; i < value;++i){
-		++result;
+	volatile int value = 0;
+	for(int i = 0; i < 100;++i){
+		++value;
 	}
 
-	return result;
+	return value;
 
 }
