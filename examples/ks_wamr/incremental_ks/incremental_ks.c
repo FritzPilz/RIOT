@@ -8,7 +8,7 @@
 #include "../utility/utility_ks.h"
 #include "wasm_export.h"
 
-#include "incremental_read_only_ks.wasm.h"
+#include "incremental_ks.wasm.h"
 
 #define runs 5
 
@@ -32,7 +32,6 @@ int32_t prepare_wasm_run(uint8_t* wasm_buf);
 void cleanup_wasm(uint8_t* wasm_buf);
 
 void launch_test_case(KS_Test_State* ks_state){	
-	puts("Fibonacci Test");
 	++ks_state->value;
 
     uint8_t * wasm_buf = NULL;
@@ -40,6 +39,8 @@ void launch_test_case(KS_Test_State* ks_state){
 
 	printf("Start wasm test:\n");
     for(int i = 0; i < runs; ++i){
+	
+
 		run_wasm_test(&test_runs[i]);
 
 		#if(VERBOSE_DEBUG == 1)
@@ -49,7 +50,7 @@ void launch_test_case(KS_Test_State* ks_state){
 		clear_empirical_function();
 	}
 	print_csv_header(test_runs, runs);
-	print_csv_body(test_runs, runs, "Incremental WASM RO in ms,");
+	print_csv_body(test_runs, runs, "Incremental WASM in ms,");
 
 	printf("Start reference test:\n");
 	for(int i = 0; i < runs; ++i){
@@ -61,7 +62,7 @@ void launch_test_case(KS_Test_State* ks_state){
 		clear_empirical_function();
 	}
 	cleanup_wasm(wasm_buf);
-	print_csv_body(test_runs, runs, "Incremental WASM RO Plain in ms,");
+	print_csv_body(test_runs, runs, "Incremental Plain in ms,");
 }
 
 void create_function(benchmark_runs* run){
@@ -71,9 +72,9 @@ void create_function(benchmark_runs* run){
 }
 
 void run_wasm_test(benchmark_runs* test){
-	int argc = 1;
-    char *argv[] = { "100" };
 	create_function(test);
+	int argc = 1;
+	char *argv[] = { "100" };
 
 	uint32_t start_time = xtimer_usec_from_ticks(xtimer_now());
     for(uint32_t i = 0; i < test->times_to_run; ++i){
@@ -99,14 +100,14 @@ void run_reference_test(benchmark_runs* test){
 
 int32_t prepare_wasm_run(uint8_t* wasm_buf){
 	iwasm_runtime_init();
-	wasm_buf = malloc(sizeof(incremental_read_only_ks_wasm));
+	wasm_buf = malloc(sizeof(incremental_ks_wasm));
 	if(!wasm_buf){
 		return -1;
 	}
-	memcpy(wasm_buf, incremental_read_only_ks_wasm, sizeof(incremental_read_only_ks_wasm));
+	memcpy(wasm_buf, incremental_ks_wasm, sizeof(incremental_ks_wasm));
 
 	char error_buf[128];
-    if (!(fibonacci_module = wasm_runtime_load(wasm_buf, sizeof(incremental_read_only_ks_wasm),
+    if (!(fibonacci_module = wasm_runtime_load(wasm_buf, sizeof(incremental_ks_wasm),
         error_buf, sizeof(error_buf)))) {
         puts(error_buf);
 		return -1;
@@ -117,6 +118,7 @@ int32_t prepare_wasm_run(uint8_t* wasm_buf){
         puts(error_buf);
         return -1;
     }
+
 	return 0;
 }
 
