@@ -97,7 +97,10 @@ void run_reference_test(benchmark_runs* test){
 	uint32_t start_time = xtimer_usec_from_ticks(xtimer_now());
 
 	for(uint32_t i = 0; i < test->times_to_run; ++i){
-		uint32_t value = xtimer_usec_from_ticks(xtimer_now())%(function_size*granularity);
+		int value = 0;
+		for(int j = 0; j < 100; ++j){
+			++value;
+		}
 		kolmogorov_smirnov_test(value);
 	}
 	 uint32_t end_time = xtimer_usec_from_ticks(xtimer_now());
