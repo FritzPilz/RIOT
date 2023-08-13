@@ -27,7 +27,6 @@ static wasm_module_inst_t incremental_read_only_instance = NULL;
 int iwasm_instance_exec_main(wasm_module_inst_t module_inst, int argc, char **argv);
 bool iwasm_runtime_init(void);
 
-void run_wasm_test(benchmark_runs* test);
 int32_t prepare_wasm_run(uint8_t* wasm_buf);
 void cleanup_wasm(uint8_t* wasm_buf);
 
