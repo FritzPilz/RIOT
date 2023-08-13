@@ -24,9 +24,9 @@
 #include "bpf/nrf52_temp_read_only_bpf.h"
 
 #include "bpf.h"
+#include "../utility/include/test_ks.h"
+#include "../utility/include/shared_ks.h"
 #include "bpf/nrf52_temp_read_only_bpf.bin.h"
-#include "../utility/utility_ks.h"
-#include "../ks_test.h"
 
 #define runs 5
 

@@ -3,8 +3,8 @@
 
 #include "bpf.h"
 #include "bpf/shared.h"
-#include "../ks_test.h"
-#include "../utility/utility_ks.h"
+#include "../utility/include/test_ks.h"
+#include "../utility/include/shared_ks.h"
 #include "bpf/random_ks_bpf.bin.h"
 
 #define runs 5

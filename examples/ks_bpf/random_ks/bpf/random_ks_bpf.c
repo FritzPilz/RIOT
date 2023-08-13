@@ -1,8 +1,5 @@
-/* TODO: provide a way to make code from other modules accessible (random.h and xtimer.h can't include inttypes.h) */
-
-#include "../../utility/utility_ks.h"
+#include "../../utility/include/shared_ks.h"
 #include "bpf/bpfapi/helpers.h"
-#include "random_ks_bpf.h"
 
 uint32_t kolmogorov_smirnov_test(kolmogorov_ctx_t* ctx){
 	for(int i = 0; i < ctx->kolmogorov_ctx->values; ++i){

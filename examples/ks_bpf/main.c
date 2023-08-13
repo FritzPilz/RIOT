@@ -1,9 +1,9 @@
 #include <stdio.h>
 #include "bpf.h"
 #include "bpf/shared.h"
-#include "ks_test.h"
-#include "utility/utility_ks.h"
-#include "utility/math.h"
+#include "utility/include/test_ks.h"
+#include "utility/include/shared_ks.h"
+#include "utility/include/math.h"
 
 int32_t expected_function[function_size];
 int32_t empirical_function[function_size];

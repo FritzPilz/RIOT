@@ -1,4 +1,4 @@
-#include "../../utility/utility_ks.h"
+#include "../../utility/include/shared_ks.h"
 #include "nrf52_temp_read_only_bpf.h"
 
 inline uint64_t read_memory(volatile uint64_t address);

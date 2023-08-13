@@ -18,10 +18,6 @@ typedef struct {
     __bpf_shared_ptr(KS_Test_State *, kolmogorov_ctx);
 } kolmogorov_ctx_t;
 
-void print_list(KS_Test_State* run);
-void clear_empirical_function(void);
-void launch_test_case(KS_Test_State* ks_state);
-
 #ifdef FUNCTION_SIZE
 #define function_size FUNCTION_SIZE
 #else
