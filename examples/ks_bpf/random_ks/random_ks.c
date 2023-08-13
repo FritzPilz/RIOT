@@ -19,8 +19,6 @@ static benchmark_runs test_runs[runs] =
 	{.times_to_run = 4096, .time_taken_in_usec = 0}
 };
 
-void run_bpf_test(bpf_t* ks_bpf, kolmogorov_ctx_t* ctx, benchmark_runs* test);
-
 void launch_test_case(KS_Test_State* ks_state){
 	bpf_t ks_bpf = {
 	    .application = random_ks_bpf_bin,

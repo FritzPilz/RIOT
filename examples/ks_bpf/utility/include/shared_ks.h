@@ -14,7 +14,7 @@ typedef struct KS_Test_State{
     uint32_t values;
 } KS_Test_State;
 
-typedef struct {
+typedef struct kolmogorov_ctx_t{
     __bpf_shared_ptr(KS_Test_State *, kolmogorov_ctx);
 } kolmogorov_ctx_t;
 

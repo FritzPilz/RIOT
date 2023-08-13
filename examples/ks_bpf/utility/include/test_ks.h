@@ -2,8 +2,10 @@
 #define KS_TEST
 
 #include "bpf/shared.h"
+#include "bpf.h"
 
 typedef struct KS_Test_State KS_Test_State;
+typedef struct kolmogorov_ctx_t kolmogorov_ctx_t;
 
 typedef struct benchmark_runs{
     uint32_t times_to_run;
@@ -13,6 +15,7 @@ typedef struct benchmark_runs{
 
 void create_function(benchmark_runs* run);
 void run_reference_test(benchmark_runs* test);
+void run_bpf_test(bpf_t* ks_bpf, kolmogorov_ctx_t* ctx, benchmark_runs* test);
 
 void print_list(KS_Test_State* run);
 void clear_empirical_function(void);
