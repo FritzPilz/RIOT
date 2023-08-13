@@ -4,8 +4,8 @@
 #include <stdlib.h>
 #include "xtimer.h"
 
-#include "../ks_test.h"
-#include "../utility/utility_ks.h"
+#include "../utility/include/test_ks.h"
+#include "../utility/include/shared_ks.h"
 #include "wasm_export.h"
 
 #include "incremental_read_only_ks.wasm.h"

@@ -1,5 +1,5 @@
 #include <stdint.h>
-#include "../../utility/utility_ks.h"
+#include "../../utility/include/shared_ks.h"
 
 extern long strtol(const char *restrict nptr, char **restrict endptr, int base);
 

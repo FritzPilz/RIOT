@@ -3,6 +3,8 @@
 
 #include "bpf/shared.h"
 
+typedef struct KS_Test_State KS_Test_State;
+
 typedef struct benchmark_runs{
     uint32_t times_to_run;
     uint32_t time_taken_in_usec;
@@ -11,6 +13,10 @@ typedef struct benchmark_runs{
 
 void create_function(benchmark_runs* run);
 void run_reference_test(benchmark_runs* test);
+
+void print_list(KS_Test_State* run);
+void clear_empirical_function(void);
+void launch_test_case(KS_Test_State* ks_state);
 
 void print_csv_header(benchmark_runs* run, int32_t runs);
 void print_csv_body(benchmark_runs* run, int32_t runs, const char* test_type);
