@@ -61,7 +61,7 @@ void launch_test_case(KS_Test_State* ks_state){
 		clear_empirical_function();
 	}
 	cleanup_wasm(wasm_buf);
-	print_csv_body(test_runs, runs, "Incremental RO WASM Plain in ms,");
+	print_csv_body(test_runs, runs, "Incremental Plain in ms,");
 }
 
 void create_function(benchmark_runs* run){
