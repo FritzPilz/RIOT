@@ -7,13 +7,15 @@
 #include "../utility/include/shared_ks.h"
 #include "bpf/incremental_ks_bpf.bin.h"
 
-#define runs 5
+#define runs 7
 
 static uint8_t _stack[512] = { 0 };
 static benchmark_runs test_runs[runs] =
 {
 	{.times_to_run = 1, .time_taken_in_usec = 0},
+	{.times_to_run = 4, .time_taken_in_usec = 0},
 	{.times_to_run = 8, .time_taken_in_usec = 0},
+	{.times_to_run = 12, .time_taken_in_usec = 0},
 	{.times_to_run = 64, .time_taken_in_usec = 0},
 	{.times_to_run = 512, .time_taken_in_usec = 0},
 	{.times_to_run = 4096, .time_taken_in_usec = 0}

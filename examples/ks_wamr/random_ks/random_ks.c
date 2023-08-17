@@ -10,12 +10,14 @@
 
 #include "random_ks.wasm.h"
 
-#define runs 5
+#define runs 7
 
 static benchmark_runs test_runs[runs] =
 {
 	{.times_to_run = 1, .time_taken_in_usec = 0},
+	{.times_to_run = 4, .time_taken_in_usec = 0},
 	{.times_to_run = 8, .time_taken_in_usec = 0},
+	{.times_to_run = 12, .time_taken_in_usec = 0},
 	{.times_to_run = 64, .time_taken_in_usec = 0},
 	{.times_to_run = 512, .time_taken_in_usec = 0},
 	{.times_to_run = 4096, .time_taken_in_usec = 0}
