@@ -92,7 +92,8 @@ endif
 ifeq (1,$(USE_NEWLIB_NANO))
   NEWLIB_NANO_INCLUDE_DIR ?= $(firstword $(wildcard $(NEWLIB_INCLUDE_DIR)/newlib-nano \
                                                     $(NEWLIB_INCLUDE_DIR)/newlib/nano \
-                                                    $(NEWLIB_INCLUDE_DIR)/nano))
+                                                    $(NEWLIB_INCLUDE_DIR)/nano) \
+  						    /usr/include/newlib/nano)
 
   ifneq (,$(NEWLIB_NANO_INCLUDE_DIR))
      # newlib-nano overrides newlib.h and its include dir should therefore go before

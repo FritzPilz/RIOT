@@ -34,6 +34,9 @@
 #include "panic.h"
 #include "sched.h"
 #include "vectors_cortexm.h"
+
+#include "SAU.h"
+
 #ifdef MODULE_PUF_SRAM
 #include "puf_sram.h"
 #endif
@@ -96,10 +99,16 @@ __attribute__((weak)) void post_startup (void)
 
 void reset_handler_default(void)
 {
+
     uint32_t *dst;
     const uint32_t *src = &_etext;
 
     cortexm_init_fpu();
+    
+    SAU_Region regions[3];
+
+    configureSAU(0, regions);
+    configureSAU(1, regions);
 
 #ifdef MODULE_PUF_SRAM
     puf_sram_init((uint8_t *)&_srelocate, SEED_RAM_LEN);
@@ -203,9 +212,10 @@ void reset_handler_default(void)
     /* initialize std-c library (this must be done after board_init) */
     extern void __libc_init_array(void);
     __libc_init_array();
-#endif
+#endif 
 
     /* startup the kernel */
+    __asm ("bkpt");
     kernel_init();
 }
 

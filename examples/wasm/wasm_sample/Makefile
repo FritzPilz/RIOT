@@ -45,6 +45,7 @@ LINK_FLAGS := -z stack-size=4096 \
 		--export=__heap_base \
 		--export=__data_end \
 		--allow-undefined \
+		--no-entry \
 		--strip-all \
 		--export-dynamic \
 		-error-limit=0 \
@@ -52,8 +53,6 @@ LINK_FLAGS := -z stack-size=4096 \
 		-O3 \
 		--gc-sections\
 		--initial-memory=65536 \
-		--no-entry \
-		#
 
 # --initial-memory may only be set in 64kB steps (pagesize of WASM)
 # even though this one page is 64kB
@@ -103,8 +102,6 @@ COMPILE_FLAGS := -Wall \
 
 %.wat: %.wasm Makefile
 	wasm2wat -o $@ $<
-
-hello.wasm:
 
 ifeq ($(COPY_HELLO),YES)
 hello.wasm: hello_prebuild.wasm

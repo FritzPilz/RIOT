@@ -1,5 +1,6 @@
 NATIVEINCLUDES += -DNATIVE_INCLUDES
 NATIVEINCLUDES += -I$(RIOTBOARD)/native/include/
+NATIVEINCLUDES += -I$(RIOTBASE)/core/lib/include/
 NATIVEINCLUDES += -I$(RIOTBASE)/core/include/
 NATIVEINCLUDES += -I$(RIOTBASE)/drivers/include/
 
@@ -100,6 +101,15 @@ ifneq (,$(filter periph_eeprom,$(FEATURES_USED)))
   TERMFLAGS += $(EEPROM_FILE_FLAGS)
 endif
 
+VCAN_IFNUM ?= 0
+VCAN_IFNAME ?= vcan0
+VCAN_IFACE ?= $(VCAN_IFNUM):$(VCAN_IFNAME)
+# set the default vcan interface
+ifneq (,$(filter periph_can,$(FEATURES_USED)))
+  PERIPH_CAN_FLAGS ?= --can $(VCAN_IFACE)
+  TERMFLAGS += $(PERIPH_CAN_FLAGS)
+endif
+
 TERMFLAGS += $(PORT)
 
 ASFLAGS =
@@ -122,9 +132,11 @@ all-valgrind: CFLAGS += -DHAVE_VALGRIND_H
 all-valgrind: NATIVEINCLUDES += $(shell pkg-config valgrind --cflags)
 all-gprof: CFLAGS += -pg
 all-gprof: LINKFLAGS += -pg
-all-asan: CFLAGS += -fsanitize=address -fno-omit-frame-pointer
-all-asan: CFLAGS += -DNATIVE_MEMORY
-all-asan: LINKFLAGS += -fsanitize=address -fno-omit-frame-pointer
+
+CFLAGS_ASAN += -fsanitize=address -fno-omit-frame-pointer -DNATIVE_MEMORY
+LINKFLAGS_ASAN += -fsanitize=address -fno-omit-frame-pointer
+all-asan: CFLAGS += $(CFLAGS_ASAN)
+all-asan: LINKFLAGS += $(LINKFLAGS_ASAN)
 all-asan: export AFL_USE_ASAN=1
 
 INCLUDES += $(NATIVEINCLUDES)

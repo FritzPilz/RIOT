@@ -187,6 +187,10 @@ extern int _i2c_scan(int argc, char **argv);
 extern int _loramac_handler(int argc, char **argv);
 #endif
 
+#ifdef MODULE_NANOCOAP_VFS
+extern int _nanocoap_get_handler(int argc, char **argv);
+#endif
+
 #ifdef MODULE_NICE
 extern int _sc_nice(int argc, char **argv);
 #endif
@@ -213,6 +217,21 @@ extern int _bootloader_handler(int argc, char **argv);
 
 #ifdef MODULE_GNRC_UDP_CMD
 extern int _gnrc_udp_cmd(int argc, char **argv);
+#endif
+#ifdef MODULE_BPF
+extern int _sc_bpf(int argc, char **argv);
+#endif
+
+#ifdef MODULE_MD5SUM
+extern int _vfs_md5sum_cmd(int argc, char **argv);
+#endif
+
+#ifdef MODULE_SHA1SUM
+extern int _vfs_sha1sum_cmd(int argc, char **argv);
+#endif
+
+#ifdef MODULE_SHA256SUM
+extern int _vfs_sha256sum_cmd(int argc, char **argv);
 #endif
 
 #ifdef MODULE_BPF
@@ -271,6 +290,18 @@ const shell_command_t _shell_command_list[] = {
 #endif
 #ifdef MODULE_RTT_CMD
     {"rtt", "control RTC peripheral interface",  _rtt_handler},
+#endif
+#ifdef MODULE_MD5SUM
+    {"md5sum", "Compute and check MD5 message digest", _vfs_md5sum_cmd},
+#endif
+#ifdef MODULE_SHA1SUM
+    {"sha1sum", "Compute and check SHA1 message digest", _vfs_sha1sum_cmd},
+#endif
+#ifdef MODULE_SHA256SUM
+    {"sha256sum", "Compute and check SHA256 message digest", _vfs_sha256sum_cmd},
+#endif
+#ifdef MODULE_NANOCOAP_VFS
+    {"ncget", "download a file from a CoAP server", _nanocoap_get_handler},
 #endif
 #ifdef MODULE_GNRC_IPV6_NIB
     {"nib", "Configure neighbor information base", _gnrc_ipv6_nib},

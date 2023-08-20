@@ -26,7 +26,9 @@
 #include <string.h>
 
 #include "assert.h"
+#include "net/coap.h"
 #include "net/gcoap.h"
+#include "net/nanocoap/cache.h"
 #include "net/sock/async/event.h"
 #include "net/sock/util.h"
 #include "mutex.h"
@@ -40,6 +42,8 @@
 #include "net/dsm.h"
 #endif
 
+#include "net/gcoap/forward_proxy.h"
+
 #define ENABLE_DEBUG 0
 #include "debug.h"
 
@@ -47,26 +51,27 @@
 #define NO_IMMEDIATE_REPLY (-1)
 
 /* End of the range to pick a random timeout */
-#define TIMEOUT_RANGE_END (CONFIG_COAP_ACK_TIMEOUT * CONFIG_COAP_RANDOM_FACTOR_1000 / 1000)
+#define TIMEOUT_RANGE_END (CONFIG_COAP_ACK_TIMEOUT_MS * CONFIG_COAP_RANDOM_FACTOR_1000 / 1000)
 
 /* Internal functions */
 static void *_event_loop(void *arg);
 static void _on_sock_udp_evt(sock_udp_t *sock, sock_async_flags_t type, void *arg);
-static void _process_coap_pdu(gcoap_socket_t *sock, sock_udp_ep_t *remote,
+static void _process_coap_pdu(gcoap_socket_t *sock, sock_udp_ep_t *remote, sock_udp_aux_tx_t *aux,
                               uint8_t *buf, size_t len, bool truncated);
-static void _tl_init_coap_socket(gcoap_socket_t *sock);
+static int _tl_init_coap_socket(gcoap_socket_t *sock, gcoap_socket_type_t type);
 static ssize_t _tl_send(gcoap_socket_t *sock, const void *data, size_t len,
-                        const sock_udp_ep_t *remote);
+                        const sock_udp_ep_t *remote, sock_udp_aux_tx_t *aux);
 static ssize_t _tl_authenticate(gcoap_socket_t *sock, const sock_udp_ep_t *remote,
                                 uint32_t timeout);
 static ssize_t _well_known_core_handler(coap_pkt_t* pdu, uint8_t *buf, size_t len, void *ctx);
 static void _cease_retransmission(gcoap_request_memo_t *memo);
-static size_t _handle_req(coap_pkt_t *pdu, uint8_t *buf, size_t len,
-                                                         sock_udp_ep_t *remote);
+static size_t _handle_req(gcoap_socket_t *sock, coap_pkt_t *pdu, uint8_t *buf,
+                          size_t len, sock_udp_ep_t *remote);
 static void _expire_request(gcoap_request_memo_t *memo);
 static void _find_req_memo(gcoap_request_memo_t **memo_ptr, coap_pkt_t *pdu,
                            const sock_udp_ep_t *remote, bool by_mid);
-static int _find_resource(const coap_pkt_t *pdu,
+static int _find_resource(gcoap_socket_type_t tl_type,
+                          coap_pkt_t *pdu,
                           const coap_resource_t **resource_ptr,
                           gcoap_listener_t **listener_ptr);
 static int _find_observer(sock_udp_ep_t **observer, sock_udp_ep_t *remote);
@@ -74,10 +79,16 @@ static int _find_obs_memo(gcoap_observe_memo_t **memo, sock_udp_ep_t *remote,
                                                        coap_pkt_t *pdu);
 static void _find_obs_memo_resource(gcoap_observe_memo_t **memo,
                                    const coap_resource_t *resource);
+static nanocoap_cache_entry_t *_cache_lookup_memo(gcoap_request_memo_t *cache_key);
+static void _cache_process(gcoap_request_memo_t *memo,
+                           coap_pkt_t *pdu);
+static ssize_t _cache_build_response(nanocoap_cache_entry_t *ce, coap_pkt_t *pdu,
+                                     uint8_t *buf, size_t len);
+static void _receive_from_cache_cb(void *arg);
 
 static int _request_matcher_default(gcoap_listener_t *listener,
                                     const coap_resource_t **resource,
-                                    const coap_pkt_t *pdu);
+                                    coap_pkt_t *pdu);
 
 #if IS_USED(MODULE_GCOAP_DTLS)
 static void _on_sock_dtls_evt(sock_dtls_t *sock, sock_async_flags_t type, void *arg);
@@ -92,6 +103,7 @@ const coap_resource_t _default_resources[] = {
 static gcoap_listener_t _default_listener = {
     &_default_resources[0],
     ARRAY_SIZE(_default_resources),
+    GCOAP_SOCKET_TYPE_UNDEF,
     NULL,
     NULL,
     _request_matcher_default
@@ -126,11 +138,12 @@ static char _msg_stack[GCOAP_STACK_SIZE];
 static event_queue_t _queue;
 static uint8_t _listen_buf[CONFIG_GCOAP_PDU_BUF_SIZE];
 static sock_udp_t _sock_udp;
+static event_callback_t _receive_from_cache;
 
 #if IS_USED(MODULE_GCOAP_DTLS)
 /* DTLS variables and definitions */
 #define SOCK_DTLS_CLIENT_TAG (2)
-
+static sock_udp_t _sock_dtls_base;
 static sock_dtls_t _sock_dtls;
 static kernel_pid_t _auth_waiting_thread;
 
@@ -147,11 +160,7 @@ static void *_event_loop(void *arg)
     memset(&local, 0, sizeof(sock_udp_ep_t));
     local.family = AF_INET6;
     local.netif  = SOCK_ADDR_ANY_NETIF;
-    if (IS_USED(MODULE_GCOAP_DTLS)) {
-        local.port = CONFIG_GCOAPS_PORT;
-    } else {
-        local.port = CONFIG_GCOAP_PORT;
-    }
+    local.port = CONFIG_GCOAP_PORT;
     int res = sock_udp_create(&_sock_udp, &local, NULL, 0);
     if (res < 0) {
         DEBUG("gcoap: cannot create sock: %d\n", res);
@@ -159,20 +168,25 @@ static void *_event_loop(void *arg)
     }
 
     event_queue_init(&_queue);
+    sock_udp_event_init(&_sock_udp, &_queue, _on_sock_udp_evt, NULL);
+
     if (IS_USED(MODULE_GCOAP_DTLS)) {
 #if IS_USED(MODULE_GCOAP_DTLS)
-        if (sock_dtls_create(&_sock_dtls, &_sock_udp,
+        local.port = CONFIG_GCOAPS_PORT;
+        if (sock_udp_create(&_sock_dtls_base, &local, NULL, 0)) {
+            DEBUG("gcoap: error creating DTLS transport sock\n");
+            return 0;
+        }
+        if (sock_dtls_create(&_sock_dtls, &_sock_dtls_base,
                             CREDMAN_TAG_EMPTY,
                             SOCK_DTLS_1_2, SOCK_DTLS_SERVER) < 0) {
-            DEBUG("gcoap: error creating DTLS sock");
-            sock_udp_close(&_sock_udp);
+            DEBUG("gcoap: error creating DTLS sock\n");
+            sock_udp_close(&_sock_dtls_base);
             return 0;
         }
         sock_dtls_event_init(&_sock_dtls, &_queue, _on_sock_dtls_evt,
                             NULL);
 #endif
-    } else {
-        sock_udp_event_init(&_sock_udp, &_queue, _on_sock_udp_evt, NULL);
     }
 
     event_loop(&_queue);
@@ -259,7 +273,7 @@ static void _on_sock_dtls_evt(sock_dtls_t *sock, sock_async_flags_t type, void *
         sock_udp_ep_t ep;
         sock_dtls_session_get_udp_ep(&socket.ctx_dtls_session, &ep);
         /* Truncated DTLS messages would already have gotten lost at verification */
-        _process_coap_pdu(&socket, &ep,  _listen_buf, res, false);
+        _process_coap_pdu(&socket, &ep, NULL, _listen_buf, res, false);
     }
 }
 
@@ -290,6 +304,9 @@ static void _on_sock_udp_evt(sock_udp_t *sock, sock_async_flags_t type, void *ar
         void *buf_ctx = NULL;
         bool truncated = false;
         size_t cursor = 0;
+        sock_udp_aux_rx_t aux_in = {
+            .flags = SOCK_AUX_GET_LOCAL,
+        };
 
         /* The zero-copy _buf API is not used to its full potential here -- we
          * still copy out data in what is a manual version of sock_udp_recv,
@@ -302,7 +319,7 @@ static void _on_sock_udp_evt(sock_udp_t *sock, sock_async_flags_t type, void *ar
          * single slice (but that may be a realistic assumption).
          */
         while (true) {
-            ssize_t res = sock_udp_recv_buf(sock, &stackbuf, &buf_ctx, 0, &remote);
+            ssize_t res = sock_udp_recv_buf_aux(sock, &stackbuf, &buf_ctx, 0, &remote, &aux_in);
             if (res < 0) {
                 DEBUG("gcoap: udp recv failure: %d\n", (int)res);
                 return;
@@ -317,13 +334,24 @@ static void _on_sock_udp_evt(sock_udp_t *sock, sock_async_flags_t type, void *ar
             memcpy(&_listen_buf[cursor], stackbuf, res);
             cursor += res;
         }
-        gcoap_socket_t socket = { .type = GCOAP_SOCKET_TYPE_UDP, .socket.udp = sock };
-        _process_coap_pdu(&socket, &remote, _listen_buf, cursor, truncated);
+
+        /* make sure we reply with the same address that the request was destined for */
+        sock_udp_aux_tx_t aux_out = {
+            .flags = SOCK_AUX_SET_LOCAL,
+            .local = aux_in.local,
+        };
+
+        gcoap_socket_t socket = {
+            .type = GCOAP_SOCKET_TYPE_UDP,
+            .socket.udp = sock,
+         };
+
+        _process_coap_pdu(&socket, &remote, &aux_out, _listen_buf, cursor, truncated);
     }
 }
 
 /* Processes and evaluates the coap pdu */
-static void _process_coap_pdu(gcoap_socket_t *sock, sock_udp_ep_t *remote,
+static void _process_coap_pdu(gcoap_socket_t *sock, sock_udp_ep_t *remote, sock_udp_aux_tx_t *aux,
                               uint8_t *buf, size_t len, bool truncated)
 {
     coap_pkt_t pdu;
@@ -383,12 +411,12 @@ static void _process_coap_pdu(gcoap_socket_t *sock, sock_udp_ep_t *remote,
                 pdu_len = gcoap_response(&pdu, _listen_buf, sizeof(_listen_buf),
                                          COAP_CODE_REQUEST_ENTITY_TOO_LARGE);
             } else {
-                pdu_len = _handle_req(&pdu, _listen_buf, sizeof(_listen_buf), remote);
+                pdu_len = _handle_req(sock, &pdu, _listen_buf,
+                                      sizeof(_listen_buf), remote);
             }
 
             if (pdu_len > 0) {
-                ssize_t bytes = _tl_send(sock, _listen_buf, pdu_len,
-                                                remote);
+                ssize_t bytes = _tl_send(sock, _listen_buf, pdu_len, remote, aux);
                 if (bytes <= 0) {
                     DEBUG("gcoap: send response failed: %d\n", (int)bytes);
                 }
@@ -416,6 +444,32 @@ static void _process_coap_pdu(gcoap_socket_t *sock, sock_udp_ep_t *remote,
                     event_timeout_clear(&memo->resp_evt_tmout);
                 }
                 memo->state = truncated ? GCOAP_MEMO_RESP_TRUNC : GCOAP_MEMO_RESP;
+                if (IS_USED(MODULE_NANOCOAP_CACHE)) {
+                    nanocoap_cache_entry_t *ce = NULL;
+
+                    if ((pdu.hdr->code == COAP_CODE_VALID) &&
+                        (ce = _cache_lookup_memo(memo))) {
+                        /* update max_age from response and send cached response */
+                        uint32_t max_age = 60;
+
+                        coap_opt_get_uint(&pdu, COAP_OPT_MAX_AGE, &max_age);
+                        ce->max_age = ztimer_now(ZTIMER_SEC) + max_age;
+                        /* copy all options and possible payload from the cached response
+                         * to the new response */
+                        assert((uint8_t *)pdu.hdr == &_listen_buf[0]);
+                        if (_cache_build_response(ce, &pdu, _listen_buf,
+                                                  sizeof(_listen_buf)) < 0) {
+                            memo->state = GCOAP_MEMO_ERR;
+                        }
+                        if (ce->truncated) {
+                            memo->state = GCOAP_MEMO_RESP_TRUNC;
+                        }
+                    }
+                    /* TODO: resend request if VALID but no cache entry? */
+                    else if ((pdu.hdr->code != COAP_CODE_VALID)) {
+                        _cache_process(memo, &pdu);
+                    }
+                }
                 if (memo->resp_handler) {
                     memo->resp_handler(memo, &pdu, remote);
                 }
@@ -448,8 +502,7 @@ static void _process_coap_pdu(gcoap_socket_t *sock, sock_udp_ep_t *remote,
          * */
         pdu.hdr->ver_t_tkl &= 0xf0;
 
-        ssize_t bytes = _tl_send(sock, buf,
-                                      sizeof(coap_hdr_t), remote);
+        ssize_t bytes = _tl_send(sock, buf, sizeof(coap_hdr_t), remote, aux);
         if (bytes <= 0) {
             DEBUG("gcoap: empty response failed: %d\n", (int)bytes);
         }
@@ -472,9 +525,9 @@ static void _on_resp_timeout(void *arg) {
 #else
         unsigned i        = CONFIG_COAP_MAX_RETRANSMIT - memo->send_limit;
 #endif
-        uint32_t timeout  = ((uint32_t)CONFIG_COAP_ACK_TIMEOUT << i) * MS_PER_SEC;
+        uint32_t timeout  = (uint32_t)CONFIG_COAP_ACK_TIMEOUT_MS << i;
 #if CONFIG_COAP_RANDOM_FACTOR_1000 > 1000
-        uint32_t end = ((uint32_t)TIMEOUT_RANGE_END << i) * MS_PER_SEC;
+        uint32_t end = (uint32_t)TIMEOUT_RANGE_END << i;
         timeout = random_uint32_range(timeout, end);
 #endif
         event_timeout_set(&memo->resp_evt_tmout, timeout);
@@ -485,10 +538,8 @@ static void _on_resp_timeout(void *arg) {
             return;
         }
 
-        gcoap_socket_t socket;
-        _tl_init_coap_socket(&socket);
-        ssize_t bytes = _tl_send(&socket, memo->msg.data.pdu_buf,
-                                 memo->msg.data.pdu_len, &memo->remote_ep);
+        ssize_t bytes = _tl_send(&memo->socket, memo->msg.data.pdu_buf,
+                                 memo->msg.data.pdu_len, &memo->remote_ep, NULL);
         if (bytes <= 0) {
             DEBUG("gcoap: sock resend failed: %d\n", (int)bytes);
             _expire_request(memo);
@@ -529,8 +580,8 @@ static void _cease_retransmission(gcoap_request_memo_t *memo) {
  *
  * return length of response pdu, or < 0 if can't handle
  */
-static size_t _handle_req(coap_pkt_t *pdu, uint8_t *buf, size_t len,
-                                                         sock_udp_ep_t *remote)
+static size_t _handle_req(gcoap_socket_t *sock, coap_pkt_t *pdu, uint8_t *buf,
+                          size_t len, sock_udp_ep_t *remote)
 {
     const coap_resource_t *resource     = NULL;
     gcoap_listener_t *listener          = NULL;
@@ -538,7 +589,7 @@ static size_t _handle_req(coap_pkt_t *pdu, uint8_t *buf, size_t len,
     gcoap_observe_memo_t *memo          = NULL;
     gcoap_observe_memo_t *resource_memo = NULL;
 
-    switch (_find_resource((const coap_pkt_t *)pdu, &resource, &listener)) {
+    switch (_find_resource(sock->type, pdu, &resource, &listener)) {
         case GCOAP_RESOURCE_WRONG_METHOD:
             return gcoap_response(pdu, buf, len, COAP_CODE_METHOD_NOT_ALLOWED);
         case GCOAP_RESOURCE_NO_PATH:
@@ -567,7 +618,8 @@ static size_t _handle_req(coap_pkt_t *pdu, uint8_t *buf, size_t len,
                 }
                 /* otherwise OK to re-register resource with the same token */
             }
-            else if (sock_udp_ep_equal(remote, resource_memo->observer)) {
+            else if ((sock->type == resource_memo->socket.type) &&
+                     sock_udp_ep_equal(remote, resource_memo->observer)) {
                 /* accept new token for resource */
                 memo = resource_memo;
             }
@@ -601,8 +653,9 @@ static size_t _handle_req(coap_pkt_t *pdu, uint8_t *buf, size_t len,
             /* resource may be assigned here if it is not already registered */
             memo->resource = resource;
             memo->token_len = coap_get_token_len(pdu);
+            memo->socket = *sock;
             if (memo->token_len) {
-                memcpy(&memo->token[0], pdu->token, memo->token_len);
+                memcpy(&memo->token[0], coap_get_token(pdu), memo->token_len);
             }
             DEBUG("gcoap: Registered observer for: %s\n", memo->resource->path);
         }
@@ -630,7 +683,18 @@ static size_t _handle_req(coap_pkt_t *pdu, uint8_t *buf, size_t len,
         return -1;
     }
 
-    ssize_t pdu_len = resource->handler(pdu, buf, len, resource->context);
+    pdu->tl_type = (uint32_t)sock->type;
+
+    ssize_t pdu_len;
+    char *offset;
+
+    if (coap_get_proxy_uri(pdu, &offset) > 0) {
+        pdu_len = resource->handler(pdu, buf, len, remote);
+    }
+    else {
+        pdu_len = resource->handler(pdu, buf, len, resource->context);
+    }
+
     if (pdu_len < 0) {
         pdu_len = gcoap_response(pdu, buf, len,
                                  COAP_CODE_INTERNAL_SERVER_ERROR);
@@ -640,7 +704,7 @@ static size_t _handle_req(coap_pkt_t *pdu, uint8_t *buf, size_t len,
 
 static int _request_matcher_default(gcoap_listener_t *listener,
                                     const coap_resource_t **resource,
-                                    const coap_pkt_t *pdu)
+                                    coap_pkt_t *pdu)
 {
     uint8_t uri[CONFIG_NANOCOAP_URI_MAX];
     int ret = GCOAP_RESOURCE_NO_PATH;
@@ -688,6 +752,7 @@ static int _request_matcher_default(gcoap_listener_t *listener,
 /*
  * Searches listener registrations for the resource matching the path in a PDU.
  *
+ * param[in]  tl_type -- transport the request for the resource came over.
  * param[in]  pdu -- the PDU to check the resource for
  * param[out] resource_ptr -- found resource
  * param[out] listener_ptr -- listener for found resource
@@ -696,7 +761,8 @@ static int _request_matcher_default(gcoap_listener_t *listener,
  *        code didn't match and `GCOAP_RESOURCE_NO_PATH` if no matching
  *        resource was found.
  */
-static int _find_resource(const coap_pkt_t *pdu,
+static int _find_resource(gcoap_socket_type_t tl_type,
+                          coap_pkt_t *pdu,
                           const coap_resource_t **resource_ptr,
                           gcoap_listener_t **listener_ptr)
 {
@@ -707,8 +773,17 @@ static int _find_resource(const coap_pkt_t *pdu,
 
     while (listener) {
         const coap_resource_t *resource;
-        int res = listener->request_matcher(listener, &resource, pdu);
+        int res;
 
+        /* only makes sense to check if non-UDP transports are supported,
+         * so check if module is used first. */
+        if (IS_USED(MODULE_GCOAP_DTLS) &&
+            (listener->tl_type != GCOAP_SOCKET_TYPE_UNDEF) &&
+            !(listener->tl_type & tl_type)) {
+            listener = listener->next;
+            continue;
+        }
+        res = listener->request_matcher(listener, &resource, pdu);
         /* check next resource on mismatch */
         if (res == GCOAP_RESOURCE_NO_PATH) {
             listener = listener->next;
@@ -760,13 +835,8 @@ static void _find_req_memo(gcoap_request_memo_t **memo_ptr, coap_pkt_t *src_pdu,
         }
 
         gcoap_request_memo_t *memo = &_coap_state.open_reqs[i];
-        if (memo->send_limit == GCOAP_SEND_LIMIT_NON) {
-            memo_pdu->hdr = (coap_hdr_t *) &memo->msg.hdr_buf[0];
-        }
-        else {
-            memo_pdu->hdr = (coap_hdr_t *) memo->msg.data.pdu_buf;
-        }
 
+        memo_pdu->hdr = gcoap_request_memo_get_hdr(memo);
         if (by_mid) {
             if ((src_pdu->hdr->id == memo_pdu->hdr->id)
                     && sock_udp_ep_equal(&memo->remote_ep, remote)) {
@@ -775,7 +845,7 @@ static void _find_req_memo(gcoap_request_memo_t **memo_ptr, coap_pkt_t *src_pdu,
             }
         } else if (coap_get_token_len(memo_pdu) == cmplen) {
             memo_pdu->token = coap_hdr_data_ptr(memo_pdu->hdr);
-            if ((memcmp(src_pdu->token, memo_pdu->token, cmplen) == 0)
+            if ((memcmp(coap_get_token(src_pdu), memo_pdu->token, cmplen) == 0)
                     && sock_udp_ep_equal(&memo->remote_ep, remote)) {
                 *memo_ptr = memo;
                 break;
@@ -793,12 +863,8 @@ static void _expire_request(gcoap_request_memo_t *memo)
         /* Pass response to handler */
         if (memo->resp_handler) {
             coap_pkt_t req;
-            if (memo->send_limit == GCOAP_SEND_LIMIT_NON) {
-                req.hdr = (coap_hdr_t *)&memo->msg.hdr_buf[0];   /* for reference */
-            }
-            else {
-                req.hdr = (coap_hdr_t *)memo->msg.data.pdu_buf;
-            }
+
+            req.hdr = gcoap_request_memo_get_hdr(memo);
             memo->resp_handler(memo, &req, NULL);
         }
         if (memo->send_limit != GCOAP_SEND_LIMIT_NON) {
@@ -825,8 +891,9 @@ static ssize_t _well_known_core_handler(coap_pkt_t* pdu, uint8_t *buf, size_t le
     coap_opt_add_format(pdu, COAP_FORMAT_LINK);
     ssize_t plen = coap_opt_finish(pdu, COAP_OPT_FINISH_PAYLOAD);
 
-    plen += gcoap_get_resource_list(pdu->payload, (size_t)pdu->payload_len,
-                                    COAP_FORMAT_LINK);
+    plen += gcoap_get_resource_list_tl(pdu->payload, (size_t)pdu->payload_len,
+                                       COAP_FORMAT_LINK,
+                                       (gcoap_socket_type_t)pdu->tl_type);
     return plen;
 }
 
@@ -924,54 +991,72 @@ static void _find_obs_memo_resource(gcoap_observe_memo_t **memo,
  * Transport layer functions
  */
 
-static void _tl_init_coap_socket(gcoap_socket_t *sock)
+static int _tl_init_coap_socket(gcoap_socket_t *sock, gcoap_socket_type_t type)
 {
-#if IS_USED(MODULE_GCOAP_DTLS)
-    sock->type = GCOAP_SOCKET_TYPE_DTLS;
-    sock->socket.dtls = &_sock_dtls;
-#else
-    sock->type = GCOAP_SOCKET_TYPE_UDP;
-    sock->socket.udp = &_sock_udp;
+    switch (type) {
+#if !IS_USED(MODULE_GCOAP_DTLS)
+        case GCOAP_SOCKET_TYPE_UNDEF:
 #endif
+        case GCOAP_SOCKET_TYPE_UDP:
+            sock->type = GCOAP_SOCKET_TYPE_UDP;
+            sock->socket.udp = &_sock_udp;
+            break;
+#if IS_USED(MODULE_GCOAP_DTLS)
+        case GCOAP_SOCKET_TYPE_UNDEF:
+        case GCOAP_SOCKET_TYPE_DTLS:
+            sock->type = GCOAP_SOCKET_TYPE_DTLS;
+            sock->socket.dtls = &_sock_dtls;
+            break;
+#else
+        default:
+            return -1;
+#endif
+    }
+    return 0;
 }
 
 static ssize_t _tl_send(gcoap_socket_t *sock, const void *data, size_t len,
-                      const sock_udp_ep_t *remote)
+                        const sock_udp_ep_t *remote, sock_udp_aux_tx_t *aux)
 {
     ssize_t res = -1;
-    if (sock->type == GCOAP_SOCKET_TYPE_DTLS) {
+    switch (sock->type) {
+        case GCOAP_SOCKET_TYPE_UDP:
+            res = sock_udp_send_aux(sock->socket.udp, data, len, remote, aux);
+            break;
 #if IS_USED(MODULE_GCOAP_DTLS)
-        /* prepare session */
-        sock_dtls_session_set_udp_ep(&sock->ctx_dtls_session, remote);
-        dsm_state_t session_state = dsm_store(sock->socket.dtls, &sock->ctx_dtls_session,
-                    SESSION_STATE_HANDSHAKE, true);
-        if (session_state == NO_SPACE) {
-            return -1;
-        }
+        case GCOAP_SOCKET_TYPE_DTLS:
+            /* prepare session */
+            sock_dtls_session_set_udp_ep(&sock->ctx_dtls_session, remote);
+            dsm_state_t session_state = dsm_store(sock->socket.dtls,
+                                                  &sock->ctx_dtls_session,
+                                                  SESSION_STATE_HANDSHAKE,
+                                                  true);
+            if (session_state == NO_SPACE) {
+                return -1;
+            }
 
-        /* send application data */
-        res = sock_dtls_send(sock->socket.dtls, &sock->ctx_dtls_session, data, len,
-                                SOCK_NO_TIMEOUT);
-        switch (res) {
-        case -EHOSTUNREACH:
-        case -ENOTCONN:
-        case 0:
-            DEBUG("gcoap: DTLS sock not connected or remote unreachable. "
-                  "Destroying session.\n");
-            dsm_remove(sock->socket.dtls, &sock->ctx_dtls_session);
-            sock_dtls_session_destroy(sock->socket.dtls, &sock->ctx_dtls_session);
+            /* send application data */
+            res = sock_dtls_send(sock->socket.dtls, &sock->ctx_dtls_session, data, len,
+                                    SOCK_NO_TIMEOUT);
+            switch (res) {
+            case -EHOSTUNREACH:
+            case -ENOTCONN:
+            case 0:
+                DEBUG("gcoap: DTLS sock not connected or remote unreachable. "
+                      "Destroying session.\n");
+                dsm_remove(sock->socket.dtls, &sock->ctx_dtls_session);
+                sock_dtls_session_destroy(sock->socket.dtls, &sock->ctx_dtls_session);
+                break;
+            default:
+                /* Temporary error. Keeping the DTLS session */
+                break;
+            }
             break;
-        default:
-            /* Temporary error. Keeping the DTLS session */
-            break;
-        }
 #endif
-    } else if (sock->type == GCOAP_SOCKET_TYPE_UDP) {
-        res = sock_udp_send(sock->socket.udp, data, len, remote);
-    } else {
-        DEBUG("gcoap: undefined socket type\n");
+        default:
+            DEBUG("gcoap: undefined socket type\n");
+            break;
     }
-
     return res;
 }
 
@@ -986,6 +1071,9 @@ static ssize_t _tl_authenticate(gcoap_socket_t *sock, const sock_udp_ep_t *remot
 #else
     int res;
 
+    if (sock->type != GCOAP_SOCKET_TYPE_DTLS) {
+        return 0;
+    }
     /* prepare session */
     sock_dtls_session_set_udp_ep(&sock->ctx_dtls_session, remote);
     dsm_state_t session_state = dsm_store(sock->socket.dtls, &sock->ctx_dtls_session,
@@ -1031,6 +1119,207 @@ static ssize_t _tl_authenticate(gcoap_socket_t *sock, const sock_udp_ep_t *remot
 #endif
 }
 
+static nanocoap_cache_entry_t *_cache_lookup_memo(gcoap_request_memo_t *memo)
+{
+#if IS_USED(MODULE_NANOCOAP_CACHE)
+    /* cache_key in memo is pre-processor guarded so we need to as well */
+    return nanocoap_cache_key_lookup(memo->cache_key);
+#else
+    (void)memo;
+    return NULL;
+#endif
+}
+
+static void _cache_process(gcoap_request_memo_t *memo,
+                           coap_pkt_t *pdu)
+{
+    if (!IS_USED(MODULE_NANOCOAP_CACHE)) {
+        return;
+    }
+    coap_pkt_t req;
+
+    req.hdr = gcoap_request_memo_get_hdr(memo);
+    size_t pdu_len = pdu->payload_len +
+        (pdu->payload - (uint8_t *)pdu->hdr);
+#if IS_USED(MODULE_NANOCOAP_CACHE)
+    nanocoap_cache_entry_t *ce;
+    /* cache_key in memo is pre-processor guarded so we need to as well */
+    if ((ce = nanocoap_cache_process(memo->cache_key, coap_get_code(&req), pdu, pdu_len))) {
+        ce->truncated = (memo->state == GCOAP_MEMO_RESP_TRUNC);
+    }
+#else
+    (void)req;
+    (void)pdu_len;
+#endif
+}
+
+static ssize_t _cache_build_response(nanocoap_cache_entry_t *ce, coap_pkt_t *pdu,
+                                     uint8_t *buf, size_t len)
+{
+    if (!IS_USED(MODULE_NANOCOAP_CACHE)) {
+        return -ENOTSUP;
+    }
+    if (len < ce->response_len) {
+        return -ENOBUFS;
+    }
+    /* Use the same code from the cached content. Use other header
+     * fields from the incoming request */
+    gcoap_resp_init(pdu, buf, len, ce->response_pkt.hdr->code);
+    /* copy all options and possible payload from the cached response
+     * to the new response */
+    unsigned header_len_req = coap_get_total_hdr_len(pdu);
+    unsigned header_len_cached = coap_get_total_hdr_len(&ce->response_pkt);
+    unsigned opt_payload_len = ce->response_len - header_len_cached;
+
+    /* copy all options and possible payload from the cached response
+     * to the new response */
+    memcpy((buf + header_len_req),
+           (ce->response_buf + header_len_cached),
+           opt_payload_len);
+    /* parse into pdu including all options and payload pointers etc */
+    coap_parse(pdu, buf, header_len_req + opt_payload_len);
+    return ce->response_len;
+}
+
+static void _copy_hdr_from_req_memo(coap_pkt_t *pdu, gcoap_request_memo_t *memo)
+{
+    coap_pkt_t req_pdu;
+
+    req_pdu.hdr = gcoap_request_memo_get_hdr(memo);
+    memcpy(pdu->hdr, req_pdu.hdr, coap_get_total_hdr_len(&req_pdu));
+}
+
+static void _receive_from_cache_cb(void *ctx)
+{
+    if (!IS_USED(MODULE_NANOCOAP_CACHE)) {
+        return;
+    }
+
+    gcoap_request_memo_t *memo = ctx;
+    nanocoap_cache_entry_t *ce = NULL;
+
+    if ((ce = _cache_lookup_memo(memo))) {
+        if (memo->resp_handler) {
+            /* copy header from request so gcoap_resp_init in _cache_build_response works correctly
+             */
+            coap_pkt_t pdu = { .hdr = (coap_hdr_t *)_listen_buf };
+            _copy_hdr_from_req_memo(&pdu, memo);
+            if (_cache_build_response(ce, &pdu, _listen_buf, sizeof(_listen_buf)) >= 0) {
+                memo->state = (ce->truncated) ? GCOAP_MEMO_RESP_TRUNC : GCOAP_MEMO_RESP;
+                memo->resp_handler(memo, &pdu, &memo->remote_ep);
+                if (memo->send_limit >= 0) {        /* if confirmable */
+                    *memo->msg.data.pdu_buf = 0;    /* clear resend PDU buffer */
+                }
+                memo->state = GCOAP_MEMO_UNUSED;
+            }
+        }
+    }
+    else {
+        /* oops we somehow lost the cache entry */
+        DEBUG("gcoap: cache entry was lost\n");
+        if (memo->resp_handler) {
+            memo->state = GCOAP_MEMO_ERR;
+            memo->resp_handler(memo, NULL, &memo->remote_ep);
+        }
+    }
+}
+
+static void _update_memo_cache_key(gcoap_request_memo_t *memo, uint8_t *cache_key)
+{
+#if IS_USED(MODULE_NANOCOAP_CACHE)
+    if (memo) {
+        /* memo->cache_key is guarded by MODULE_NANOCOAP_CACHE, so preprocessor
+         * magic is needed */
+        memcpy(memo->cache_key, cache_key, CONFIG_NANOCOAP_CACHE_KEY_LENGTH);
+    }
+#else
+    (void)memo;
+    (void)cache_key;
+#endif
+}
+
+static bool _cache_lookup(gcoap_request_memo_t *memo,
+                          coap_pkt_t *pdu,
+                          nanocoap_cache_entry_t **ce)
+{
+    if (IS_USED(MODULE_NANOCOAP_CACHE)) {
+        uint8_t cache_key[SHA256_DIGEST_LENGTH];
+        ztimer_now_t now = ztimer_now(ZTIMER_SEC);
+
+        nanocoap_cache_key_generate(pdu, cache_key);
+        *ce = nanocoap_cache_key_lookup(cache_key);
+
+        _update_memo_cache_key(memo, cache_key);
+        /* cache hit, methods are equal, and cache entry is not stale */
+        if (*ce &&
+            ((*ce)->request_method == coap_get_code(pdu)) &&
+            !nanocoap_cache_entry_is_stale(*ce, now)) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+static ssize_t _cache_check(const uint8_t *buf, size_t len,
+                            gcoap_request_memo_t *memo,
+                            bool *cache_hit)
+{
+    if (!IS_USED(MODULE_NANOCOAP_CACHE)) {
+        return len;
+    }
+    coap_pkt_t req;
+    nanocoap_cache_entry_t *ce = NULL;
+    /* XXX cast to const might cause problems here :-/ */
+    ssize_t res = coap_parse(&req, (uint8_t *)buf, len);
+
+    if (res < 0) {
+        DEBUG("gcoap: parse failure for cache lookup: %d\n", (int)res);
+        return -EINVAL;
+    }
+
+    *cache_hit = _cache_lookup(memo, &req, &ce);
+
+    if (!(*cache_hit) && (ce != NULL)) {
+        /* Cache entry was found, but it is stale. Try to validate */
+        uint8_t *resp_etag;
+        /* Searching for more ETags might become necessary in the future */
+        ssize_t resp_etag_len = coap_opt_get_opaque(&ce->response_pkt, COAP_OPT_ETAG, &resp_etag);
+
+        /* ETag found, but don't act on illegal ETag size */
+        if ((resp_etag_len > 0) && ((size_t)resp_etag_len <= COAP_ETAG_LENGTH_MAX)) {
+            uint8_t *tmp_etag;
+            ssize_t tmp_etag_len = coap_opt_get_opaque(&req, COAP_OPT_ETAG, &tmp_etag);
+
+            if (tmp_etag_len >= resp_etag_len) {
+                memcpy(tmp_etag, resp_etag, resp_etag_len);
+                /* shorten ETag option if necessary */
+                if ((size_t)resp_etag_len < COAP_ETAG_LENGTH_MAX) {
+                    /* now we need the start of the option (not its value) so dig once more */
+                    uint8_t *start = coap_find_option(&req, COAP_OPT_ETAG);
+                    /* option length must always be <= COAP_ETAG_LENGTH_MAX = 8 < 12, so the length
+                     * is encoded in the first byte, see also RFC 7252, section 3.1 */
+                    *start &= 0x0f;
+                    /* first if around here should make sure we are <= 8 < 0xf, so we don't need to
+                     * bitmask resp_etag_len */
+                    *start |= (uint8_t)resp_etag_len;
+                    /* remove padding */
+                    size_t rem_len = (len - (tmp_etag + COAP_ETAG_LENGTH_MAX - buf));
+                    memmove(tmp_etag + resp_etag_len, tmp_etag + COAP_ETAG_LENGTH_MAX, rem_len);
+                    len -= (COAP_ETAG_LENGTH_MAX - resp_etag_len);
+                }
+            }
+        }
+        else {
+            len = coap_opt_remove(&req, COAP_OPT_ETAG);
+        }
+    }
+    else {
+        len = coap_opt_remove(&req, COAP_OPT_ETAG);
+    }
+    return len;
+}
+
 /*
  * gcoap interface functions
  */
@@ -1051,6 +1340,14 @@ kernel_pid_t gcoap_init(void)
     memset(&_coap_state.resend_bufs[0], 0, sizeof(_coap_state.resend_bufs));
     /* randomize initial value */
     atomic_init(&_coap_state.next_message_id, (unsigned)random_uint32());
+
+    if (IS_USED(MODULE_NANOCOAP_CACHE)) {
+        nanocoap_cache_init();
+    }
+    /* initialize the forward proxy operation, if compiled */
+    if (IS_ACTIVE(MODULE_GCOAP_FORWARD_PROXY)) {
+        gcoap_forward_proxy_init();
+    }
 
     return _pid;
 }
@@ -1105,22 +1402,35 @@ int gcoap_req_init_path_buffer(coap_pkt_t *pdu, uint8_t *buf, size_t len,
     }
 
     coap_pkt_init(pdu, buf, len, res);
-    if ((path != NULL) && (path_len > 0)) {
+    if (IS_USED(MODULE_NANOCOAP_CACHE)) {
+        static const uint8_t tmp[COAP_ETAG_LENGTH_MAX] = { 0 };
+        /* add slack to maybe add an ETag on stale cache hit later */
+        res = coap_opt_add_opaque(pdu, COAP_OPT_ETAG, tmp, sizeof(tmp));
+    }
+    if ((res > 0) && (path != NULL) && (path_len > 0)) {
         res = coap_opt_add_uri_path_buffer(pdu, path, path_len);
     }
     return (res > 0) ? 0 : res;
 }
 
-ssize_t gcoap_req_send(const uint8_t *buf, size_t len,
-                       const sock_udp_ep_t *remote,
-                       gcoap_resp_handler_t resp_handler, void *context)
+ssize_t gcoap_req_send_tl(const uint8_t *buf, size_t len,
+                          const sock_udp_ep_t *remote,
+                          gcoap_resp_handler_t resp_handler, void *context,
+                          gcoap_socket_type_t tl_type)
 {
+    gcoap_socket_t socket = { 0 };
     gcoap_request_memo_t *memo = NULL;
     unsigned msg_type  = (*buf & 0x30) >> 4;
     uint32_t timeout   = 0;
+    ssize_t res = 0;
+    bool cache_hit = false;
 
     assert(remote != NULL);
 
+    res = _tl_init_coap_socket(&socket, tl_type);
+    if (res < 0) {
+        return -EINVAL;
+    }
     /* Only allocate memory if necessary (i.e. if user is interested in the
      * response or request is confirmable) */
     if ((resp_handler != NULL) || (msg_type == COAP_TYPE_CON)) {
@@ -1142,6 +1452,16 @@ ssize_t gcoap_req_send(const uint8_t *buf, size_t len,
         memo->resp_handler = resp_handler;
         memo->context = context;
         memcpy(&memo->remote_ep, remote, sizeof(sock_udp_ep_t));
+        memo->socket = socket;
+
+        if (IS_USED(MODULE_NANOCOAP_CACHE)) {
+            ssize_t res = _cache_check(buf, len, memo, &cache_hit);
+
+            if (res < 0) {
+                return res;
+            }
+            len = res;
+        }
 
         switch (msg_type) {
         case COAP_TYPE_CON:
@@ -1158,9 +1478,9 @@ ssize_t gcoap_req_send(const uint8_t *buf, size_t len,
             }
             if (memo->msg.data.pdu_buf) {
                 memo->send_limit  = CONFIG_COAP_MAX_RETRANSMIT;
-                timeout           = (uint32_t)CONFIG_COAP_ACK_TIMEOUT * MS_PER_SEC;
+                timeout           = (uint32_t)CONFIG_COAP_ACK_TIMEOUT_MS;
 #if CONFIG_COAP_RANDOM_FACTOR_1000 > 1000
-                timeout = random_uint32_range(timeout, TIMEOUT_RANGE_END * MS_PER_SEC);
+                timeout = random_uint32_range(timeout, TIMEOUT_RANGE_END);
 #endif
                 memo->state = GCOAP_MEMO_RETRANSMIT;
             }
@@ -1184,12 +1504,28 @@ ssize_t gcoap_req_send(const uint8_t *buf, size_t len,
         if (memo->state == GCOAP_MEMO_UNUSED) {
             return 0;
         }
+        if (cache_hit) {
+            /* post to receive cache entry */
+            event_callback_init(&_receive_from_cache,
+                                _receive_from_cache_cb,
+                                memo);
+            event_post(&_queue, &_receive_from_cache.super);
+            return len;
+        }
+    }
+    /* check cache without memo */
+    else if (IS_USED(MODULE_NANOCOAP_CACHE)) {
+        ssize_t res = _cache_check(buf, len, NULL, &cache_hit);
+
+        if (res < 0) {
+            return res;
+        }
+        if (cache_hit > 0) {
+            return res;
+        }
     }
 
-    ssize_t res = 0;
-    gcoap_socket_t socket = { 0 };
-
-    _tl_init_coap_socket(&socket);
+    _tl_init_coap_socket(&socket, tl_type);
     if (IS_USED(MODULE_GCOAP_DTLS) && socket.type == GCOAP_SOCKET_TYPE_DTLS) {
         res = _tl_authenticate(&socket, remote, CONFIG_GCOAP_DTLS_HANDSHAKE_TIMEOUT_MSEC);
     }
@@ -1208,7 +1544,7 @@ ssize_t gcoap_req_send(const uint8_t *buf, size_t len,
     }
 
     if (res == 0) {
-        res = _tl_send(&socket, buf, len, remote);
+        res = _tl_send(&socket, buf, len, remote, NULL);
     }
     if (res <= 0) {
         if (memo != NULL) {
@@ -1283,12 +1619,10 @@ size_t gcoap_obs_send(const uint8_t *buf, size_t len,
                       const coap_resource_t *resource)
 {
     gcoap_observe_memo_t *memo = NULL;
-    gcoap_socket_t socket;
-    _tl_init_coap_socket(&socket);
     _find_obs_memo_resource(&memo, resource);
 
     if (memo) {
-        ssize_t bytes = _tl_send(&socket, buf, len, memo->observer);
+        ssize_t bytes = _tl_send(&memo->socket, buf, len, memo->observer, NULL);
         return (size_t)((bytes > 0) ? bytes : 0);
     }
     else {
@@ -1307,7 +1641,8 @@ uint8_t gcoap_op_state(void)
     return count;
 }
 
-int gcoap_get_resource_list(void *buf, size_t maxlen, uint8_t cf)
+int gcoap_get_resource_list_tl(void *buf, size_t maxlen, uint8_t cf,
+                               gcoap_socket_type_t tl_type)
 {
     assert(cf == COAP_FORMAT_LINK);
 
@@ -1324,6 +1659,15 @@ int gcoap_get_resource_list(void *buf, size_t maxlen, uint8_t cf)
     /* write payload */
     for (; listener != NULL; listener = listener->next) {
         if (!listener->link_encoder) {
+            continue;
+        }
+        /* only makes sense to check if non-UDP transports are supported,
+         * so check if module is used first. */
+        if (IS_USED(MODULE_GCOAP_DTLS) &&
+            (tl_type != GCOAP_SOCKET_TYPE_UNDEF) &&
+            (listener->tl_type != GCOAP_SOCKET_TYPE_UNDEF) &&
+            ((listener->tl_type & GCOAP_SOCKET_TYPE_UDP) != (tl_type & GCOAP_SOCKET_TYPE_UDP)) &&
+            ((listener->tl_type & GCOAP_SOCKET_TYPE_DTLS) != (tl_type & GCOAP_SOCKET_TYPE_DTLS))) {
             continue;
         }
         ctx.link_pos = 0;
@@ -1385,5 +1729,17 @@ sock_dtls_t *gcoap_get_sock_dtls(void)
 #endif
 
 /*  */
+
+void gcoap_forward_proxy_find_req_memo(gcoap_request_memo_t **memo_ptr,
+                                       coap_pkt_t *src_pdu,
+                                       const sock_udp_ep_t *remote)
+{
+    _find_req_memo(memo_ptr, src_pdu, remote, false);
+}
+
+ssize_t gcoap_forward_proxy_dispatch(const uint8_t *buf, size_t len, sock_udp_ep_t *remote)
+{
+    return sock_udp_send(&_sock_udp, buf, len, remote);
+}
 
 /** @} */

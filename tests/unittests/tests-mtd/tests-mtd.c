@@ -39,10 +39,13 @@
 #ifndef PAGE_SIZE
 #define PAGE_SIZE 128
 #endif
+#ifndef WRITE_SIZE
+#define WRITE_SIZE 1
+#endif
 
 static uint8_t dummy_memory[PAGE_PER_SECTOR * PAGE_SIZE * SECTOR_COUNT];
 
-static int init(mtd_dev_t *dev)
+static int _init(mtd_dev_t *dev)
 {
     (void)dev;
 
@@ -50,7 +53,7 @@ static int init(mtd_dev_t *dev)
     return 0;
 }
 
-static int read(mtd_dev_t *dev, void *buff, uint32_t addr, uint32_t size)
+static int _read(mtd_dev_t *dev, void *buff, uint32_t addr, uint32_t size)
 {
     (void)dev;
 
@@ -62,7 +65,7 @@ static int read(mtd_dev_t *dev, void *buff, uint32_t addr, uint32_t size)
     return 0;
 }
 
-static int write(mtd_dev_t *dev, const void *buff, uint32_t addr, uint32_t size)
+static int _write(mtd_dev_t *dev, const void *buff, uint32_t addr, uint32_t size)
 {
     (void)dev;
 
@@ -77,7 +80,7 @@ static int write(mtd_dev_t *dev, const void *buff, uint32_t addr, uint32_t size)
     return 0;
 }
 
-static int erase(mtd_dev_t *dev, uint32_t addr, uint32_t size)
+static int _erase(mtd_dev_t *dev, uint32_t addr, uint32_t size)
 {
     (void)dev;
 
@@ -95,7 +98,7 @@ static int erase(mtd_dev_t *dev, uint32_t addr, uint32_t size)
     return 0;
 }
 
-static int power(mtd_dev_t *dev, enum mtd_power_state power)
+static int _power(mtd_dev_t *dev, enum mtd_power_state power)
 {
     (void)dev;
     (void)power;
@@ -103,11 +106,11 @@ static int power(mtd_dev_t *dev, enum mtd_power_state power)
 }
 
 static const mtd_desc_t driver = {
-    .init = init,
-    .read = read,
-    .write = write,
-    .erase = erase,
-    .power = power,
+    .init = _init,
+    .read = _read,
+    .write = _write,
+    .erase = _erase,
+    .power = _power,
 };
 
 static mtd_dev_t _dev = {
@@ -115,6 +118,7 @@ static mtd_dev_t _dev = {
     .sector_count = SECTOR_COUNT,
     .pages_per_sector = PAGE_PER_SECTOR,
     .page_size = PAGE_SIZE,
+    .write_size = WRITE_SIZE,
 };
 
 static mtd_dev_t *dev = (mtd_dev_t*) &_dev;

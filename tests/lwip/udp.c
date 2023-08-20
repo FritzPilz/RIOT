@@ -29,7 +29,7 @@
 #include "shell.h"
 #include "test_utils/expect.h"
 #include "thread.h"
-#include "xtimer.h"
+#include "ztimer.h"
 
 #ifdef MODULE_SOCK_UDP
 static char sock_inbuf[SOCK_INBUF_SIZE];
@@ -99,7 +99,7 @@ static int udp_send(char *addr_str, char *data, unsigned int num,
     size_t data_len;
 
     /* parse destination address */
-    if (sock_udp_str2ep(&dst, addr_str) < 0) {
+    if (sock_udp_name2ep(&dst, addr_str) < 0) {
         puts("Error: unable to parse destination address");
         return 1;
     }
@@ -121,7 +121,7 @@ static int udp_send(char *addr_str, char *data, unsigned int num,
             printf("Success: send %u byte over UDP to %s\n",
                    (unsigned)data_len, addr_str);
         }
-        xtimer_usleep(delay);
+        ztimer_sleep(ZTIMER_USEC, delay);
     }
     return 0;
 }

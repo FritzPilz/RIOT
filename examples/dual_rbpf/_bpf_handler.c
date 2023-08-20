@@ -7,7 +7,6 @@
 #include "bpf.h"
 #include "bpf/shared.h"
 #include "bpf/store.h"
-#include "ztimer.h"
 
 static ssize_t _bpf_counter(coap_pkt_t* pdu, uint8_t *buf, size_t len, void *ctx);
 static ssize_t _bpf_state_handler(coap_pkt_t* pdu, uint8_t *buf, size_t len, void *ctx);
@@ -34,7 +33,6 @@ static const coap_resource_t _resources[] = {
 static gcoap_listener_t _listener = {
     &_resources[0],
     ARRAY_SIZE(_resources),
-    GCOAP_SOCKET_TYPE_UNDEF,
     NULL,
     NULL
 };
@@ -137,9 +135,9 @@ static ssize_t _bpf_handler(coap_pkt_t *pdu, uint8_t *buf, size_t len, void *ctx
 
     int64_t result = -1;
 
-    uint32_t start = ztimer_now(ZTIMER_MSEC);
+    uint32_t start = xtimer_now_usec();
     int res = bpf_execute(&_bpf, &bpf_ctx, sizeof(bpf_ctx), &result);
-    uint32_t stop = ztimer_now(ZTIMER_MSEC);
+    uint32_t stop = xtimer_now_usec();
 
     printf("Execution done res=%i, result=%i\n", res, (int)result);
     printf("duration: %"PRIu32" us\n",

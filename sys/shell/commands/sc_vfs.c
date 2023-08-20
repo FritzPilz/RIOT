@@ -30,9 +30,22 @@
 #include <fcntl.h>
 
 #include "vfs.h"
+#if MODULE_VFS_UTIL
+#include "vfs_util.h"
+#endif
 
 #define SHELL_VFS_BUFSIZE 256
 static uint8_t _shell_vfs_data_buffer[SHELL_VFS_BUFSIZE];
+
+/**
+ * @brief Auto-Mount array
+ */
+XFA_USE_CONST(vfs_mount_t, vfs_mountpoints_xfa);
+
+/**
+ * @brief Number of automatic mountpoints
+ */
+#define MOUNTPOINTS_NUMOF XFA_LEN(vfs_mount_t, vfs_mountpoints_xfa)
 
 static void _ls_usage(char **argv)
 {
@@ -47,15 +60,26 @@ static void _vfs_usage(char **argv)
     printf("%s ls <path>\n", argv[0]);
     printf("%s cp <src> <dest>\n", argv[0]);
     printf("%s mv <src> <dest>\n", argv[0]);
+    printf("%s mkdir <path> \n", argv[0]);
     printf("%s rm <file>\n", argv[0]);
     printf("%s df [path]\n", argv[0]);
+    if (MOUNTPOINTS_NUMOF > 0) {
+        printf("%s mount [path]\n", argv[0]);
+    }
+    if (MOUNTPOINTS_NUMOF > 0) {
+        printf("%s umount [path]\n", argv[0]);
+    }
+    if (MOUNTPOINTS_NUMOF > 0) {
+        printf("%s remount [path]\n", argv[0]);
+    }
     puts("r: Read [bytes] bytes at [offset] in file <path>");
     puts("w: Write (<a>: append, <o> overwrite) <ascii> or <hex> string <data> in file <path>");
-    puts("ls: list files in <path>");
+    puts("ls: List files in <path>");
     puts("mv: Move <src> file to <dest>");
+    puts("mkdir: Create directory <path> ");
     puts("cp: Copy <src> file to <dest>");
     puts("rm: Unlink (delete) <file>");
-    puts("df: show file system space utilization stats");
+    puts("df: Show file system space utilization stats");
 }
 
 /* Macro used by _errno_string to expand errno labels to string and print it */
@@ -102,11 +126,11 @@ static int _errno_string(int err, char *buf, size_t buflen)
 }
 #undef _case_snprintf_errno_name
 
-static void _print_df(const char *path)
+static void _print_df(vfs_DIR *dir)
 {
     struct statvfs buf;
-    int res = vfs_statvfs(path, &buf);
-    printf("%-16s ", path);
+    int res = vfs_dstatvfs(dir, &buf);
+    printf("%-16s ", dir->mp->mount_point);
     if (res < 0) {
         char err[16];
         _errno_string(res, err, sizeof(err));
@@ -123,16 +147,71 @@ static int _df_handler(int argc, char **argv)
     puts("Mountpoint              Total         Used    Available     Capacity");
     if (argc > 1) {
         const char *path = argv[1];
-        _print_df(path);
+        /* Opening a directory just to statfs is somewhat odd, but it is the
+         * easiest to support with a single _print_df function */
+        vfs_DIR dir;
+        int res = vfs_opendir(&dir, path);
+        if (res == 0) {
+            _print_df(&dir);
+            vfs_closedir(&dir);
+        } else {
+            char err[16];
+            _errno_string(res, err, sizeof(err));
+            printf("Failed to open `%s`: %s\n", path, err);
+        }
     }
     else {
         /* Iterate through all mount points */
-        const vfs_mount_t *it = NULL;
-        while ((it = vfs_iterate_mounts(it)) != NULL) {
-            _print_df(it->mount_point);
+        vfs_DIR it = { 0 };
+        while (vfs_iterate_mount_dirs(&it)) {
+            _print_df(&it);
         }
     }
     return 0;
+}
+
+static int _mount_handler(int argc, char **argv)
+{
+    if (argc < 2) {
+        printf("usage: %s [path]\n", argv[0]);
+        puts("mount pre-configured mount point");
+        return -1;
+    }
+
+    uint8_t buf[16];
+    int res = vfs_mount_by_path(argv[1]);
+    _errno_string(res, (char *)buf, sizeof(buf));
+    return res;
+}
+
+static int _umount_handler(int argc, char **argv)
+{
+    if (argc < 2) {
+        printf("usage: %s [path]\n", argv[0]);
+        puts("umount pre-configured mount point");
+        return -1;
+    }
+
+    uint8_t buf[16];
+    int res = vfs_unmount_by_path(argv[1]);
+
+    _errno_string(res, (char *)buf, sizeof(buf));
+    return res;
+}
+
+static int _remount_handler(int argc, char **argv)
+{
+    if (argc < 2) {
+        printf("usage: %s [path]\n", argv[0]);
+        puts("remount pre-configured mount point");
+        return -1;
+    }
+
+    uint8_t buf[16];
+    vfs_unmount_by_path(argv[1]);
+    int res = vfs_mount_by_path(argv[1]);
+    _errno_string(res, (char *)buf, sizeof(buf));
+    return res;
 }
 
 static int _read_handler(int argc, char **argv)
@@ -491,6 +570,25 @@ static int _rm_handler(int argc, char **argv)
     return 0;
 }
 
+static int _mkdir_handler(int argc, char **argv)
+{
+    if (argc < 2) {
+        _vfs_usage(argv);
+        return 1;
+    }
+    char *dir_name = argv[1];
+    printf("%s: mkdir: %s\n", argv[0], dir_name);
+
+    int res = vfs_mkdir(dir_name, 0);
+    if (res < 0) {
+        char errbuf[16];
+        _errno_string(res, (char *)errbuf, sizeof(errbuf));
+        printf("mkdir ERR: %s\n", errbuf);
+        return 2;
+    }
+    return 0;
+}
+
 int _ls_handler(int argc, char **argv)
 {
     if (argc < 2) {
@@ -517,7 +615,10 @@ int _ls_handler(int argc, char **argv)
     unsigned int nfiles = 0;
 
     while (1) {
+        char path_name[2 * (VFS_NAME_MAX + 1)];
         vfs_dirent_t entry;
+        struct stat stat;
+
         res = vfs_readdir(&dir, &entry);
         if (res < 0) {
             _errno_string(res, (char *)buf, sizeof(buf));
@@ -533,8 +634,17 @@ int _ls_handler(int argc, char **argv)
             /* end of stream */
             break;
         }
-        printf("%s\n", entry.d_name);
-        ++nfiles;
+
+        snprintf(path_name, sizeof(path_name), "%s/%s", path, entry.d_name);
+        vfs_stat(path_name, &stat);
+        if (stat.st_mode & S_IFDIR) {
+            printf("%s/\n", entry.d_name);
+        } else if (stat.st_mode & S_IFREG) {
+            printf("%s\t%lu B\n", entry.d_name, stat.st_size);
+            ++nfiles;
+        } else {
+            printf("%s\n", entry.d_name);
+        }
     }
     if (ret == 0) {
         printf("total %u files\n", nfiles);
@@ -571,15 +681,116 @@ int _vfs_handler(int argc, char **argv)
     else if (strcmp(argv[1], "mv") == 0) {
         return _mv_handler(argc - 1, &argv[1]);
     }
+    else if (strcmp(argv[1], "mkdir") == 0) {
+        return _mkdir_handler(argc - 1, &argv[1]);
+    }
     else if (strcmp(argv[1], "rm") == 0) {
         return _rm_handler(argc - 1, &argv[1]);
     }
     else if (strcmp(argv[1], "df") == 0) {
         return _df_handler(argc - 1, &argv[1]);
     }
+    else if (MOUNTPOINTS_NUMOF > 0 && strcmp(argv[1], "mount") == 0) {
+        return _mount_handler(argc - 1, &argv[1]);
+    }
+    else if (MOUNTPOINTS_NUMOF > 0 && strcmp(argv[1], "umount") == 0) {
+        return _umount_handler(argc - 1, &argv[1]);
+    }
+    else if (MOUNTPOINTS_NUMOF > 0 && strcmp(argv[1], "remount") == 0) {
+        return _remount_handler(argc - 1, &argv[1]);
+    }
     else {
         printf("vfs: unsupported sub-command \"%s\"\n", argv[1]);
         return 1;
     }
 }
+
+static inline void _print_digest(const uint8_t *digest, size_t len, const char *file)
+{
+    for (unsigned i = 0; i < len; ++i) {
+        printf("%02x", digest[i]);
+    }
+    printf("  %s\n", file);
+}
+
+#if MODULE_MD5SUM
+#include "hashes/md5.h"
+int _vfs_md5sum_cmd(int argc, char **argv)
+{
+    int res;
+    uint8_t digest[MD5_DIGEST_LENGTH];
+
+    if (argc < 2) {
+        printf("usage: %s [file] …\n", argv[0]);
+        return -1;
+    }
+
+    for (int i = 1; i < argc; ++i) {
+        const char *file = argv[i];
+        res = vfs_file_md5(file, digest,
+                           _shell_vfs_data_buffer, sizeof(_shell_vfs_data_buffer));
+        if (res < 0) {
+            printf("%s: error %d\n", file, res);
+        } else {
+            _print_digest(digest, sizeof(digest), file);
+        }
+    }
+
+    return 0;
+}
+#endif
+
+#if MODULE_SHA1SUM
+#include "hashes/sha1.h"
+int _vfs_sha1sum_cmd(int argc, char **argv)
+{
+    int res;
+    uint8_t digest[SHA1_DIGEST_LENGTH];
+
+    if (argc < 2) {
+        printf("usage: %s [file] …\n", argv[0]);
+        return -1;
+    }
+
+    for (int i = 1; i < argc; ++i) {
+        const char *file = argv[i];
+        res = vfs_file_sha1(file, digest,
+                           _shell_vfs_data_buffer, sizeof(_shell_vfs_data_buffer));
+        if (res < 0) {
+            printf("%s: error %d\n", file, res);
+        } else {
+            _print_digest(digest, sizeof(digest), file);
+        }
+    }
+
+    return 0;
+}
+#endif
+
+#if MODULE_SHA256SUM
+#include "hashes/sha256.h"
+int _vfs_sha256sum_cmd(int argc, char **argv)
+{
+    int res;
+    uint8_t digest[SHA256_DIGEST_LENGTH];
+
+    if (argc < 2) {
+        printf("usage: %s [file] …\n", argv[0]);
+        return -1;
+    }
+
+    for (int i = 1; i < argc; ++i) {
+        const char *file = argv[i];
+        res = vfs_file_sha256(file, digest,
+                              _shell_vfs_data_buffer, sizeof(_shell_vfs_data_buffer));
+        if (res < 0) {
+            printf("%s: error %d\n", file, res);
+        } else {
+            _print_digest(digest, sizeof(digest), file);
+        }
+    }
+
+    return 0;
+}
+#endif
 #endif

@@ -32,14 +32,16 @@ extern "C" {
  * @name    Power mode configuration
  * @{
  */
-#define PM_NUM_MODES        (3)
+#define PM_NUM_MODES        (4)
 /** @} */
 
 /**
  * @brief   Override the default initial PM blocker
- * @todo   Idle modes are enabled by default, deep sleep mode blocked
+ *          Idle modes are enabled by default, deep sleep mode blocked
  */
-#define PM_BLOCKER_INITIAL      0x00000001
+#ifndef PM_BLOCKER_INITIAL
+#define PM_BLOCKER_INITIAL      { 1, 0, 0, 0 }
+#endif
 
 /**
  * @name   SAMD21 sleep modes for PM

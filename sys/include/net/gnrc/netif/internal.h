@@ -41,11 +41,6 @@ extern "C" {
 #define GNRC_NETIF_PKTQ_DEQUEUE_MSG     (0x1233)
 
 /**
- * @brief   Message type for @ref netdev_event_t "netdev events"
- */
-#define NETDEV_MSG_TYPE_EVENT           (0x1234)
-
-/**
  * @brief   Acquires exclusive access to the interface
  *
  * @param[in] netif the network interface
@@ -729,6 +724,9 @@ static inline int gnrc_netif_ipv6_group_to_l2_group(gnrc_netif_t *netif,
  * @param[in] pref      Preferred lifetime of the prefix in seconds
  *
  * @return  >= 0, on success
+ *          The returned value is the index of the newly created address
+ *          based on the prefix and the interfaces IID in the interface's
+ *          address array.
  * @return  -ENOMEM, when no space for new addresses (or its solicited nodes
  *          multicast address) is left on the interface
  */

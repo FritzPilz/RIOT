@@ -764,12 +764,14 @@ INPUT                  = ../../doc.txt \
                          src/porting-boards.md \
                          src/driver-guide.md \
                          src/getting-started.md \
+                         src/build-in-docker.md \
                          ../../tests/README.md \
                          src/build-system-basics.md \
                          src/kconfig/kconfig.md \
                          src/using-cpp.md \
                          src/using-rust.md \
                          src/advanced-build-system-tricks.md \
+                         src/debugging-aids.md \
                          src/emulators.md \
                          src/release-cycle.md \
                          src/changelog.md \
@@ -858,7 +860,7 @@ EXCLUDE_SYMBOLS        = *CMSIS* \
 # that contain example code fragments that are included (see the \include
 # command).
 
-EXAMPLE_PATH           =
+EXAMPLE_PATH           = ../../
 
 # If the value of the EXAMPLE_PATH tag contains directories, you can use the
 # EXAMPLE_PATTERNS tag to specify one or more wildcard pattern (like *.cpp and

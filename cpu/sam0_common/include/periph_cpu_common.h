@@ -772,9 +772,29 @@ static inline bool cpu_woke_from_backup(void)
  * @brief ADC Channel Configuration
  */
 typedef struct {
-    gpio_t pin;            /**< ADC channel pin */
-    uint32_t muxpos;       /**< ADC channel pin multiplexer value */
+    gpio_t pin;             /**< ADC channel pin */
+    uint32_t muxpos;        /**< ADC channel pin multiplexer value */
+#ifdef ADC0
+    Adc *dev;               /**< ADC device descriptor */
+#endif
 } adc_conf_chan_t;
+
+/**
+ * @brief Pin that can be used for external voltage reference A
+ */
+#define ADC_REFSEL_AREFA_PIN    GPIO_PIN(PA, 3)
+
+/**
+ * @brief Pin that can be used for external voltage reference B
+ */
+#define ADC_REFSEL_AREFB_PIN    GPIO_PIN(PA, 4)
+
+#if defined(ADC_REFCTRL_REFSEL_AREFC) || DOXYGEN
+/**
+ * @brief Pin that can be used for external voltage reference C
+ */
+#define ADC_REFSEL_AREFC_PIN    GPIO_PIN(PA, 6)
+#endif
 
 /**
  * @name Ethernet peripheral parameters

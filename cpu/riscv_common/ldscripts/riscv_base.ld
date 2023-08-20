@@ -205,6 +205,17 @@ SECTIONS
     *(COMMON)
     . = ALIGN(4);
   } >ram AT>ram :ram
+  PROVIDE( __bss_end = . );
+
+  .noinit (NOLOAD) :
+  {
+      __noinit_begin__ = .;
+
+      *(.noinit .noinit.*)
+
+        . = ALIGN(4) ;
+      __noinit_end__ = .;
+  } >ram AT>ram :ram
 
   . = ALIGN(8);
   PROVIDE( _end = . );
@@ -217,6 +228,10 @@ SECTIONS
     . = __stack_size;
     PROVIDE( _sp = . );
   } >ram AT>ram :ram
+
+  .flash_writable (NOLOAD) : {
+    KEEP(*(SORT(.flash_writable.*)))
+  } > flash
 
   .end_fw (NOLOAD) : ALIGN(4) {
     _end_fw = . ;

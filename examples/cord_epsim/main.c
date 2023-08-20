@@ -24,6 +24,7 @@
 #include "net/gcoap.h"
 #include "net/cord/epsim.h"
 #include "net/cord/common.h"
+#include "net/gnrc/netif.h"
 #include "net/sock/util.h"
 #include "net/ipv6/addr.h"
 #include "xtimer.h"
@@ -82,7 +83,7 @@ int main(void)
     /* parse RD address information */
     sock_udp_ep_t rd_ep;
 
-    if (sock_udp_str2ep(&rd_ep, RD_ADDR) < 0) {
+    if (sock_udp_name2ep(&rd_ep, RD_ADDR) < 0) {
         puts("error: unable to parse RD address from RD_ADDR variable");
         return 1;
     }

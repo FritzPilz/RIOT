@@ -21,6 +21,7 @@
 #include "lwip/ethip6.h"
 #include "lwip/netif.h"
 #include "lwip/netifapi.h"
+#include "lwip/netif/compat.h"
 #include "lwip/netif/netdev.h"
 #include "lwip/opt.h"
 #include "lwip/pbuf.h"
@@ -64,16 +65,6 @@ static err_t _ieee802154_link_output(struct netif *netif, struct pbuf *p);
 static void _event_cb(netdev_t *dev, netdev_event_t event);
 static void *_event_loop(void *arg);
 
-static void _configure_netdev(netdev_t *dev)
-{
-    /* Enable RX-complete interrupts */
-    static const netopt_enable_t enable = NETOPT_ENABLE;
-    int res = dev->driver->set(dev, NETOPT_RX_END_IRQ, &enable, sizeof(enable));
-    if (res < 0) {
-        DEBUG("lwip_netdev: enable NETOPT_RX_END_IRQ failed: %d\n", res);
-    }
-}
-
 err_t lwip_netdev_init(struct netif *netif)
 {
     LWIP_ASSERT("netif != NULL", (netif != NULL));
@@ -96,7 +87,6 @@ err_t lwip_netdev_init(struct netif *netif)
     /* initialize netdev and netif */
     netdev = netif->state;
     netdev->driver->init(netdev);
-    _configure_netdev(netdev);
     netdev->event_callback = _event_cb;
     if (netdev->driver->get(netdev, NETOPT_DEVICE_TYPE, &dev_type,
                             sizeof(dev_type)) < 0) {
@@ -192,7 +182,6 @@ err_t lwip_netdev_init(struct netif *netif)
     }
     netif->flags |= NETIF_FLAG_IGMP;
     netif->flags |= NETIF_FLAG_MLD6;
-    netdev->context = netif;
 #if LWIP_IPV6_AUTOCONFIG
     netif->ip6_autoconfig_enabled = 1;
 #endif
@@ -279,7 +268,8 @@ static void _event_cb(netdev_t *dev, netdev_event_t event)
         }
     }
     else {
-        struct netif *netif = dev->context;
+        lwip_netif_t *compat_netif = dev->context;
+        struct netif *netif = &compat_netif->lwip_netif;
         switch (event) {
             case NETDEV_EVENT_RX_COMPLETE: {
                 struct pbuf *p = _get_recv_pkt(dev);

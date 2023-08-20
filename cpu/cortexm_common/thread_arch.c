@@ -463,13 +463,18 @@ void __attribute__((naked)) __attribute__((used)) isr_svc(void)
     __asm__ volatile (
     ".thumb_func            \n"
     "tst    lr, #4          \n" /* switch bit4(lr) == 1):   */
-    "ite    eq              \n"
-    "mrseq  r0, msp         \n" /* case 1: r0 = msp         */
-    "mrsne  r0, psp         \n" /* case 0: r0 = psp         */
+
     "b      _svc_dispatch   \n" /* return svc_dispatch()    */
     );
 #endif
 }
+
+#include "arm_cmse.h"
+#include "timex.h"
+#include "ztimer.h"
+#include "board.h"
+
+void configureSAU(int enable);
 
 static void __attribute__((used)) _svc_dispatch(unsigned int *svc_args)
 {
@@ -496,6 +501,23 @@ static void __attribute__((used)) _svc_dispatch(unsigned int *svc_args)
         case 1: /* SVC number used by cpu_switch_context_exit */
             SCB->ICSR = SCB_ICSR_PENDSVSET_Msk;
             break;
+	case 2:
+	      LED0_TOGGLE;
+	      ztimer_sleep(ZTIMER_USEC, 500*1000);
+	      puts("Check");
+	      configureSAU(1);
+	      puts("Check Check");
+	      break;
+	case 3:
+	      LED0_TOGGLE;
+	      ztimer_sleep(ZTIMER_USEC, 500*1000);
+	      puts("Check");
+	      configureSAU(0);
+	      puts("Check Check");
+	      break;
+	case 4:
+	      cmse_TT((void *) svc_args[0]);
+	      break;
         default:
             DEBUG("svc: unhandled SVC #%u\n", svc_number);
             break;

@@ -14,11 +14,14 @@ rsource "base64/Kconfig"
 rsource "benchmark/Kconfig"
 rsource "bitfield/Kconfig"
 rsource "bloom/Kconfig"
+rsource "bus/Kconfig"
 rsource "cb_mux/Kconfig"
 rsource "checksum/Kconfig"
+rsource "chunked_ringbuffer/Kconfig"
 rsource "color/Kconfig"
 rsource "crypto/Kconfig"
 rsource "congure/Kconfig"
+rsource "cpp11-compat/Kconfig"
 rsource "cpp_new_delete/Kconfig"
 rsource "cxx_ctor_guards/Kconfig"
 rsource "div/Kconfig"
@@ -47,8 +50,12 @@ config MODULE_NEWLIB
 config MODULE_PICOLIBC
     bool "Picolibc"
     depends on HAS_PICOLIBC
-
 endchoice
+
+config MODULE_LIBC_GETTIMEOFDAY
+    bool "Support for gettimeofday()"
+    select MODULE_XTIMER
+    select MODULE_ZTIMER64_XTIMER_COMPAT if MODULE_ZTIMER_XTIMER_COMPAT
 
 rsource "Kconfig.newlib"
 rsource "Kconfig.picolibc"
@@ -75,6 +82,7 @@ rsource "rtc_utils/Kconfig"
 rsource "saul_reg/Kconfig"
 rsource "schedstatistics/Kconfig"
 rsource "sema/Kconfig"
+rsource "senml/Kconfig"
 rsource "seq/Kconfig"
 rsource "shell/Kconfig"
 rsource "test_utils/Kconfig"

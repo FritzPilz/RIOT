@@ -24,9 +24,13 @@
 #include <string.h>
 
 #include "net/coap.h"
+#include "net/gnrc/netif.h"
+#include "net/ipv6.h"
 #include "net/nanocoap.h"
 #include "net/nanocoap_sock.h"
 #include "net/sock/udp.h"
+#include "net/sock/util.h"
+
 #include "od.h"
 
 static ssize_t _send(coap_pkt_t *pkt, size_t len, char *addr_str, char *port_str)
@@ -80,7 +84,7 @@ static ssize_t _send(coap_pkt_t *pkt, size_t len, char *addr_str, char *port_str
 int nanotest_client_cmd(int argc, char **argv)
 {
     /* Ordered like the RFC method code numbers, but off by 1. GET is code 0. */
-    char *method_codes[] = {"get", "post", "put"};
+    const char *method_codes[] = {"get", "post", "put"};
     unsigned buflen = 128;
     uint8_t buf[buflen];
     coap_pkt_t pkt;
@@ -160,4 +164,105 @@ int nanotest_client_cmd(int argc, char **argv)
     printf("usage: %s <get|post|put> <addr>[%%iface] <port> <path> [data]\n",
            argv[0]);
     return 1;
+}
+
+static int _blockwise_cb(void *arg, size_t offset, uint8_t *buf, size_t len, int more)
+{
+    (void)arg;
+    (void)more;
+
+    printf("offset %03u: ", (unsigned)offset);
+    for (unsigned i = 0; i < len; ++i) {
+        putchar(buf[i]);
+    }
+    puts("");
+
+    return 0;
+}
+
+int nanotest_client_url_cmd(int argc, char **argv)
+{
+    /* Ordered like the RFC method code numbers, but off by 1. GET is code 0. */
+    const char *method_codes[] = {"get", "post", "put"};
+
+    if (argc < 3) {
+        goto error;
+    }
+
+    int code_pos = -1;
+    for (size_t i = 0; i < ARRAY_SIZE(method_codes); i++) {
+        if (strcmp(argv[1], method_codes[i]) == 0) {
+            code_pos = i;
+            break;
+        }
+    }
+    if (code_pos == -1) {
+        goto error;
+    }
+
+    if (code_pos != 0) {
+        printf("TODO: implement %s request\n", method_codes[code_pos]);
+        return -1;
+    }
+
+    return nanocoap_get_blockwise_url(argv[2], COAP_BLOCKSIZE_32,
+                                      _blockwise_cb, NULL);
+error:
+    printf("usage: %s <get|post|put> <url> [data]\n", argv[0]);
+    return -1;
+}
+
+static const char song[] =
+    "Join us now and share the software;\n"
+    "You'll be free, hackers, you'll be free.\n"
+    "Join us now and share the software;\n"
+    "You'll be free, hackers, you'll be free.\n"
+    "\n"
+    "Hoarders can get piles of money,\n"
+    "That is true, hackers, that is true.\n"
+    "But they cannot help their neighbors;\n"
+    "That's not good, hackers, that's not good.\n"
+    "\n"
+    "When we have enough free software\n"
+    "At our call, hackers, at our call,\n"
+    "We'll kick out those dirty licenses\n"
+    "Ever more, hackers, ever more.\n"
+    "\n"
+    "Join us now and share the software;\n"
+    "You'll be free, hackers, you'll be free.\n"
+    "Join us now and share the software;\n"
+    "You'll be free, hackers, you'll be free.\n";
+
+int nanotest_client_put_cmd(int argc, char **argv)
+{
+    int res;
+    coap_block_request_t ctx;
+
+    if (argc < 2) {
+        printf("usage: %s <url>\n", argv[0]);
+        return 1;
+    }
+
+    res = nanocoap_block_request_init_url(&ctx, argv[1],
+                                          COAP_METHOD_PUT, COAP_BLOCKSIZE_32);
+    if (res < 0) {
+        printf("error: %d\n", res);
+        return res;
+    }
+
+    const char *pos = song;
+    size_t len = sizeof(song);
+
+    while (len) {
+        res = nanocoap_sock_block_request(&ctx, pos, len, 0, NULL, NULL);
+        if (res <= 0) {
+            puts(strerror(-res));
+            break;
+        }
+        len -= res;
+        pos += res;
+    }
+
+    nanocoap_block_request_done(&ctx);
+    return res;
 }

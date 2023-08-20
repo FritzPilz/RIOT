@@ -39,6 +39,11 @@ extern "C" {
 #define GET_RDP(x) ((x & 0xFF00) >> 8)
 
 /**
+ * @brief   Available number of ADC devices
+ */
+#define ADC_DEVS            (3U)
+
+/**
  * @brief   Override the ADC resolution configuration
  * @{
  */
@@ -52,6 +57,15 @@ typedef enum {
     ADC_RES_16BIT = 2               /**< ADC resolution: 16 bit (not supported)*/
 } adc_res_t;
 /** @} */
+
+/**
+ * @name   Constants for internal VBAT ADC line
+ * @{
+ */
+#define VBAT_ADC_RES        ADC_RES_12BIT
+#define VBAT_ADC_MAX        4095
+/** @} */
+
 #endif /* ndef DOXYGEN */
 
 #ifdef __cplusplus

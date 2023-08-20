@@ -278,19 +278,19 @@ ssize_t sock_udp_recv_buf_aux(sock_udp_t *sock, void **data, void **buf_ctx,
     return res;
 }
 
-ssize_t sock_udp_send_aux(sock_udp_t *sock, const void *data, size_t len,
-                          const sock_udp_ep_t *remote, sock_udp_aux_tx_t *aux)
+ssize_t sock_udp_sendv_aux(sock_udp_t *sock,
+                           const iolist_t *snips,
+                           const sock_udp_ep_t *remote, sock_udp_aux_tx_t *aux)
 {
     (void)aux;
     int res;
-    gnrc_pktsnip_t *payload, *pkt;
+    gnrc_pktsnip_t *pkt, *payload = NULL;
     uint16_t src_port = 0, dst_port;
     sock_ip_ep_t local;
     sock_udp_ep_t remote_cpy;
     sock_ip_ep_t *rem;
 
     assert((sock != NULL) || (remote != NULL));
-    assert((len == 0) || (data != NULL)); /* (len != 0) => (data != NULL) */
 
     if (remote != NULL) {
         if (remote->port == 0) {
@@ -345,6 +345,16 @@ ssize_t sock_udp_send_aux(sock_udp_t *sock, const void *data, size_t len,
         src_port = sock->local.port;
         memcpy(&local, &sock->local, sizeof(local));
     }
+#if IS_USED(MODULE_SOCK_AUX_LOCAL)
+    /* user supplied local endpoint takes precedent */
+    if ((aux != NULL) && (aux->flags & SOCK_AUX_SET_LOCAL)) {
+        local.family = aux->local.family;
+        local.netif = aux->local.netif;
+        memcpy(&local.addr, &aux->local.addr, sizeof(local.addr));
+
+        aux->flags &= ~SOCK_AUX_SET_LOCAL;
+    }
+#endif
     /* sock can't be NULL at this point */
     if (remote == NULL) {
         rem = (sock_ip_ep_t *)&sock->remote;
@@ -362,11 +372,16 @@ ssize_t sock_udp_send_aux(sock_udp_t *sock, const void *data, size_t len,
     else if (local.family != rem->family) {
         return -EINVAL;
     }
-    /* generate payload and header snips */
-    payload = gnrc_pktbuf_add(NULL, (void *)data, len, GNRC_NETTYPE_UNDEF);
+
+    /* allocate snip for payload */
+    payload = gnrc_pktbuf_add(NULL, NULL, iolist_size(snips), GNRC_NETTYPE_UNDEF);
     if (payload == NULL) {
         return -ENOMEM;
     }
+
+    /* copy payload data into payload snip */
+    iolist_to_buffer(snips, payload->data, payload->size);
+
     pkt = gnrc_udp_hdr_build(payload, src_port, dst_port);
     if (pkt == NULL) {
         gnrc_pktbuf_release(payload);

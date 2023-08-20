@@ -7,6 +7,7 @@
 
 #
 : ${TEST_BOARDS_AVAILABLE:="esp32-wroom-32 samr21-xpro"}
+#: ${EMULATED_BOARDS_AVAILABLE:="microbit"}
 
 # temporarily disabling llvm builds until https://github.com/RIOT-OS/RIOT/pull/15595
 # is in
@@ -31,7 +32,9 @@ cc1352-launchpad
 cc2650-launchpad
 derfmega128
 dwm1001
+esp32-ci
 esp32-heltec-lora32-v2
+esp8266-ci
 esp8266-esp-12x
 hamilton
 hifive1
@@ -65,6 +68,7 @@ slstk3400a
 sltb001a
 slwstk6220a
 stm32f723e-disco
+stm32mp157c-dk2
 waspmote-pro
 weact-f401ce
 z1
@@ -88,6 +92,7 @@ tests/driver_s*
 tests/driver_t*
 tests/driver_u*
 tests/driver_v*
+tests/external_board_dirs
 tests/periph_*
 tests/pkg_elk
 tests/pkg_uzlib
@@ -106,17 +111,9 @@ tests/ieee802154_hal
 # modules or packages.
 # Eventually this list will be removed...
 #
-# msbiot and pyboard are on the list as kconfig tunes the pll due to different
-# HSE values from the standard, this is not the case in makefile.
 : ${TEST_KCONFIG_BOARD_BLOCKLIST:="
 6lowpan-clicker
 pic32-wifire
-
-esp32-wrover-kit
-esp8266-olimex-mod
-
-msbiot
-pyboard
 "}
 
 # This list will force all boards that are not in the TEST_KCONFIG_BOARD_BLOCKLIST
@@ -485,10 +482,16 @@ compile() {
 
     # run tests
     if [ $RES -eq 0 ]; then
-        if [ $RUN_TESTS -eq 1 -o "$board" = "native" ]; then
+        if is_in_list "$board" "$EMULATED_BOARDS_AVAILABLE"; then
+            EMULATED=1
+        else
+            EMULATED=0
+        fi
+
+        if [ $RUN_TESTS -eq 1 -o "$board" = "native" -o "$EMULATED" = "1" ]; then
             if [ -f "${BINDIR}/.test" ]; then
-                if [ "$board" = "native" ]; then
-                    BOARD=$board make -C${appdir} test
+                if [ "$board" = "native" -o "${EMULATED}" = "1" ]; then
+                    EMULATE=${EMULATED} BOARD=$board make -C${appdir} test
                     RES=$?
                 elif is_in_list "$board" "$TEST_BOARDS_AVAILABLE"; then
                     echo "-- test_hash=$test_hash"
@@ -504,10 +507,10 @@ compile() {
         fi
     fi
 
+    # log some build stats
     if [ -d ${BINDIR} ]
     then
-        echo "-- build directory size: $(du -sh ${BINDIR} | cut -f1)"
-
+        echo "{\"build/\": $(du -s ${BINDIR} | cut -f1)}"
         # cleanup
         rm -rf ${BINDIR}
     fi

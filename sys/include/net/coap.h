@@ -36,10 +36,12 @@ extern "C" {
  * @{
  */
 #define COAP_OPT_URI_HOST       (3)
+#define COAP_OPT_ETAG           (4)
 #define COAP_OPT_OBSERVE        (6)
 #define COAP_OPT_LOCATION_PATH  (8)
 #define COAP_OPT_URI_PATH       (11)
 #define COAP_OPT_CONTENT_FORMAT (12)
+#define COAP_OPT_MAX_AGE        (14)
 #define COAP_OPT_URI_QUERY      (15)
 #define COAP_OPT_ACCEPT         (17)
 #define COAP_OPT_LOCATION_QUERY (20)
@@ -170,6 +172,13 @@ extern "C" {
 /** @} */
 
 /**
+ * @name    CoAP option constants
+ * @{
+ */
+#define COAP_ETAG_LENGTH_MAX     (8U)   /**< maximum length of the ETag option */
+/** @} */
+
+/**
  * @defgroup net_coap_conf    CoAP compile configurations
  * @ingroup  net_coap
  * @ingroup  config
@@ -183,16 +192,16 @@ extern "C" {
  * @{
  */
 /**
- * @brief    Timeout in seconds for a response to a confirmable request
+ * @brief    Timeout in milliseconds for a response to a confirmable request
  *
  * This value is for the response to the *initial* confirmable message. The
  * timeout doubles for subsequent retries. To avoid synchronization of resends
  * across hosts, the actual timeout is chosen randomly between
- * @ref CONFIG_COAP_ACK_TIMEOUT and
- * (@ref CONFIG_COAP_ACK_TIMEOUT * @ref CONFIG_COAP_RANDOM_FACTOR_1000 / 1000).
+ * @ref CONFIG_COAP_ACK_TIMEOUT_MS and
+ * (@ref CONFIG_COAP_ACK_TIMEOUT_MS * @ref CONFIG_COAP_RANDOM_FACTOR_1000 / 1000).
  */
-#ifndef CONFIG_COAP_ACK_TIMEOUT
-#define CONFIG_COAP_ACK_TIMEOUT        (2U)
+#ifndef CONFIG_COAP_ACK_TIMEOUT_MS
+#define CONFIG_COAP_ACK_TIMEOUT_MS     (2000U)
 #endif
 
 /**
@@ -202,7 +211,7 @@ extern "C" {
  * ([RFC 7252, section 4.2](https://tools.ietf.org/html/rfc7252#section-4.2))
  * multiplied by 1000, to avoid floating point arithmetic.
  *
- * See @ref CONFIG_COAP_ACK_TIMEOUT
+ * See @ref CONFIG_COAP_ACK_TIMEOUT_MS
  */
 #ifndef CONFIG_COAP_RANDOM_FACTOR_1000
 #define CONFIG_COAP_RANDOM_FACTOR_1000      (1500)
@@ -232,6 +241,19 @@ extern "C" {
 #define COAP_BLOCKWISE_SZX_MASK (0x07)
 #define COAP_BLOCKWISE_SZX_MAX  (7)
 /** @} */
+
+/**
+ * @brief Coap block-wise-transfer size SZX
+ */
+typedef enum {
+    COAP_BLOCKSIZE_16 = 0,
+    COAP_BLOCKSIZE_32,
+    COAP_BLOCKSIZE_64,
+    COAP_BLOCKSIZE_128,
+    COAP_BLOCKSIZE_256,
+    COAP_BLOCKSIZE_512,
+    COAP_BLOCKSIZE_1024,
+} coap_blksize_t;
 
 #ifdef __cplusplus
 }

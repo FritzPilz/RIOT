@@ -31,7 +31,6 @@ USEMODULE += saul
 USEMODULE += saul_reg
 USEMODULE += saul_default
 USEMODULE += ztimer_usec
-USEMODULE += ztimer_msec
 
 # Change this to 0 to not use ethos
 USE_ETHOS ?= 0

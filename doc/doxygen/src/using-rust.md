@@ -84,21 +84,26 @@ Toolchain {#toolchain}
 
 To install the necessary Rust components, it is easiest use [**rustup**, installed as described on its website].
 
-Using Rust on RIOT requires a nightly version of Rust,
-because some transpiled expressions for RIOT make use of unstable features,
-and because the RIOT wrappers use some unstable idioms.
+Using Rust on RIOT needs the latest stable or nightly version of Rust,
+depending on the precise example used.
+(Several modules, such as CoAP, SAUL or the shell, need features not yet available on stable yet;
+the minimal test is performed on stable, and examples are configured to use stable as it becomes available).
 
-Make sure you have both the nightly **toolchain**
+Make sure you have both the nightly and stable **toolchains**
 and the core library for the CPU (**target**) of your choice available:
 
 ```
 $ rustup toolchain add nightly
+$ rustup toolchain add stable
 $ rustup target add thumbv7m-none-eabi --toolchain nightly
+$ rustup target add thumbv7m-none-eabi --toolchain stable
 ```
 
-(Substitute thumbv7m-none-eavi with the value of `RUST_TARGET`
+Substitute thumbv7m-none-eabi with the value of `RUST_TARGET`
 in the output of `make info-build` of an application that has your current board selected,
 or just add it later whenever the Rust compiler complains about not finding the core library for a given target).
+Installing only nightly will work just as well,
+but you may need to remove the `CARGO_CHANNEL = stable` lines from tests or examples.
 
 
 While Rust comes with its own [cargo] dependency tracker for any Rust code,
@@ -116,17 +121,20 @@ This encompass both components needed for riot-sys and for the later installatio
 
 Installing **C2Rust** is special because
 it can only be built using a particular nightly version
-(as explained in its [introduction post])
-and needs some patches applied:
+(as explained in its [introduction post]):
 
 ```shell
 $ rustup install nightly-2019-12-05
 $ rustup component add --toolchain nightly-2019-12-05 rustfmt rustc-dev
-$ cargo +nightly-2019-12-05 install c2rust
-$ git clone https://github.com/chrysn-pull-requests/c2rust -b for-riot
+$ git clone https://github.com/immunant/c2rust
 $ cd c2rust
+$ git reset --hard 6674d785
 $ cargo +nightly-2019-12-05 install --locked --path c2rust
 ```
+
+The `git reset` step pins C2Rust to the version at time of writing.
+It is expected that later versions of C2Rust would work just as well,
+but they may need a more recent nightly Rust.
 
 [cargo]: https://doc.rust-lang.org/cargo/
 [**rustup**, installed as described on its website]: https://rustup.rs/
@@ -145,4 +153,4 @@ Dealing with this,
 and other aspects of maintenance of the crates,
 is described in [the `rust_minimal` test's README].
 
-[the `rust_minimal` test's README]: (https://github.com/RIOT-OS/RIOT/blob/master/tests/rust_minimal/README.md).
+[the `rust_minimal` test's README]: https://github.com/RIOT-OS/RIOT/blob/master/tests/rust_minimal/README.md

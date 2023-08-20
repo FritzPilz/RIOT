@@ -325,7 +325,14 @@ void thread_sleep(void);
  *
  * @see     thread_yield_higher()
  */
+#if defined(MODULE_CORE_THREAD) || DOXYGEN
 void thread_yield(void);
+#else
+static inline void thread_yield(void)
+{
+    /* NO-OP */
+}
+#endif
 
 /**
  * @brief   Lets current thread yield in favor of a higher prioritized thread.
@@ -436,9 +443,16 @@ void thread_add_to_list(list_node_t *list, thread_t *thread);
  * @return          the threads name
  * @return          `NULL` if pid is unknown
  */
+#if defined(MODULE_CORE_THREAD) || DOXYGEN
 const char *thread_getname(kernel_pid_t pid);
+#else
+static inline const char *thread_getname(kernel_pid_t pid)
+{
+    (void)pid;
+    return "(none)";
+}
+#endif
 
-#ifdef DEVELHELP
 /**
  * @brief Measures the stack usage of a stack
  *
@@ -449,7 +463,6 @@ const char *thread_getname(kernel_pid_t pid);
  * @return          the amount of unused space of the thread's stack
  */
 uintptr_t thread_measure_stack_free(const char *stack);
-#endif /* DEVELHELP */
 
 /**
  * @brief   Get the number of bytes used on the ISR stack

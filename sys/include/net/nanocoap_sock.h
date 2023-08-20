@@ -134,10 +134,28 @@
 
 #include "net/nanocoap.h"
 #include "net/sock/udp.h"
+#include "net/sock/util.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+/**
+ * @brief   nanocoap socket type
+ *
+ */
+typedef sock_udp_t nanocoap_sock_t;
+
+/**
+ * @brief Blockwise request helper struct
+ */
+typedef struct {
+    nanocoap_sock_t sock;           /**< socket used for the request        */
+    const char *path;               /**< path on the server                 */
+    uint32_t blknum;                /**< current block number               */
+    uint8_t method;                 /**< request method (GET, POST, PUT)    */
+    uint8_t blksize;                /**< CoAP blocksize exponent            */
+} coap_block_request_t;
 
 /**
  * @brief   Start a nanocoap server instance
@@ -154,9 +172,43 @@ extern "C" {
 int nanocoap_server(sock_udp_ep_t *local, uint8_t *buf, size_t bufsize);
 
 /**
+ * @brief   Create a CoAP client socket
+ *
+ * @param[out]  sock    CoAP UDP socket
+ * @param[in]   local   Local UDP endpoint, may be NULL
+ * @param[in]   remote  remote UDP endpoint
+ *
+ * @returns     0 on success
+ * @returns     <0 on error
+ */
+int nanocoap_sock_connect(nanocoap_sock_t *sock, sock_udp_ep_t *local,
+                          sock_udp_ep_t *remote);
+
+/**
+ * @brief   Create a CoAP client socket by URL
+ *
+ * @param[in]   url     URL with server information to connect to
+ * @param[out]  sock    CoAP UDP socket
+ *
+ * @returns     0 on success
+ * @returns     <0 on error
+ */
+int nanocoap_sock_url_connect(const char *url, nanocoap_sock_t *sock);
+
+/**
+ * @brief   Close a CoAP client socket
+ *
+ * @param[in]  sock     CoAP UDP socket
+ */
+static inline void nanocoap_sock_close(nanocoap_sock_t *sock)
+{
+    sock_udp_close(sock);
+}
+
+/**
  * @brief   Simple synchronous CoAP (confirmable) get
  *
- * @param[in]   remote  remote UDP endpoint
+ * @param[in]   sock    socket to use for the request
  * @param[in]   path    remote path
  * @param[out]  buf     buffer to write response to
  * @param[in]   len     length of @p buffer
@@ -164,8 +216,103 @@ int nanocoap_server(sock_udp_ep_t *local, uint8_t *buf, size_t bufsize);
  * @returns     length of response payload on success
  * @returns     <0 on error
  */
-ssize_t nanocoap_get(sock_udp_ep_t *remote, const char *path, uint8_t *buf,
-                     size_t len);
+ssize_t nanocoap_sock_get(nanocoap_sock_t *sock, const char *path, void *buf,
+                          size_t len);
+
+/**
+ * @brief    Performs a blockwise coap get request on a socket.
+ *
+ * This function will fetch the content of the specified resource path via
+ * block-wise-transfer. A coap_blockwise_cb_t will be called on each received
+ * block.
+ *
+ * @param[in]   sock       socket to use for the request
+ * @param[in]   path       pointer to source path
+ * @param[in]   blksize    sender suggested SZX for the COAP block request
+ * @param[in]   callback   callback to be executed on each received block
+ * @param[in]   arg        optional function arguments
+ *
+ * @returns     -1         if failed to fetch the url content
+ * @returns      0         on success
+ */
+int nanocoap_sock_get_blockwise(nanocoap_sock_t *sock, const char *path,
+                                coap_blksize_t blksize,
+                                coap_blockwise_cb_t callback, void *arg);
+
+/**
+ * @brief    Performs a blockwise coap get request to the specified url.
+ *
+ * This function will fetch the content of the specified resource path via
+ * block-wise-transfer. A coap_blockwise_cb_t will be called on each received
+ * block.
+ *
+ * @param[in]   url        Absolute URL pointer to source path (i.e. not containing
+ *                         a fragment identifier)
+ * @param[in]   blksize    sender suggested SZX for the COAP block request
+ * @param[in]   callback   callback to be executed on each received block
+ * @param[in]   arg        optional function arguments
+ *
+ * @returns     -EINVAL    if an invalid url is provided
+ * @returns     -1         if failed to fetch the url content
+ * @returns      0         on success
+ */
+int nanocoap_get_blockwise_url(const char *url,
+                               coap_blksize_t blksize,
+                               coap_blockwise_cb_t callback, void *arg);
+
+/**
+ * @brief    Performs a blockwise coap get request to the specified url, store
+ *           the response in a buffer.
+ *
+ * This function will fetch the content of the specified resource path via
+ * block-wise-transfer.
+ * The blocks will be re-assembled into @p buf
+ *
+ * @param[in]   url        Absolute URL pointer to source path (i.e. not containing
+ *                         a fragment identifier)
+ * @param[in]   blksize    sender suggested SZX for the COAP block request
+ * @param[in]   buf        Target buffer
+ * @param[in]   len        Target buffer length
+ *
+ * @returns     -EINVAL    if an invalid url is provided
+ * @returns     -1         if failed to fetch the url content
+ * @returns     size of the response payload on success
+ */
+ssize_t nanocoap_get_blockwise_url_to_buf(const char *url,
+                                          coap_blksize_t blksize,
+                                          void *buf, size_t len);
+
+/**
+ * @brief   Simple synchronous CoAP request
+ *
+ * @param[in]       sock    socket to use for the request
+ * @param[in,out]   pkt     Packet struct containing the request. Is reused for
+ *                          the response
+ * @param[in]       len     Total length of the buffer associated with the
+ *                          request
+ *
+ * @returns     length of response on success
+ * @returns     <0 on error
+ */
+ssize_t nanocoap_sock_request(nanocoap_sock_t *sock, coap_pkt_t *pkt, size_t len);
+
+/**
+ * @brief   Simple synchronous CoAP request with callback
+ *
+ *          The response will be handled by a callback, which avoids copying the
+ *          response packet out of the network stack internal buffer.
+ *
+ * @param[in]       sock    socket to use for the request
+ * @param[in,out]   pkt     Packet struct containing the request. Is reused for
+ *                          the response
+ * @param[in]       cb      Callback executed for response packet
+ * @param[in]       arg     Optional callback argumnent
+ *
+ * @returns     length of response on success
+ * @returns     <0 on error
+ */
+ssize_t nanocoap_sock_request_cb(sock_udp_t *sock, coap_pkt_t *pkt,
+                                 coap_request_cb_t cb, void *arg);
 
 /**
  * @brief   Simple synchronous CoAP request
@@ -183,6 +330,101 @@ ssize_t nanocoap_get(sock_udp_ep_t *remote, const char *path, uint8_t *buf,
 ssize_t nanocoap_request(coap_pkt_t *pkt, sock_udp_ep_t *local,
                          sock_udp_ep_t *remote, size_t len);
 
+/**
+ * @brief   Simple synchronous CoAP (confirmable) get
+ *
+ * @param[in]   remote  remote UDP endpoint
+ * @param[in]   path    remote path
+ * @param[out]  buf     buffer to write response to
+ * @param[in]   len     length of @p buffer
+ *
+ * @returns     length of response payload on success
+ * @returns     <0 on error
+ */
+ssize_t nanocoap_get(sock_udp_ep_t *remote, const char *path, void *buf,
+                     size_t len);
+
+/**
+ * @brief   Initialize block request context
+ *
+ * @param[out]  ctx     The block request context to initialize
+ * @param[in]   remote  Server endpoint
+ * @param[in]   path    Server path for request
+ * @param[in]   method  Request method (`COAP_METHOD_{GET|PUT|POST}`)
+ * @param[in]   blksize Request blocksize exponent
+ *
+ * @retval      0       Success
+ * @retval      <0      Error (see @ref nanocoap_sock_connect for details)
+ */
+static inline int nanocoap_block_request_init(coap_block_request_t *ctx,
+                                              sock_udp_ep_t *remote,
+                                              const char *path,
+                                              uint8_t method,
+                                              coap_blksize_t blksize)
+{
+    ctx->path = path;
+    ctx->blknum = 0;
+    ctx->method = method;
+    ctx->blksize = blksize;
+    return nanocoap_sock_connect(&ctx->sock, NULL, remote);
+}
+
+/**
+ * @brief   Initialize block request context by URL
+ *
+ * @param[out]  ctx     The block request context to initialize
+ * @param[in]   url     The request URL
+ * @param[in]   method  Request method (`COAP_METHOD_{GET|PUT|POST}`)
+ * @param[in]   blksize Request blocksize exponent
+ *
+ * @retval      0       Success
+ * @retval      <0      Error (see @ref nanocoap_sock_url_connect for details)
+ */
+static inline int nanocoap_block_request_init_url(coap_block_request_t *ctx,
+                                                  const char *url,
+                                                  uint8_t method,
+                                                  coap_blksize_t blksize)
+{
+    ctx->path = sock_urlpath(url);
+    ctx->blknum = 0;
+    ctx->method = method;
+    ctx->blksize = blksize;
+    return nanocoap_sock_url_connect(url, &ctx->sock);
+}
+
+/**
+ * @brief   Free block request context
+ *
+ * @param[out]  ctx     The block request context to finalize
+ */
+static inline void nanocoap_block_request_done(coap_block_request_t *ctx)
+{
+    nanocoap_sock_close(&ctx->sock);
+}
+
+/**
+ * @brief   Do a block-wise request, send a single block.
+ *
+ *          This method is expected to be called in a loop until all
+ *          payload blocks have been transferred.
+ *
+ * @pre     @p ctx was initialized with @ref nanocoap_block_request_init or
+ *          @ref nanocoap_block_request_init_url
+ *
+ * @param[in]   ctx     blockwise request context
+ * @param[in]   data    payload to send
+ * @param[in]   len     payload length
+ * @param[in]   more    more blocks after this one
+ *                      (will be set automatically if @p len > block size)
+ * @param[in]   cb      callback for response
+ * @param[in]   arg     callback context
+ *
+ * @return      Number of payload bytes written on success
+ *              Negative error on failure
+ */
+int nanocoap_sock_block_request(coap_block_request_t *ctx,
+                                const void *data, size_t len, bool more,
+                                coap_request_cb_t cb, void *arg);
 #ifdef __cplusplus
 }
 #endif

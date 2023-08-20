@@ -3,8 +3,8 @@ PKG_URL=https://github.com/bytecodealliance/wasm-micro-runtime.git
 ifeq ($(PKG_BLEADING),1)
   PKG_VERSION=main
 else
-  PKG_VERSION=770ca8c90c8803f934bf681cd29949b7fb5291a3
-  #main 2022-01-28
+  PKG_VERSION=d7a2888b18c478d87ce8094e1419b4e061db289f
+  #release tag: WAMR-05-18-2022
 endif
 PKG_LICENSE=Apache-2.0
 
@@ -36,6 +36,7 @@ ifeq ($(findstring arm,$(OS_ARCH)),arm)
   WAMR_BUILD_TARGET = ARM
 endif
 ifeq ($(findstring aarch,$(OS_ARCH)),aarch)
+  #using 32Bit arm on native aarch
   WAMR_BUILD_TARGET = ARM
 endif
 else ifeq ($(findstring arm,$(CPU_ARCH)),arm)

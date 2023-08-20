@@ -37,6 +37,7 @@
 
 #ifdef MODULE_SUIT_TRANSPORT_COAP
 #include "suit/transport/coap.h"
+#include "net/nanocoap_sock.h"
 #endif
 #include "suit/transport/mock.h"
 
@@ -48,8 +49,8 @@ static int _get_component_size(suit_manifest_t *manifest,
 {
     nanocbor_value_t param_size;
     if ((suit_param_ref_to_cbor(manifest, &comp->param_size, &param_size) == 0)
-            || (nanocbor_get_uint32(&param_size, img_size) < 0)) { return
-        SUIT_ERR_INVALID_MANIFEST;
+            || (nanocbor_get_uint32(&param_size, img_size) < 0)) {
+        return SUIT_ERR_INVALID_MANIFEST;
     }
     return SUIT_OK;
 }
@@ -358,9 +359,9 @@ static int _dtv_fetch(suit_manifest_t *manifest, int key,
     if (0) {}
 #ifdef MODULE_SUIT_TRANSPORT_COAP
     else if (strncmp(manifest->urlbuf, "coap://", 7) == 0) {
-        res = suit_coap_get_blockwise_url(manifest->urlbuf, CONFIG_SUIT_COAP_BLOCKSIZE,
-                                          suit_storage_helper,
-                                          manifest);
+        res = nanocoap_get_blockwise_url(manifest->urlbuf, CONFIG_SUIT_COAP_BLOCKSIZE,
+                                         suit_storage_helper,
+                                         manifest);
     }
 #endif
 #ifdef MODULE_SUIT_TRANSPORT_MOCK
@@ -487,8 +488,14 @@ static int _dtv_verify_image_match(suit_manifest_t *manifest, int key,
     LOG_INFO("Starting digest verification against image\n");
     res = _validate_payload(comp, digest, img_size);
     if (res == SUIT_OK) {
-        LOG_INFO("Install correct payload\n");
-        suit_storage_install(comp->storage_backend, manifest);
+        if (!suit_component_check_flag(comp, SUIT_COMPONENT_STATE_INSTALLED)) {
+            LOG_INFO("Install correct payload\n");
+            suit_storage_install(comp->storage_backend, manifest);
+            suit_component_set_flag(comp, SUIT_COMPONENT_STATE_INSTALLED);
+        }
+        if (suit_component_check_flag(comp, SUIT_COMPONENT_STATE_INSTALLED)) {
+            LOG_INFO("Verified installed payload\n");
+        }
     }
     else {
         LOG_INFO("Erasing bad payload\n");

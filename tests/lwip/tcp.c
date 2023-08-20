@@ -29,7 +29,7 @@
 #include "shell.h"
 #include "test_utils/expect.h"
 #include "thread.h"
-#include "xtimer.h"
+#include "ztimer.h"
 
 #ifdef MODULE_SOCK_TCP
 static char sock_inbuf[SOCK_INBUF_SIZE];
@@ -131,7 +131,7 @@ static int tcp_connect(char *addr_str, char *local_port_str)
     }
 
     /* parse destination address */
-    if (sock_tcp_str2ep(&dst, addr_str) < 0) {
+    if (sock_tcp_name2ep(&dst, addr_str) < 0) {
         puts("Error: unable to parse destination address");
         return 1;
     }
@@ -174,7 +174,7 @@ static int tcp_send(char *data, unsigned int num, unsigned int delay)
         else {
             printf("Success: send %u byte over TCP to server\n", (unsigned)data_len);
         }
-        xtimer_usleep(delay);
+        ztimer_sleep(ZTIMER_USEC, delay);
     }
     return 0;
 }

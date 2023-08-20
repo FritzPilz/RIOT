@@ -32,6 +32,8 @@ BOARD_PROVIDES_NETIF := \
     nrf52dk \
     nrf6310 \
     nucleo-f207zg \
+    nucleo-f429zi \
+    nucleo-f439zi \
     nucleo-f767zi \
     openlabs-kw41z-mini \
     openlabs-kw41z-mini-256kib \
@@ -47,6 +49,7 @@ BOARD_PROVIDES_NETIF := \
     samr30-xpro \
     spark-core \
     stm32f746g-disco \
+    stm32f7508-dk \
     telosb \
     thingy52 \
     usb-kw41z \

@@ -42,6 +42,16 @@
 #endif
 
 /**
+ * @brief Automatic mountpoints
+ */
+XFA_INIT(vfs_mount_t, vfs_mountpoints_xfa);
+
+/**
+ * @brief Number of automatic mountpoints
+ */
+#define MOUNTPOINTS_NUMOF XFA_LEN(vfs_mount_t, vfs_mountpoints_xfa)
+
+/**
  * @internal
  * @brief Array of all currently open files
  *
@@ -190,6 +200,7 @@ int vfs_fstat(int fd, struct stat *buf)
         /* driver does not implement fstat() */
         return -EINVAL;
     }
+    memset(buf, 0, sizeof(*buf));
     return filp->f_op->fstat(filp, buf);
 }
 
@@ -204,15 +215,26 @@ int vfs_fstatvfs(int fd, struct statvfs *buf)
         return res;
     }
     vfs_file_t *filp = &_vfs_open_files[fd];
-    if (filp->mp->fs->fs_op->fstatvfs == NULL) {
-        /* file system driver does not implement fstatvfs() */
-        if (filp->mp->fs->fs_op->statvfs != NULL) {
-            /* Fall back to statvfs */
-            return filp->mp->fs->fs_op->statvfs(filp->mp, "/", buf);
-        }
+    memset(buf, 0, sizeof(*buf));
+    if (filp->mp->fs->fs_op->statvfs == NULL) {
+        /* file system driver does not implement statvfs() */
         return -EINVAL;
     }
-    return filp->mp->fs->fs_op->fstatvfs(filp->mp, filp, buf);
+    return filp->mp->fs->fs_op->statvfs(filp->mp, "/", buf);
+}
+
+int vfs_dstatvfs(vfs_DIR *dirp, struct statvfs *buf)
+{
+    DEBUG("vfs_dstatvfs: %p, %p\n", (void*)dirp, (void *)buf);
+    if (buf == NULL) {
+        return -EFAULT;
+    }
+    memset(buf, 0, sizeof(*buf));
+    if (dirp->mp->fs->fs_op->statvfs == NULL) {
+        /* file system driver does not implement statvfs() */
+        return -EINVAL;
+    }
+    return dirp->mp->fs->fs_op->statvfs(dirp->mp, "/", buf);
 }
 
 off_t vfs_lseek(int fd, off_t off, int whence)
@@ -331,6 +353,22 @@ ssize_t vfs_write(int fd, const void *src, size_t count)
         return -EINVAL;
     }
     return filp->f_op->write(filp, src, count);
+}
+
+ssize_t vfs_write_iol(int fd, const iolist_t *snips)
+{
+    int res, sum = 0;
+
+    while (snips) {
+        res = vfs_write(fd, snips->iol_base, snips->iol_len);
+        if (res < 0) {
+            return res;
+        }
+        sum += res;
+        snips = snips->iol_next;
+    }
+
+    return sum;
 }
 
 int vfs_fsync(int fd)
@@ -500,7 +538,7 @@ int vfs_mount(vfs_mount_t *mountp)
             }
         }
     }
-    /* insert last in list */
+    /* Insert last in list. This property is relied on by vfs_iterate_mount_dirs. */
     clist_rpush(&_vfs_mounts_list, &mountp->list_entry);
     mutex_unlock(&_mount_mutex);
     DEBUG("vfs_mount: mount done\n");
@@ -571,7 +609,7 @@ int vfs_rename(const char *from_path, const char *to_path)
         DEBUG("vfs_rename: rename not supported by fs!\n");
         /* remember to decrement the open_files count */
         atomic_fetch_sub(&mountp->open_files, 1);
-        return -EPERM;
+        return -EROFS;
     }
     const char *rel_to;
     vfs_mount_t *mountp_to;
@@ -630,7 +668,7 @@ int vfs_unlink(const char *name)
         DEBUG("vfs_unlink: unlink not supported by fs!\n");
         /* remember to decrement the open_files count */
         atomic_fetch_sub(&mountp->open_files, 1);
-        return -EPERM;
+        return -EROFS;
     }
     res = mountp->fs->fs_op->unlink(mountp, rel_path);
     DEBUG("vfs_unlink: unlink %p, \"%s\"", (void *)mountp, rel_path);
@@ -667,7 +705,7 @@ int vfs_mkdir(const char *name, mode_t mode)
         DEBUG("vfs_mkdir: mkdir not supported by fs!\n");
         /* remember to decrement the open_files count */
         atomic_fetch_sub(&mountp->open_files, 1);
-        return -EPERM;
+        return -EROFS;
     }
     res = mountp->fs->fs_op->mkdir(mountp, rel_path, mode);
     DEBUG("vfs_mkdir: mkdir %p, \"%s\"", (void *)mountp, rel_path);
@@ -704,7 +742,7 @@ int vfs_rmdir(const char *name)
         DEBUG("vfs_rmdir: rmdir not supported by fs!\n");
         /* remember to decrement the open_files count */
         atomic_fetch_sub(&mountp->open_files, 1);
-        return -EPERM;
+        return -EROFS;
     }
     res = mountp->fs->fs_op->rmdir(mountp, rel_path);
     DEBUG("vfs_rmdir: rmdir %p, \"%s\"", (void *)mountp, rel_path);
@@ -743,6 +781,7 @@ int vfs_stat(const char *restrict path, struct stat *restrict buf)
         atomic_fetch_sub(&mountp->open_files, 1);
         return -EPERM;
     }
+    memset(buf, 0, sizeof(*buf));
     res = mountp->fs->fs_op->stat(mountp, rel_path, buf);
     /* remember to decrement the open_files count */
     atomic_fetch_sub(&mountp->open_files, 1);
@@ -772,6 +811,7 @@ int vfs_statvfs(const char *restrict path, struct statvfs *restrict buf)
         atomic_fetch_sub(&mountp->open_files, 1);
         return -EPERM;
     }
+    memset(buf, 0, sizeof(*buf));
     res = mountp->fs->fs_op->statvfs(mountp, rel_path, buf);
     /* remember to decrement the open_files count */
     atomic_fetch_sub(&mountp->open_files, 1);
@@ -872,14 +912,60 @@ const vfs_mount_t *vfs_iterate_mounts(const vfs_mount_t *cur)
             /* empty list */
             return NULL;
         }
+        node = node->next;
     }
     else {
         node = cur->list_entry.next;
-        if (node == _vfs_mounts_list.next) {
+        if (node == _vfs_mounts_list.next->next) {
             return NULL;
         }
     }
     return container_of(node, vfs_mount_t, list_entry);
+}
+
+/* General implementation note: This heavily relies on the produced opened dir
+ * to lock keep the underlying mount point from closing. */
+bool vfs_iterate_mount_dirs(vfs_DIR *dir)
+{
+    /* This is NULL after the prescribed initialization, or a valid (and
+     * locked) mount point otherwise */
+    vfs_mount_t *last_mp = dir->mp;
+
+    /* This is technically violating vfs_iterate_mounts' API, as that says no
+     * mounts or unmounts on the chain while iterating. However, as we know
+     * that the current dir's mount point is still on, the equivalent procedure
+     * of starting a new round of `vfs_iterate_mounts` from NULL and calling it
+     * until it produces `last_mp` (all while holding _mount_mutex) would leave
+     * us with the very same situation as if we started iteration with last_mp.
+     *
+     * On the cast discarding const: vfs_iterate_mounts's type is more for
+     * public use */
+    vfs_mount_t *next = (vfs_mount_t *)vfs_iterate_mounts(last_mp);
+    if (next == NULL) {
+        /* Ignoring errors, can't help with them */
+        vfs_closedir(dir);
+        return false;
+    }
+
+    /* Even if we held the mutex up to here (see above comment on the fiction
+     * of acquiring it, iterating to where we are, and releasing it again),
+     * we'd need to let go of it now to actually open the directory. This
+     * temporary count ensures that the file system will stick around for the
+     * directory open step that follows immediately */
+    atomic_fetch_add(&next->open_files, 1);
+
+    /* Ignoring errors, can't help with them */
+    vfs_closedir(dir);
+
+    int err = vfs_opendir(dir, next->mount_point);
+    /* No matter the success, the open_files lock has done its duty */
+    atomic_fetch_sub(&next->open_files, 1);
+
+    if (err != 0) {
+        DEBUG("vfs_iterate_mount opendir erred: vfs_opendir(\"%s\") = %d\n", next->mount_point, err);
+        return false;
+    }
+    return true;
 }
 
 const vfs_file_t *vfs_file_get(int fd)
@@ -1018,23 +1104,108 @@ static inline int _fd_is_valid(int fd)
     return 0;
 }
 
+static bool _is_dir(vfs_mount_t *mountp, vfs_DIR *dir, const char *restrict path)
+{
+    const vfs_dir_ops_t *ops = mountp->fs->d_op;
+    if (!ops->opendir) {
+        return false;
+    }
+
+    dir->d_op = ops;
+    dir->mp = mountp;
+
+    int res = ops->opendir(dir, path, path);
+    if (res < 0) {
+        return false;
+    }
+
+    ops->closedir(dir);
+    return true;
+}
+
 int vfs_sysop_stat_from_fstat(vfs_mount_t *mountp, const char *restrict path, struct stat *restrict buf)
 {
     const vfs_file_ops_t * f_op = mountp->fs->f_op;
-    vfs_file_t opened = {
-        .mp = mountp,
-        /* As per definition of the `vfsfile_ops::open` field */
-        .f_op = f_op,
-        .private_data = { .ptr = NULL },
-        .pos = 0,
+
+    union {
+        vfs_file_t file;
+        vfs_DIR dir;
+    } filedir = {
+        .file = {
+            .mp = mountp,
+            /* As per definition of the `vfsfile_ops::open` field */
+            .f_op = f_op,
+            .private_data = { .ptr = NULL },
+            .pos = 0,
+        },
     };
-    int err = f_op->open(&opened, path, 0, 0, NULL);
+
+    int err = f_op->open(&filedir.file, path, 0, 0, NULL);
     if (err < 0) {
+        if (_is_dir(mountp, &filedir.dir, path)) {
+            buf->st_mode = S_IFDIR;
+            return 0;
+        }
         return err;
     }
-    err = f_op->fstat(&opened, buf);
-    f_op->close(&opened);
+    err = f_op->fstat(&filedir.file, buf);
+    f_op->close(&filedir.file);
     return err;
+}
+
+static int _auto_mount(vfs_mount_t *mountp, unsigned i)
+{
+    (void) i;
+    DEBUG("vfs%u: mounting as '%s'\n", i, mountp->mount_point);
+    int res = vfs_mount(mountp);
+    if (res == 0) {
+        return 0;
+    }
+
+    if (IS_ACTIVE(MODULE_VFS_AUTO_FORMAT)) {
+        DEBUG("vfs%u: formatting…\n", i);
+        res = vfs_format(mountp);
+        if (res) {
+            DEBUG("vfs%u: format: error %d\n", i, res);
+            return res;
+        }
+        res = vfs_mount(mountp);
+    }
+
+    if (res) {
+        DEBUG("vfs%u mount: error %d\n", i, res);
+    }
+
+    return res;
+}
+
+void auto_init_vfs(void)
+{
+    for (unsigned i = 0; i < MOUNTPOINTS_NUMOF; ++i) {
+        _auto_mount(&vfs_mountpoints_xfa[i], i);
+    }
+}
+
+int vfs_mount_by_path(const char *path)
+{
+    for (unsigned i = 0; i < MOUNTPOINTS_NUMOF; ++i) {
+        if (strcmp(path, vfs_mountpoints_xfa[i].mount_point) == 0) {
+            return _auto_mount(&vfs_mountpoints_xfa[i], i);
+        }
+    }
+
+    return -ENOENT;
+}
+
+int vfs_unmount_by_path(const char *path)
+{
+    for (unsigned i = 0; i < MOUNTPOINTS_NUMOF; ++i) {
+        if (strcmp(path, vfs_mountpoints_xfa[i].mount_point) == 0) {
+            return vfs_umount(&vfs_mountpoints_xfa[i]);
+        }
+    }
+
+    return -ENOENT;
 }
 
 /** @} */
