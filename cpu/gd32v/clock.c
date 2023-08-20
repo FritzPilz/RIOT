@@ -35,7 +35,7 @@
 
 #define PREDV0_CONF          1  /* Divide by 2 */
 #define PLL_MULT_FACTOR      (CLOCK_CORECLOCK / \
-                                (CLOCK_HXTAL / (PREDV0_CONF + 1)) - 1)
+                                (CLOCK_HXTAL / (PREDV0_CONF + 1)))
 
 #define RCU_CFG0_SCS_IRC8    (0 << RCU_CFG0_SCS_Pos)
 #define RCU_CFG0_SCS_HXTAL   (1 << RCU_CFG0_SCS_Pos)

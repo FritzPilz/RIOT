@@ -218,6 +218,9 @@ extern int _bootloader_handler(int argc, char **argv);
 #ifdef MODULE_GNRC_UDP_CMD
 extern int _gnrc_udp_cmd(int argc, char **argv);
 #endif
+#ifdef MODULE_BPF
+extern int _sc_bpf(int argc, char **argv);
+#endif
 
 #ifdef MODULE_MD5SUM
 extern int _vfs_md5sum_cmd(int argc, char **argv);
@@ -409,6 +412,9 @@ const shell_command_t _shell_command_list[] = {
       congure_test_msgs_reset },
     { "cong_report", "Calls a report_* method of the CongURE state object",
       congure_test_call_report },
+#endif
+#ifdef MODULE_BPF
+    {"bpf_keyval", "retrieve bpf key value store values", _sc_bpf},
 #endif
     {NULL, NULL, NULL}
 };
