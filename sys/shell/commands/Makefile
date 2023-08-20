@@ -142,7 +142,4 @@ ifneq (,$(filter cryptoauthlib,$(USEPKG)))
   SRC += sc_cryptoauthlib.c
 endif
 
-ifneq (,$(filter bpf,$(USEMODULE)))
-  SRC += sc_bpf.c
-endif
 include $(RIOTBASE)/Makefile.base

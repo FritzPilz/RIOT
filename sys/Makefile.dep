@@ -24,11 +24,6 @@ ifneq (,$(filter auto_init_gnrc_netif,$(USEMODULE)))
   USEMODULE += gnrc_netif_init_devs
 endif
 
-ifneq (,$(filter bpf,$(USEMODULE)))
-  USEMODULE += btree
-  USEMODULE += memarray
-endif
-
 ifneq (,$(filter auto_init_sock_dns,$(USEMODULE)))
   ifneq (,$(filter ipv4,$(USEMODULE)))
     USEMODULE += ipv4_addr
@@ -439,9 +434,6 @@ ifneq (,$(filter sched_round_robin,$(USEMODULE)))
     USEMODULE += ztimer_msec
   endif
   USEMODULE += sched_runq_callback
-endif
-ifneq (,$(filter sched_rbpf,$(USEMODULE)))
-  USEMODULE += sched_cb
 endif
 
 ifneq (,$(filter saul_reg,$(USEMODULE)))
