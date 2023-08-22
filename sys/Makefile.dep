@@ -379,6 +379,9 @@ ifneq (,$(filter sched_round_robin,$(USEMODULE)))
   endif
   USEMODULE += sched_runq_callback
 endif
+ifneq (,$(filter sched_rbpf,$(USEMODULE)))
+  USEMODULE += sched_cb
+endif
 
 ifneq (,$(filter sched_rbpf,$(USEMODULE)))
   USEMODULE += sched_cb

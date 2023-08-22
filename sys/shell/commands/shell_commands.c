@@ -214,6 +214,9 @@ extern int _bootloader_handler(int argc, char **argv);
 #ifdef MODULE_GNRC_UDP_CMD
 extern int _gnrc_udp_cmd(int argc, char **argv);
 #endif
+#ifdef MODULE_BPF
+extern int _sc_bpf(int argc, char **argv);
+#endif
 
 #ifdef MODULE_BPF
 extern int _sc_bpf(int argc, char **argv);
