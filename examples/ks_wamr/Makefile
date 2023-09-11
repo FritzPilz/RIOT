@@ -40,7 +40,6 @@ BLOBS += $(TESTCASE).wasm
 
 CFLAGS += -DTHREAD_STACKSIZE_MAIN='(4 * 1024)'
 CFLAGS += -mfloat-abi=hard
-CFLAGS := $(subst -Wstrict-prototypes,,$(CFLAGS))
 export WAMR_CONFIG := $(abspath config.cmake)
 
 all: $(TESTCASE).wasm
@@ -53,3 +52,5 @@ $(TESTCASE).wasm: $(TESTCASE)/wasm/$(TESTCASE).c $(TESTCASE)/wasm/Makefile
 DIRS += $(CURDIR)/$(TESTCASE) $(CURDIR)/utility
 
 include $(RIOTBASE)/Makefile.include
+CFLAGS := $(filter-out -Wstrict-prototypes,$(CFLAGS))
+CFLAGS := $(filter-out -Werror,$(CFLAGS))

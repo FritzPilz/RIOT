@@ -78,8 +78,6 @@ void run_wasm_test(benchmark_runs* test){
 	uint32_t start_time = xtimer_usec_from_ticks(xtimer_now());
     for(uint32_t i = 0; i < test->times_to_run; ++i){
         int result = iwasm_instance_exec_main(small_incremental_read_only_instance, argc, argv);
-		// manually added, as the value cannot be returned through the function
-		kolmogorov_smirnov_test(100);
     }
 
 	uint32_t end_time = xtimer_usec_from_ticks(xtimer_now());
@@ -102,8 +100,28 @@ void run_reference_test(benchmark_runs* test){
 	 test->time_taken_in_usec = (end_time-start_time);
 }
 
+void pass_WAMR_value(wasm_exec_env_t exec_env, int value){
+	kolmogorov_smirnov_test(value);
+}
+
 int32_t prepare_wasm_run(uint8_t* wasm_buf){
+	static NativeSymbol native_symbols[] =
+	{
+		{
+			"pass_WAMR_value",
+			pass_WAMR_value,
+			"(i)"
+		}
+	};
+
 	iwasm_runtime_init();
+
+	int32_t n_native_symbols = sizeof(native_symbols) / sizeof(NativeSymbol);
+	if (!wasm_runtime_register_natives("env", native_symbols, n_native_symbols)){
+		printf("Registration of host function in WAMR module failed!");
+		while(1);
+	}
+
 	wasm_buf = malloc(sizeof(small_incremental_read_only_ks_wasm));
 	if(!wasm_buf){
 		return -1;
