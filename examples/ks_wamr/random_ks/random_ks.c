@@ -19,10 +19,8 @@ static benchmark_runs test_runs[runs] =
 	{.times_to_run = 8, .time_taken_in_usec = 0},
 	{.times_to_run = 12, .time_taken_in_usec = 0},
 	{.times_to_run = 64, .time_taken_in_usec = 0},
-	{.times_to_run = 128, .time_taken_in_usec = 0},
-	{.times_to_run = 128, .time_taken_in_usec = 0},
-	//{.times_to_run = 512, .time_taken_in_usec = 0},
-	//{.times_to_run = 4096, .time_taken_in_usec = 0}
+	{.times_to_run = 512, .time_taken_in_usec = 0},
+	{.times_to_run = 4096, .time_taken_in_usec = 0},
 };
 
 static wasm_module_t random_module;
@@ -34,7 +32,7 @@ bool iwasm_runtime_init(void);
 int32_t prepare_wasm_run(uint8_t* wasm_buf);
 void cleanup_wasm(uint8_t* wasm_buf);
 
-void prepare_function(int8_t* dest, uint32_t size);
+void prepare_function(int32_t* func, uint32_t size);
 void copy_empirical_function_from_WAMR(wasm_exec_env_t exec_env, int32_t* arr, uint32_t size);
 
 void launch_test_case(KS_Test_State* ks_state){	
@@ -85,7 +83,7 @@ void run_wasm_test(benchmark_runs* test){
 	empirical_function_copy[(function_size*sizeof(int32_t)+1)]; memset(empirical_function_copy,0,(function_size*sizeof(int32_t)+1));
 	expected_function_copy[(function_size*sizeof(int32_t)+1)]; memset(expected_function_copy,0,(function_size*sizeof(int32_t)+1));
 	memcpy(expected_function_copy, expected_function, sizeof(expected_function_copy)-1);
-	prepare_function(expected_function_copy, (function_size*sizeof(int32_t)));
+	prepare_function((int32_t)expected_function_copy, (function_size));
 
 	uint32_t start_time = xtimer_usec_from_ticks(xtimer_now());
 	snprintf(function_size_buf, sizeof(function_size_buf), "%lu", function_size);
@@ -94,12 +92,9 @@ void run_wasm_test(benchmark_runs* test){
 		uint32_t value = xtimer_usec_from_ticks(xtimer_now())%(function_size*granularity);
 		snprintf(value_buf, sizeof(value_buf), "%lu", value);
 		memcpy(empirical_function_copy, empirical_function, sizeof(empirical_function_copy)-1);
-		prepare_function(empirical_function_copy, (function_size*sizeof(int32_t)));
+		prepare_function((int32_t)empirical_function_copy, (function_size));
 		char *argv[] = { empirical_function_copy, expected_function_copy, function_size_buf, granularity_buf, value_buf};
         iwasm_instance_exec_main(random_instance, argc, argv);
-		if(i == 600){
-			while(1){};
-		}
     }
 
 	uint32_t end_time = xtimer_usec_from_ticks(xtimer_now());
@@ -164,14 +159,12 @@ void cleanup_wasm(uint8_t* wasm_buf){
     free(wasm_buf);
 }
 
-void prepare_function(int8_t* func, uint32_t size){
-	int32_t* arr = (int32_t*)func;
-	for(int i = 0; i < size/4; ++i){
-		if((arr[i] & 0xff) == 0xff){
-			arr[i] += 0x1010101;
-			arr[i] |= 0x1018001;
+void prepare_function(int32_t* func, uint32_t size){
+	for(int i = 0; i < size; ++i){
+		if((func[i] & 0xff) == 0xff){
+			func[i] |= 0x10180ff;
 		}else{
-			arr[i] += 0x1010101;
+			func[i] += 0x1010101;
 		}
 	}
 }

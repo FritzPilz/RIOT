@@ -40,9 +40,8 @@ WASM_EXPORT int main(int argc, char **argv)
 
 void unpack_function(int32_t* func, uint32_t size){
 	for(int i = 0; i < size; ++i){
-		if((func[i] & 0x1018001) == 0x1018001){
-			func[i] &= !0x1018001;
-			func[i] -= 0x1010101;
+		if((func[i] & 0x1018000) == 0x1018000){
+			func[i] &= 0x00001fff;
 		}else{
 			func[i] -= 0x1010101;
 		}
