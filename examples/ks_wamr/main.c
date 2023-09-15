@@ -15,5 +15,7 @@ int main(void){
     printf("Granularity: %i\n", granularity);
     printf("Function size: %i\n", function_size);
 
+    printf("Space occupied by functions: %u", sizeof(expected_function));
+
     launch_test_case(&ks_state);
 }

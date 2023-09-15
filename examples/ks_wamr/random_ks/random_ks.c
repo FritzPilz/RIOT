@@ -19,8 +19,10 @@ static benchmark_runs test_runs[runs] =
 	{.times_to_run = 8, .time_taken_in_usec = 0},
 	{.times_to_run = 12, .time_taken_in_usec = 0},
 	{.times_to_run = 64, .time_taken_in_usec = 0},
-	{.times_to_run = 512, .time_taken_in_usec = 0},
-	{.times_to_run = 4096, .time_taken_in_usec = 0}
+	{.times_to_run = 128, .time_taken_in_usec = 0},
+	{.times_to_run = 128, .time_taken_in_usec = 0},
+	//{.times_to_run = 512, .time_taken_in_usec = 0},
+	//{.times_to_run = 4096, .time_taken_in_usec = 0}
 };
 
 static wasm_module_t random_module;
@@ -31,6 +33,9 @@ bool iwasm_runtime_init(void);
 
 int32_t prepare_wasm_run(uint8_t* wasm_buf);
 void cleanup_wasm(uint8_t* wasm_buf);
+
+void prepare_function(int8_t* dest, uint32_t size);
+void copy_empirical_function_from_WAMR(wasm_exec_env_t exec_env, int32_t* arr, uint32_t size);
 
 void launch_test_case(KS_Test_State* ks_state){	
 	++ks_state->value;
@@ -68,21 +73,33 @@ void launch_test_case(KS_Test_State* ks_state){
 
 void create_function(benchmark_runs* run){
 	for(uint32_t i = 0; i < function_size; ++i){
-		expected_function[i] = run->times_to_run/function_size*(function_size-i);
+		expected_function[i] = (run->times_to_run/function_size*(function_size-i));
 	}
 }
 
 void run_wasm_test(benchmark_runs* test){
 	create_function(test);
-	int argc = 1;
-	char buf[10];
+	int argc = 5;
+	uint8_t empirical_function_copy[function_size*sizeof(int32_t)+1]; uint8_t expected_function_copy[function_size*sizeof(int32_t)+1];
+	char function_size_buf[10];char granularity_buf[10];char value_buf[10];
+	empirical_function_copy[(function_size*sizeof(int32_t)+1)]; memset(empirical_function_copy,0,(function_size*sizeof(int32_t)+1));
+	expected_function_copy[(function_size*sizeof(int32_t)+1)]; memset(expected_function_copy,0,(function_size*sizeof(int32_t)+1));
+	memcpy(expected_function_copy, expected_function, sizeof(expected_function_copy)-1);
+	prepare_function(expected_function_copy, (function_size*sizeof(int32_t)));
 
 	uint32_t start_time = xtimer_usec_from_ticks(xtimer_now());
-    for(uint32_t i = 0; i < test->times_to_run; ++i){
+	snprintf(function_size_buf, sizeof(function_size_buf), "%lu", function_size);
+	snprintf(granularity_buf, sizeof(granularity_buf), "%lu", granularity);
+	    for(uint32_t i = 0; i < test->times_to_run; ++i){
 		uint32_t value = xtimer_usec_from_ticks(xtimer_now())%(function_size*granularity);
-		snprintf(buf, sizeof(buf), "%lu", value);
-		char *argv[] = { buf };
+		snprintf(value_buf, sizeof(value_buf), "%lu", value);
+		memcpy(empirical_function_copy, empirical_function, sizeof(empirical_function_copy)-1);
+		prepare_function(empirical_function_copy, (function_size*sizeof(int32_t)));
+		char *argv[] = { empirical_function_copy, expected_function_copy, function_size_buf, granularity_buf, value_buf};
         iwasm_instance_exec_main(random_instance, argc, argv);
+		if(i == 600){
+			while(1){};
+		}
     }
 
 	uint32_t end_time = xtimer_usec_from_ticks(xtimer_now());
@@ -103,7 +120,23 @@ void run_reference_test(benchmark_runs* test){
 }
 
 int32_t prepare_wasm_run(uint8_t* wasm_buf){
+	static NativeSymbol native_symbols[] =
+	{
+		{
+			"copy_empirical_function_from_WAMR",
+			copy_empirical_function_from_WAMR,
+			"(*~)"
+		}
+	};
+
 	iwasm_runtime_init();
+
+	int32_t n_native_symbols = sizeof(native_symbols) / sizeof(NativeSymbol);
+	if (!wasm_runtime_register_natives("env", native_symbols, n_native_symbols)){
+		printf("Registration of host function in WAMR module failed!");
+		while(1);
+	}
+
 	wasm_buf = malloc(sizeof(random_ks_wasm));
 	if(!wasm_buf){
 		return -1;
@@ -129,4 +162,20 @@ int32_t prepare_wasm_run(uint8_t* wasm_buf){
 void cleanup_wasm(uint8_t* wasm_buf){
 	wasm_runtime_deinstantiate(random_instance);
     free(wasm_buf);
+}
+
+void prepare_function(int8_t* func, uint32_t size){
+	int32_t* arr = (int32_t*)func;
+	for(int i = 0; i < size/4; ++i){
+		if((arr[i] & 0xff) == 0xff){
+			arr[i] += 0x1010101;
+			arr[i] |= 0x1018001;
+		}else{
+			arr[i] += 0x1010101;
+		}
+	}
+}
+
+void copy_empirical_function_from_WAMR(wasm_exec_env_t exec_env, int32_t* arr, uint32_t size){
+	memcpy(empirical_function, arr, size);
 }

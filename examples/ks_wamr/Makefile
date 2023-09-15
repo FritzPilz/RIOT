@@ -29,6 +29,7 @@ CFLAGS += -DVERBOSE_DEBUG=$(VERBOSE_DEBUG) -DFUNCTION_SIZE=$(FUNCTION_SIZE) -DGR
 INCLUDES += -I$(CURDIR)/bin/$(BOARD)/application_$(APPLICATION)/blobs/blob
 INCLUDES += -I$(WAMR_BASE)/core/app-framework/app-native-shared
 INCLUDES += -I${WAMR_CORE}/shared/utils
+INCLUDES += -I${WAMR_CORE}/iwasm
 
 USEPKG += wamr
 USEMODULE += $(TESTCASE)
@@ -40,6 +41,9 @@ BLOBS += $(TESTCASE).wasm
 
 CFLAGS += -DTHREAD_STACKSIZE_MAIN='(4 * 1024)'
 CFLAGS += -mfloat-abi=hard
+#LDFLAGS += -Wl,--export=malloc
+#LDFLAGS += -Wl,--export=free
+#LDFLAGS += --exportRuntime
 export WAMR_CONFIG := $(abspath config.cmake)
 
 all: $(TESTCASE).wasm

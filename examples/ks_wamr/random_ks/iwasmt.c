@@ -73,12 +73,13 @@ bool iwasm_runtime_init(void)
 {
     RuntimeInitArgs init_args;
 /* chose allocator non defaults to system allocator */
-#define FUNC_ALLOC
+// #define FUNC_ALLOC
 // #define POOL_ALLOC
 
     memset(&init_args, 0, sizeof(RuntimeInitArgs));
 #ifdef POOL_ALLOC
     static char global_heap_buf[128 * 1024] = { 0 };//(256 kB)
+
 
     init_args.mem_alloc_type = Alloc_With_Pool;
     init_args.mem_alloc_option.pool.heap_buf = global_heap_buf;
