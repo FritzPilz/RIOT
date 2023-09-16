@@ -32,6 +32,9 @@ bool iwasm_runtime_init(void);
 int32_t prepare_wasm_run(uint8_t* wasm_buf);
 void cleanup_wasm(uint8_t* wasm_buf);
 
+void prepare_function(int32_t* func, uint32_t size);
+void copy_empirical_function_from_WAMR(wasm_exec_env_t exec_env, int32_t* arr, uint32_t size);
+
 void launch_test_case(KS_Test_State* ks_state){	
 	++ks_state->value;
 
@@ -72,11 +75,22 @@ void create_function(benchmark_runs* run){
 
 void run_wasm_test(benchmark_runs* test){
 	create_function(test);
-	int argc = 0;
-    char *argv[] = { };
+	int argc = 5;
+	uint8_t empirical_function_copy[function_size*sizeof(int32_t)+1]; uint8_t expected_function_copy[function_size*sizeof(int32_t)+1];
+	char function_size_buf[10];char granularity_buf[10];char value_buf[10];
+	empirical_function_copy[(function_size*sizeof(int32_t)+1)]; memset(empirical_function_copy,0,(function_size*sizeof(int32_t)+1));
+	expected_function_copy[(function_size*sizeof(int32_t)+1)]; memset(expected_function_copy,0,(function_size*sizeof(int32_t)+1));
+	memcpy(expected_function_copy, expected_function, sizeof(expected_function_copy)-1);
+	prepare_function((int32_t)expected_function_copy, (function_size));
 
 	uint32_t start_time = xtimer_usec_from_ticks(xtimer_now());
+	snprintf(function_size_buf, sizeof(function_size_buf), "%lu", function_size);
+	snprintf(granularity_buf, sizeof(granularity_buf), "%lu", granularity);
     for(uint32_t i = 0; i < test->times_to_run; ++i){
+		snprintf(value_buf, sizeof(value_buf), "%lu", 100);
+		memcpy(empirical_function_copy, empirical_function, sizeof(empirical_function_copy)-1);
+		prepare_function((int32_t)empirical_function_copy, (function_size));
+		char *argv[] = { empirical_function_copy, expected_function_copy, function_size_buf, granularity_buf, value_buf};
         iwasm_instance_exec_main(small_incremental_instance, argc, argv);
     }
 
@@ -101,7 +115,23 @@ void run_reference_test(benchmark_runs* test){
 }
 
 int32_t prepare_wasm_run(uint8_t* wasm_buf){
+		static NativeSymbol native_symbols[] =
+	{
+		{
+			"copy_empirical_function_from_WAMR",
+			copy_empirical_function_from_WAMR,
+			"(*~)"
+		}
+	};
+
 	iwasm_runtime_init();
+
+	int32_t n_native_symbols = sizeof(native_symbols) / sizeof(NativeSymbol);
+	if (!wasm_runtime_register_natives("env", native_symbols, n_native_symbols)){
+		printf("Registration of host function in WAMR module failed!");
+		while(1);
+	}
+
 	wasm_buf = malloc(sizeof(small_incremental_ks_wasm));
 	if(!wasm_buf){
 		return -1;
@@ -126,4 +156,18 @@ int32_t prepare_wasm_run(uint8_t* wasm_buf){
 void cleanup_wasm(uint8_t* wasm_buf){
 	wasm_runtime_deinstantiate(small_incremental_instance);
     free(wasm_buf);
+}
+
+void prepare_function(int32_t* func, uint32_t size){
+	for(int i = 0; i < size; ++i){
+		if((func[i] & 0xff) == 0xff){
+			func[i] |= 0x10180ff;
+		}else{
+			func[i] += 0x1010101;
+		}
+	}
+}
+
+void copy_empirical_function_from_WAMR(wasm_exec_env_t exec_env, int32_t* arr, uint32_t size){
+	memcpy(empirical_function, arr, size);
 }
