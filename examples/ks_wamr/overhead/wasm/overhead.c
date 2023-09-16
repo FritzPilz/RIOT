@@ -17,22 +17,7 @@ WASM_EXPORT int main(int argc, char **argv)
 	int32_t* expected_function = (int32_t*)argv[1];
 	unpack_function(empirical_function, function_size);
 	unpack_function(expected_function, function_size);
-	for(uint32_t i = 0; i < function_size; ++i){
-		if(value < i*granularity){
-			continue;
-		}else{
-			++empirical_function[i];
-		}
-	}
 	int32_t result = 0;
-	for(uint32_t i = 0; i < function_size; ++i){
-		int32_t F1 = expected_function[i]; int32_t F2 = empirical_function[i];
-		int32_t diff = F1-F2;
-		if(diff < 0){
-			diff = -diff;
-		}
-		result = (diff > result) ? diff : result;
-	}
 	copy_empirical_function_from_WAMR(empirical_function, sizeof(int32_t)*function_size);
 	return (uint32_t)result;
 }

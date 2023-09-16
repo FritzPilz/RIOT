@@ -1,7 +1,6 @@
 #include <stdint.h>
 
 extern long strtol(const char *restrict nptr, char **restrict endptr, int base);
-extern int printf(const char* fmt, ...);
 void copy_empirical_function_from_WAMR(int32_t* arr, uint32_t size);
 void unpack_function(int32_t* func, uint32_t size);
 

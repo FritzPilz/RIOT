@@ -20,7 +20,7 @@ DEVELHELP ?= 1
 # Change this to 0 show compiler invocation lines by default:
 QUIET ?= 1
 
-VERBOSE_DEBUG ?= 1
+VERBOSE_DEBUG ?= 0
 FUNCTION_SIZE ?= 32
 GRANULARITY ?= 4
 
