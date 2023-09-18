@@ -87,7 +87,7 @@ void run_wasm_test(benchmark_runs* test){
 	snprintf(function_size_buf, sizeof(function_size_buf), "%lu", function_size);
 	snprintf(granularity_buf, sizeof(granularity_buf), "%lu", granularity);
     for(uint32_t i = 0; i < test->times_to_run; ++i){
-		snprintf(value_buf, sizeof(value_buf), "%lu", 100);
+		snprintf(value_buf, sizeof(value_buf), "%lu", 10);
 		memcpy(empirical_function_copy, empirical_function, sizeof(empirical_function_copy)-1);
 		prepare_function((int32_t)empirical_function_copy, (function_size));
 		char *argv[] = { empirical_function_copy, expected_function_copy, function_size_buf, granularity_buf, value_buf};
