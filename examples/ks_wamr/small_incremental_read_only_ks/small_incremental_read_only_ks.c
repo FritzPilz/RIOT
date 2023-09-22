@@ -78,6 +78,7 @@ void run_wasm_test(benchmark_runs* test){
 	uint32_t start_time = xtimer_usec_from_ticks(xtimer_now());
     for(uint32_t i = 0; i < test->times_to_run; ++i){
         int result = iwasm_instance_exec_main(small_incremental_read_only_instance, argc, argv);
+		kolmogorov_smirnov_test(result);
     }
 
 	uint32_t end_time = xtimer_usec_from_ticks(xtimer_now());

@@ -8,7 +8,7 @@
 #include "../utility/include/shared_ks.h"
 #include "wasm_export.h"
 
-#include "incremental_read_only_ks.wasm.h"
+#include "overhead_read_only.wasm.h"
 
 #define runs 7
 
@@ -23,8 +23,8 @@ static benchmark_runs test_runs[runs] =
 	{.times_to_run = 4096, .time_taken_in_usec = 0}
 };
 
-static wasm_module_t incremental_read_only_module;
-static wasm_module_inst_t incremental_read_only_instance = NULL;
+static wasm_module_t overhead_read_only_module;
+static wasm_module_inst_t overhead_read_only_instance = NULL;
 
 int iwasm_instance_exec_main(wasm_module_inst_t module_inst, int argc, char **argv);
 bool iwasm_runtime_init(void);
@@ -49,7 +49,7 @@ void launch_test_case(KS_Test_State* ks_state){
 		clear_empirical_function();
 	}
 	print_csv_header(test_runs, runs);
-	print_csv_body(test_runs, runs, "Incremental RO WASM in ms,");
+	print_csv_body(test_runs, runs, "Overhead RO WASM in ms,");
 
 	printf("Start reference test:\n");
 	for(int i = 0; i < runs; ++i){
@@ -61,7 +61,7 @@ void launch_test_case(KS_Test_State* ks_state){
 		clear_empirical_function();
 	}
 	cleanup_wasm(wasm_buf);
-	print_csv_body(test_runs, runs, "Incremental Plain in ms,");
+	print_csv_body(test_runs, runs, "Overhead RO Plain in ms,");
 }
 
 void create_function(benchmark_runs* run){
@@ -77,8 +77,7 @@ void run_wasm_test(benchmark_runs* test){
 
 	uint32_t start_time = xtimer_usec_from_ticks(xtimer_now());
     for(uint32_t i = 0; i < test->times_to_run; ++i){
-        int result = iwasm_instance_exec_main(incremental_read_only_instance, argc, argv);
-		kolmogorov_smirnov_test(result);
+        int result = iwasm_instance_exec_main(overhead_read_only_instance, argc, argv);
     }
 
 	uint32_t end_time = xtimer_usec_from_ticks(xtimer_now());
@@ -86,19 +85,7 @@ void run_wasm_test(benchmark_runs* test){
 }
 
 void run_reference_test(benchmark_runs* test){
-	create_function(test);
-
-	uint32_t start_time = xtimer_usec_from_ticks(xtimer_now());
-
-	for(uint32_t i = 0; i < test->times_to_run; ++i){
-		volatile int value = 0;
-		for(int j = 0; j < 100; ++j){
-			++value;
-		}
-		kolmogorov_smirnov_test(value);
-	}
-	 uint32_t end_time = xtimer_usec_from_ticks(xtimer_now());
-	 test->time_taken_in_usec = (end_time-start_time);
+	 test->time_taken_in_usec = 0;
 }
 
 void pass_WAMR_value(wasm_exec_env_t exec_env, int value){
@@ -115,7 +102,7 @@ int32_t prepare_wasm_run(uint8_t* wasm_buf){
 		}
 	};
 
-	wasm_runtime_init();
+	iwasm_runtime_init();
 
 	int32_t n_native_symbols = sizeof(native_symbols) / sizeof(NativeSymbol);
 	if (!wasm_runtime_register_natives("env", native_symbols, n_native_symbols)){
@@ -123,20 +110,20 @@ int32_t prepare_wasm_run(uint8_t* wasm_buf){
 		while(1);
 	}
 
-	wasm_buf = malloc(sizeof(incremental_read_only_ks_wasm));
+	wasm_buf = malloc(sizeof(overhead_read_only_wasm));
 	if(!wasm_buf){
 		return -1;
 	}
-	memcpy(wasm_buf, incremental_read_only_ks_wasm, sizeof(incremental_read_only_ks_wasm));
+	memcpy(wasm_buf, overhead_read_only_wasm, sizeof(overhead_read_only_wasm));
 
 	char error_buf[128];
-    if (!(incremental_read_only_module = wasm_runtime_load(wasm_buf, sizeof(incremental_read_only_ks_wasm),
+    if (!(overhead_read_only_module = wasm_runtime_load(wasm_buf, sizeof(overhead_read_only_wasm),
         error_buf, sizeof(error_buf)))) {
         puts(error_buf);
 		return -1;
     }
 
-    if (!(incremental_read_only_instance = wasm_runtime_instantiate(incremental_read_only_module, 8 * 1024,
+    if (!(overhead_read_only_instance = wasm_runtime_instantiate(overhead_read_only_module, 8 * 1024,
         8 * 1024, error_buf, sizeof(error_buf)))) {
         puts(error_buf);
         return -1;
@@ -145,6 +132,6 @@ int32_t prepare_wasm_run(uint8_t* wasm_buf){
 }
 
 void cleanup_wasm(uint8_t* wasm_buf){
-	wasm_runtime_deinstantiate(incremental_read_only_instance);
+	wasm_runtime_deinstantiate(overhead_read_only_instance);
     free(wasm_buf);
 }
