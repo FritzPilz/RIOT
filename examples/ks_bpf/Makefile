@@ -5,7 +5,7 @@ RIOTBASE ?= $(CURDIR)/../..
 # a test case corresponds to a subdirectory in this folder
 TESTCASE ?= nrf52_temp_read
 
-BOARD ?= native
+BOARD ?= microbit-v2
 
 # Comment this out to disable code in RIOT that does safety checking
 # which is not needed in a production environment but helps in the
